@@ -7,3 +7,6 @@ cceface/model/
 *.jpeg
 *.png
 *.mov
+*.DS_Store
+*.pyc
+__pycache__
