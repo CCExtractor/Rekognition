@@ -1,0 +1,9 @@
+*.ckpt
+/model/**
+model/**
+cceface/model/
+*.mp4
+*.jpg
+*.jpeg
+*.png
+*.mov
