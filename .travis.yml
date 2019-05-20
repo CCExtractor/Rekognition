@@ -22,4 +22,5 @@ install:
   - pip3 install -r requirements.txt
 
 script:
+  - flake8 .
   - python manage.py test
