@@ -8,9 +8,6 @@ cache:
 python:
   - "3.6"
   - "3.7"
-  - "3.7-dev"  # 3.7 development branch
-  - "3.8-dev"  # 3.8 development branch
-  - "nightly"  # nightly build
 
 before_install:
   - pip3 install --upgrade pip
@@ -18,7 +15,6 @@ before_install:
   - virtualenv -p python3 myenv
   - source myenv/bin/activate
   - python --version
-  - pip3 install -U pip3 wheel
 
 
 
