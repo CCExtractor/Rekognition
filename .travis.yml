@@ -1,0 +1,26 @@
+dist: xenial   # required for Python >= 3.7
+language: python
+
+cache:
+  directories:
+    - $HOME/.cache/pip
+
+python:
+  - "3.6"
+  - "3.7"
+  - "3.7-dev"  # 3.7 development branch
+  - "3.8-dev"  # 3.8 development branch
+  - "nightly"  # nightly build
+
+before_install:
+  - pip3 install --upgrade pip
+  - pip3 install virtualenv
+  - virtualenv -p python3 myenv
+  - source myenv/bin/activate
+  - python --version
+  - pip3 install -U pip3 wheel
+
+
+
+install:
+  - pip3 install -r requirements.txt
