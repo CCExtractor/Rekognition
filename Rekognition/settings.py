@@ -51,6 +51,13 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'Rekognition.urls'
 
+FILE_UPLOAD_PERMISSIONS = '0760'
+
+FILE_UPLOAD_HANDLERS = [
+    'django.core.files.uploadhandler.MemoryFileUploadHandler',
+    'django.core.files.uploadhandler.TemporaryFileUploadHandler',
+]
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
