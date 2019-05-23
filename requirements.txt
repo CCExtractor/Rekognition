@@ -6,3 +6,5 @@ pycodestyle==2.5.0
 pyflakes==2.1.1
 pytz==2019.1
 sqlparse==0.3.0
+djangorestframework==3.9.4
+tensorflow
