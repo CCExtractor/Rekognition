@@ -12,3 +12,4 @@ cceface/model/
 __pycache__
 /coverage.data
 /coverage/
+.coverage
