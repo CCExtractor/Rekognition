@@ -20,8 +20,7 @@ install:
   - pip3 install -r requirements.txt
 
 script:
-  - flake8 Rekognition
-  - pwd
+  - flake8 .
   - coverage run --source='.'  manage.py test
 
 after_success:
