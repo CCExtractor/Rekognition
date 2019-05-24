@@ -6,15 +6,15 @@ cache:
     - $HOME/.cache/pip
 
 python:
-  - "3.6"
+  # - "3.6"
   - "3.7"
 
 before_install:
   - pip3 install --upgrade pip
-  - pip3 install virtualenv
-  - virtualenv -p python3 myenv
-  - source myenv/bin/activate
-  - python --version
+  # - pip3 install virtualenv
+  # - virtualenv -p python3 myenv
+  # - source myenv/bin/activate
+  # - python --version
 
 install:
   - pip3 install -r requirements.txt
