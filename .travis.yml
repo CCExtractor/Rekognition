@@ -21,7 +21,8 @@ install:
 
 script:
   - flake8 Rekognition
-  - coverage run --source='.'  Rekognition/manage.py test
+  - pwd
+  - coverage run --source='.'  manage.py test
 
 after_success:
   - coveralls
