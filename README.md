@@ -15,3 +15,5 @@ git clone https://github.com/pymit/Rekognition
 cd Rekognition
 pip3 install -r requirements.txt
 ```
+## License
+This software is licensed under GNU GPLv3. Please see the included License file.
