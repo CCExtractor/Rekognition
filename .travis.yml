@@ -16,14 +16,12 @@ before_install:
   - source myenv/bin/activate
   - python --version
 
-
-
 install:
   - pip3 install -r requirements.txt
 
 script:
   - flake8 Rekognition
-  - coverage run --source='.'  manage.py test
+  - coverage run --source='.'  Rekognition/manage.py test
 
 after_success:
   - coveralls
