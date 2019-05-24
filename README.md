@@ -2,6 +2,7 @@
 Poor Man's Rekognition
 
 [![Build Status](https://travis-ci.org/pymit/Rekognition.svg?branch=master)](https://travis-ci.org/pymit/Rekognition)
+[![Coverage Status](https://coveralls.io/repos/github/pymit/Rekognition/badge.svg?branch=master)](https://coveralls.io/github/pymit/Rekognition?branch=master)
 
 Python3 is required
 Setting up the project locally
