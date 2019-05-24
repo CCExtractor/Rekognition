@@ -10,3 +10,6 @@ cceface/model/
 *.DS_Store
 *.pyc
 __pycache__
+/coverage.data
+/coverage/
+.coverage

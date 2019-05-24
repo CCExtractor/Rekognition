@@ -23,7 +23,7 @@ install:
 
 script:
   - flake8 Rekognition
-  - python manage.py test
+  - coverage run --source='.'  manage.py test
 
 after_success:
   - coveralls
