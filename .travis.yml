@@ -1,24 +1,45 @@
 dist: xenial   # required for Python >= 3.7
 language: python
+sudo: required
+
+services:
+  - postgresql
+
+addons:
+  postgresql: "10"
+  apt:
+    packages:
+    - postgresql-10
+    - postgresql-client-10
+env:
+  global:
+  - PGPORT=5432
 
 cache:
   directories:
     - $HOME/.cache/pip
 
+before_cache:
+    - rm -f $HOME/.cache/pip/log/debug.log
+
 python:
-  # - "3.6"
   - "3.7"
 
 before_install:
   - pip3 install --upgrade pip
-  # - pip3 install virtualenv
-  # - virtualenv -p python3 myenv
-  # - source myenv/bin/activate
-  # - python --version
 
 install:
   - pip3 install -r requirements.txt
 
+before_script:
+  - psql -U postgres -c "CREATE DATABASE pmr"
+  - psql -U postgres -c "CREATE USER admin WITH PASSWORD 'admin'"
+  - psql -U postgres -c "ALTER ROLE admin SET client_encoding TO 'utf8'"
+  - psql -U postgres -c "ALTER ROLE admin SET default_transaction_isolation TO 'read committed'"
+  - psql -U postgres -c "ALTER ROLE admin SET timezone TO 'UTC'"
+  - psql -U postgres -c "ALTER USER admin CREATEDB"
+  - python manage.py makemigrations
+  - python manage.py migrate
 script:
   - flake8 .
   - coverage run --source='.'  manage.py test
