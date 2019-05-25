@@ -4,8 +4,16 @@ sudo: required
 
 services:
   - postgresql
+
 addons:
-  postgresql: "11.3"
+  postgresql: "10"
+  apt:
+    packages:
+    - postgresql-10
+    - postgresql-client-10
+env:
+  global:
+  - PGPORT=5432
 
 cache:
   directories:
@@ -15,7 +23,6 @@ before_cache:
     - rm -f $HOME/.cache/pip/log/debug.log
 
 python:
-  # - "3.6"
   - "3.7"
 
 before_install:
@@ -25,12 +32,12 @@ install:
   - pip3 install -r requirements.txt
 
 before_script:
-  - psql -c "CREATE DATABASE pmr"
-  - psql -c "CREATE USER admin WITH PASSWORD 'admin'"
-  - psql -c "ALTER ROLE admin SET client_encoding TO 'utf8'"
-  - psql -c "ALTER ROLE admin SET default_transaction_isolation TO 'read committed'"
-  - psql -c "ALTER ROLE admin SET timezone TO 'UTC'"
-  - psql -c "ALTER USER admin CREATEDB"
+  - psql -U postgres -c "CREATE DATABASE pmr"
+  - psql -U postgres -c "CREATE USER admin WITH PASSWORD 'admin'"
+  - psql -U postgres -c "ALTER ROLE admin SET client_encoding TO 'utf8'"
+  - psql -U postgres -c "ALTER ROLE admin SET default_transaction_isolation TO 'read committed'"
+  - psql -U postgres -c "ALTER ROLE admin SET timezone TO 'UTC'"
+  - psql -U postgres -c "ALTER USER admin CREATEDB"
   - python manage.py makemigrations
   - python manage.py migrate
 script:
