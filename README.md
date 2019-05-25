@@ -48,9 +48,9 @@ pip3 install -r requirements.txt
 Start django application
 
 ```
-python manage.py runserver 8888
+python manage.py runserver 8000
 ```
-can be accessed at http://localhost:8000
+Django app can be accessed at http://localhost:8000
 
 
 
