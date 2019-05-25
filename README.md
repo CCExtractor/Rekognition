@@ -5,6 +5,7 @@ Poor Man's Rekognition
 [![Coverage Status](https://coveralls.io/repos/github/pymit/Rekognition/badge.svg?branch=master)](https://coveralls.io/github/pymit/Rekognition?branch=master)
 
 Python3 is required
+
 Setting up the project locally
 
 Run the following command to setup the virtualenv.

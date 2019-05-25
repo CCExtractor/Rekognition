@@ -2,6 +2,8 @@ dist: xenial   # required for Python >= 3.7
 language: python
 sudo: required
 
+services:
+  - postgresql
 addons:
   postgresql: "11.3"
 
