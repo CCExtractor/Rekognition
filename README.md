@@ -1,10 +1,15 @@
-# Rekognition
-Poor Man's Rekognition
+## Poor Man's Rekognition
+---
+![](https://www.ccextractor.org/_media/public:gsoc:gsoc-cc.png)
+Google Summer Of Code 2019 Project under CCExtractor Development
 
 [![Build Status](https://travis-ci.org/pymit/Rekognition.svg?branch=master)](https://travis-ci.org/pymit/Rekognition)
 [![Coverage Status](https://coveralls.io/repos/github/pymit/Rekognition/badge.svg?branch=master)](https://coveralls.io/github/pymit/Rekognition?branch=master)
+[![Python 3.X](https://img.shields.io/badge/python-3.X-blue.svg)](https://www.python.org/downloads/)
+[![GPLv3 license](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/pymit/Rekognition/blob/master/LICENSE)
 
-Python3 is required
+---
+
 
 Setting up the project locally
 
@@ -53,6 +58,6 @@ python manage.py runserver 8000
 Django app can be accessed at http://localhost:8000
 
 
-
+---
 ## License
 This software is licensed under GNU GPLv3. Please see the included License file.
