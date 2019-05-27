@@ -42,7 +42,7 @@ before_script:
   # - python manage.py migrate
 script:
   - flake8 .
-  - coverage run --source='.'  manage.py test
+  - coverage run cceface/tests.py 
 
 after_success:
   - coveralls
