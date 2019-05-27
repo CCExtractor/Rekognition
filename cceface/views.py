@@ -72,7 +72,6 @@ def get_image(request):
         return "POST HTTP method required!"
 
 
-# @api_view(['POST','GET'])
 def predict_image(request):
     if request.method == 'POST':
         if 'file' not in request.FILES:
