@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<head>
+    <title>Upload image</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"> -->
+    <link rel="stylesheet" href=" {% static 'css/test.css' %}">
+</head>
+
+<body>
+
+<div>
+        <nav class="navbar navbar-light bg-light shadow-sm ounded">
+                <a class="navbar-brand" href="#"> Face Rekognition API </a>
+        </nav>
+</div>
+
+<div class="container text-center">
+        <br><br><br><br><br><br><br>
+    <p>{{ status }}</p>
+        <br><br>
+    <a href="{% url 'index_page' %}" class="btn btn-outline-secondary">Back</a>
+</div>
+
+</body>
+</html>

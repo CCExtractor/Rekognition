@@ -9,7 +9,7 @@ from django.shortcuts import render
 from cceface.facenet_lib.src.align import detect_face
 from werkzeug.utils import secure_filename
 from django.http import HttpResponse
-from Poorface.settings import BASE_DIR, MEDIA_ROOT
+from Rekognition.settings import BASE_DIR, MEDIA_ROOT
 from cceface.utils import (load_model, get_face, embed_image, save_embedding, load_embeddings,
                            identify_face, allowed_file, remove_file_extension, save_image, time_dura, handle_uploaded_file, id_generator)
 # from .forms import VideoForm, ImageForm
