@@ -24,7 +24,26 @@
     <h3>Result of prediction:</h3>
     <img src="{{ MEDIA_URL }}images/{{ imagefile }}" alt="" height='400'>
         <br><br>
-    <p>Face detected :  {{ identity }}</p>
+    {% comment %} <p>Face detected :  {{ Faces }}</p> {% endcomment %}
+
+            <ul>
+        All the faces : <br>
+
+        <div>
+
+        {% for key, value in Faces.items %}
+        <pre>
+                {   <b> {{ key }} </b> :  {% for key_1, value_1 in value.items %}
+                        { {{ key_1 }} :
+                { {% for key_2, value_2 in value_1.items %}
+                            {{ key_2 }} : {{ value_2 }} {% endfor %}
+                }
+        }{% endfor %}
+}
+         </pre>
+        {% endfor %}
+        </div>
+        </ul>
         <br>
     <a href="{% url 'predict_page' %}" class="btn btn-outline-secondary">Back</a>
 
