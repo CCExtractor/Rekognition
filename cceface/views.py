@@ -21,7 +21,7 @@ from rest_framework.response import Response
 # APP_ROOT = os.path.dirname(os.path.abspath(__file__))
 upload_path = os.path.join(BASE_DIR, 'cceface/uploads')
 embeddings_path = os.path.join(BASE_DIR, 'cceface/embeddings')
-allowed_set = set(['png', 'jpg', 'jpeg'])
+allowed_set = set(['png', 'jpg', 'jpeg', 'PNG', 'JPEG', 'JPG'])
 model_path = BASE_DIR + '/cceface/model/2017/20170512-110547.pb'
 facenet_model = load_model(model_path)
 config = tf.ConfigProto()
@@ -88,18 +88,16 @@ def predict_image(request):
 
         if file and allowed_file(filename=filename, allowed_set=allowed_set):
             img = imread(fname=file, mode='RGB')
+            if (img.shape[2] == 4):
+                img = img[..., :3]
+
             try:
                 all_faces, all_bb = get_face(img=img, pnet=pnet, rnet=rnet, onet=onet, image_size=image_size)
-                print('predict image ',len(all_faces),len(all_bb))
-                # print(bb)
-
-                all_ids=[]
-                all_boxes= []
-                all_face_dict={}
-
+                all_face_dict = {}
+                # print(len(all_faces))
                 if all_faces is not None:
                     embedding_dict = load_embeddings()
-                    for img,bb in zip(all_faces, all_bb):
+                    for img, bb in zip(all_faces, all_bb):
                         embedding = embed_image(
                             img=img, session=facenet_persistent_session,
                             images_placeholder=images_placeholder, embeddings=embeddings,
@@ -112,16 +110,16 @@ def predict_image(request):
                             identity = identity.split('/')
                             id_name = identity[len(identity) - 1]
                             bounding_box = {"top": bb[1], "bottom": bb[3], "left": bb[0], "right": bb[2]}
-                            all_face_dict[id_name]= {"Bounding Boxes":bounding_box}
-
-                    print(all_face_dict)
+                            all_face_dict[id_name] = {"Bounding Boxes": bounding_box}
+                    # print(all_face_dict)
+                    # final_result = {"Faces":all_face_dict}
                     return render(request, 'predict_result.html', {'Faces': all_face_dict, 'imagefile': filename})
                 else:
-                    return render(request,
-                                  'predict_result.html'
-                                  )
-            except Exception as e:
-                print(e)
+                    render(request, 'predict_result.html', {'Faces': '0', 'imagefile': filename})
+            except Exception:
+                render(request, 'predict_result.html', {'Faces': '0', 'imagefile': filename})
+        else:
+            render(request, 'predict_result.html', {'Faces': 'Bad request', 'imagefile': filename})
     else:
         return "POST HTTP method required"
 
@@ -216,27 +214,29 @@ class API_predict_image(views.APIView):
 
             if file and allowed_file(filename=filename, allowed_set=allowed_set):
                 img = imread(fname=file, mode='RGB')
+                if (img.shape[2] == 4):
+                    img = img[..., :3]
                 try:
-                    img, bb = get_face(img=img, pnet=pnet, rnet=rnet, onet=onet, image_size=image_size)
-                    # print(bb)
-
-                    if img is not None:
-                        embedding = embed_image(
-                            img=img, session=facenet_persistent_session,
-                            images_placeholder=images_placeholder, embeddings=embeddings,
-                            phase_train_placeholder=phase_train_placeholder,
-                            image_size=image_size
-                        )
+                    all_faces, all_bb = get_face(img=img, pnet=pnet, rnet=rnet, onet=onet, image_size=image_size)
+                    all_face_dict = {}
+                    if all_faces is not None:
                         embedding_dict = load_embeddings()
-                        if embedding_dict:
-                            identity = identify_face(embedding=embedding, embedding_dict=embedding_dict)
-                            identity = identity.split('/')
-                            # print(bb)
-                            bounding_box = {"top": bb[1], "bottom": bb[3], "left": bb[0], "right": bb[2]}
-                            predictions = {'identity': identity[len(identity) - 1], 'Bounding Box': bounding_box}
-                            return Response(predictions, status=status.HTTP_200_OK)
-                        else:
-                            return Response(str('error'), status=status.HTTP_400_BAD_REQUEST)
+                        for img, bb in zip(all_faces, all_bb):
+                            embedding = embed_image(
+                                img=img, session=facenet_persistent_session,
+                                images_placeholder=images_placeholder, embeddings=embeddings,
+                                phase_train_placeholder=phase_train_placeholder,
+                                image_size=image_size
+                            )
+
+                            if embedding_dict:
+                                identity = identify_face(embedding=embedding, embedding_dict=embedding_dict)
+                                identity = identity.split('/')
+                                id_name = identity[len(identity) - 1]
+                                bounding_box = {"top": bb[1], "bottom": bb[3], "left": bb[0], "right": bb[2]}
+                                all_face_dict[id_name] = {"Bounding Boxes": bounding_box}
+                        final_result = {"Faces": all_face_dict}
+                        return Response(final_result, status=status.HTTP_200_OK)
                     else:
                         return Response(str('error'), status=status.HTTP_400_BAD_REQUEST)
 

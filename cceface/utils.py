@@ -55,15 +55,12 @@ def get_face(img, pnet, rnet, onet, image_size):
     bounding_boxes, _ = detect_face.detect_face(
         img=img, minsize=minsize, pnet=pnet, rnet=rnet, onet=onet, threshold=threshold, factor=factor)
 
-    print(len(bounding_boxes))
 
-    all_faces =[]
-    all_bb=[]
+    all_faces = []
+    all_bb = []
 
     if not len(bounding_boxes) == 0:
-        i = 0
         for face in bounding_boxes:
-            i+=1
             det = np.squeeze(face[0:4])
             bb = np.zeros(4, dtype=np.int32)
             bb[0] = np.maximum(det[0] - margin / 2, 0)
@@ -73,12 +70,11 @@ def get_face(img, pnet, rnet, onet, image_size):
             cropped = img[bb[1]: bb[3], bb[0]:bb[2], :]
             face_img = imresize(arr=cropped, size=(
                 input_image_size, input_image_size), mode='RGB')
-            print(i,type(face_img))
             all_faces.append(face_img)
             all_bb.append(bb)
         return all_faces, all_bb
     else:
-        return None
+        return all_faces, all_bb
 
 
 def embed_image(img, session, images_placeholder, phase_train_placeholder, embeddings, image_size):
