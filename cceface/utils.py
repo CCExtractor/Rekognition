@@ -55,7 +55,6 @@ def get_face(img, pnet, rnet, onet, image_size):
     bounding_boxes, _ = detect_face.detect_face(
         img=img, minsize=minsize, pnet=pnet, rnet=rnet, onet=onet, threshold=threshold, factor=factor)
 
-
     all_faces = []
     all_bb = []
 
