@@ -41,34 +41,34 @@ def get_image(request):
         if 'file' not in request.FILES:
             return "No file part"
         file = request.FILES['file']
-        filename = 'img_' + id_generator() + '_' + file.name
+        # filename = 'img_' + id_generator() + '_' + file.name
 
-        if filename == "":
-            return "No Selected file"
+        filename = request.FILES['file'].name
 
         if file and allowed_file(filename=filename, allowed_set=allowed_set):
             filename = secure_filename(filename=filename)
             img = imread(fname=file, mode='RGB')
             try:
                 img, tmp = get_face(img=img, pnet=pnet, rnet=rnet, onet=onet, image_size=image_size)
+                print(len(img))
                 # print(tmp)
                 if img is not None:
 
                     embedding = embed_image(
-                        img=img, session=facenet_persistent_session,
+                        img=img[0], session=facenet_persistent_session,
                         images_placeholder=images_placeholder, embeddings=embeddings,
                         phase_train_placeholder=phase_train_placeholder,
                         image_size=image_size
                     )
-                    save_image(img=img, filename=filename, upload_path=upload_path)
+                    save_image(img=img[0], filename=filename, upload_path=upload_path)
                     filename = remove_file_extension(filename=filename)
                     save_embedding(embedding=embedding, filename=filename, embeddings_path=embeddings_path)
 
                     return render(request, "upload_result.html", {'status': "Image uploaded and embedded successfully!"})
                 else:
                     return render(request, "upload_result.html", {'status': "Humein khed hai ,tasveer upload nai ho pa saka!"})
-            except Exception as e:
-                print(e)
+            except Exception:
+                return render(request, "upload_result.html", {'status': "Humein khed hai ,tasveer upload nai ho pa saka!"})
     else:
         return "POST HTTP method required!"
 
@@ -138,7 +138,7 @@ def face_vid(request):
             # form = VideoForm()
         videofile = file_path
 
-        print('bhola', filename)
+        # print('bhola', filename)
         cap = cv2.VideoCapture(videofile)
         fps = cap.get(cv2.CAP_PROP_FPS)
         timestamps = [cap.get(cv2.CAP_PROP_POS_MSEC)]
@@ -146,7 +146,7 @@ def face_vid(request):
         total_duration = total_frame / fps
         sim_cal = int(math.ceil(fps / 10))
         gap = (total_duration / total_frame) * sim_cal * 3 * 1000
-        # print(fps,total_frame,total_duration,sim_cal,gap)
+        # print(' fps : ',fps,' | tf : ' ,total_frame,' | dur: ', total_duration, ' | frame_hop :' ,sim_cal, ' |  frame gap in ms : ',gap)
         calc_timestamps = [0.0]
         count = 0
         cele = {}
@@ -159,28 +159,34 @@ def face_vid(request):
             if (frame_exists):
                 if count % sim_cal == 0:
                     timestamps = (cap.get(cv2.CAP_PROP_POS_MSEC))
-                    print(count)
+                    # print(count)
                     try:
-                        img, bb = get_face(img=curr_frame, pnet=pnet, rnet=rnet, onet=onet, image_size=image_size)
-                        if img is not None:
-                            embedding = embed_image(
-                                img=img, session=facenet_persistent_session,
-                                images_placeholder=images_placeholder, embeddings=embeddings,
-                                phase_train_placeholder=phase_train_placeholder,
-                                image_size=image_size
-                            )
+                        all_faces, all_bb = get_face(img=curr_frame, pnet=pnet, rnet=rnet, onet=onet, image_size=image_size)
+                        # all_face_dict = {}
+                        # print(len(all_faces))
+                        if all_faces is not None:
+                            cele_id = []
 
-                            if embedding_dict:
-                                identity = identify_face(embedding=embedding, embedding_dict=embedding_dict)
-                                identity = identity.split('/')
-                                identity = identity[len(identity) - 1]
-                                # print(identity,timestamps)
+                            for img, bb in zip(all_faces, all_bb):
 
-                                if(str(identity) not in ids):
-                                    ids.append(str(identity))
-                                    cele[str(identity)] = []
-                                cele[str(identity)].append(timestamps)
+                                embedding = embed_image(
+                                    img=img, session=facenet_persistent_session,
+                                    images_placeholder=images_placeholder, embeddings=embeddings,
+                                    phase_train_placeholder=phase_train_placeholder,
+                                    image_size=image_size
+                                )
 
+                                if embedding_dict:
+                                    identity = identify_face(embedding=embedding, embedding_dict=embedding_dict)
+                                    identity = identity.split('/')
+                                    id_name = identity[len(identity) - 1]
+
+                                    if(str(id_name) not in ids):
+                                        ids.append(str(id_name))
+                                        cele[str(id_name)] = []
+                                    cele_id.append(id_name)
+                                    cele[str(id_name)].append(timestamps)
+                            # print(count,cele_id)
                         else:
                             print('No face in the image')
                     except Exception as e:
@@ -190,6 +196,7 @@ def face_vid(request):
             else:
                 break
         output_dur = time_dura(cele, gap)
+        # print(output_dur)
         cap.release()
 
         return render(request, 'facevid_result.html', {'dura': output_dur, 'videofile': filename})
@@ -283,26 +290,32 @@ class API_predict_video(views.APIView):
                         timestamps = (cap.get(cv2.CAP_PROP_POS_MSEC))
                         print(count)
                         try:
-                            img, bb = get_face(img=curr_frame, pnet=pnet, rnet=rnet, onet=onet, image_size=image_size)
-                            if img is not None:
-                                embedding = embed_image(
-                                    img=img, session=facenet_persistent_session,
-                                    images_placeholder=images_placeholder, embeddings=embeddings,
-                                    phase_train_placeholder=phase_train_placeholder,
-                                    image_size=image_size
-                                )
+                            all_faces, all_bb = get_face(img=curr_frame, pnet=pnet, rnet=rnet, onet=onet, image_size=image_size)
+                            # all_face_dict = {}
+                            # print(len(all_faces))
+                            if all_faces is not None:
+                                cele_id = []
 
-                                if embedding_dict:
-                                    identity = identify_face(embedding=embedding, embedding_dict=embedding_dict)
-                                    identity = identity.split('/')
-                                    identity = identity[len(identity) - 1]
-                                    # print(identity,timestamps)
+                                for img, bb in zip(all_faces, all_bb):
 
-                                    if(str(identity) not in ids):
-                                        ids.append(str(identity))
-                                        cele[str(identity)] = []
-                                    cele[str(identity)].append(timestamps)
+                                    embedding = embed_image(
+                                        img=img, session=facenet_persistent_session,
+                                        images_placeholder=images_placeholder, embeddings=embeddings,
+                                        phase_train_placeholder=phase_train_placeholder,
+                                        image_size=image_size
+                                    )
 
+                                    if embedding_dict:
+                                        identity = identify_face(embedding=embedding, embedding_dict=embedding_dict)
+                                        identity = identity.split('/')
+                                        id_name = identity[len(identity) - 1]
+
+                                        if(str(id_name) not in ids):
+                                            ids.append(str(id_name))
+                                            cele[str(id_name)] = []
+                                        cele_id.append(id_name)
+                                        cele[str(id_name)].append(timestamps)
+                                # print(count,cele_id)
                             else:
                                 pass
                                 # print('No face in the image')

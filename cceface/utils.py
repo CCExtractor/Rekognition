@@ -138,19 +138,24 @@ def time_dura(dict_data, gap):
         x, y = 0, 1
         z = 0
         for i in range(len(dict_data[name])):
-            t1 = round(dict_data[name][x], 2)
-            t2 = round(dict_data[name][y], 2)
-            if(abs(t2 - t1) > gap):
-                new_list.append(
-                    (round(dict_data[name][z] / 1000, 2), round(dict_data[name][x] / 1000, 2)))
-                z = x + 1
-                x = y
-                y += 1
-            else:
-                x += 1
-                y += 1
-            if(x >= len(dict_data[name]) or y >= len(dict_data[name])):
-                break
+            try:
+                t1 = round(dict_data[name][x], 2)
+                t2 = round(dict_data[name][y], 2)
+                # print()
+                if(abs(t2 - t1) > gap):
+                    new_list.append(
+                        (round(dict_data[name][z] / 1000, 2), round(dict_data[name][x] / 1000, 2)))
+                    z = x + 1
+                    x = y
+                    y += 1
+                else:
+                    x += 1
+                    y += 1
+                if(x >= len(dict_data[name]) or y >= len(dict_data[name])):
+                    break
+            except Exception:
+                pass
+
         new_list.append(
             (round(dict_data[name][z] / 1000, 2), round(dict_data[name][-1] / 1000, 2)))
 
