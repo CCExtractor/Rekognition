@@ -55,6 +55,9 @@ def get_face(img, pnet, rnet, onet, image_size):
     bounding_boxes, _ = detect_face.detect_face(
         img=img, minsize=minsize, pnet=pnet, rnet=rnet, onet=onet, threshold=threshold, factor=factor)
 
+    all_faces = []
+    all_bb = []
+
     if not len(bounding_boxes) == 0:
         for face in bounding_boxes:
             det = np.squeeze(face[0:4])
@@ -66,9 +69,11 @@ def get_face(img, pnet, rnet, onet, image_size):
             cropped = img[bb[1]: bb[3], bb[0]:bb[2], :]
             face_img = imresize(arr=cropped, size=(
                 input_image_size, input_image_size), mode='RGB')
-            return face_img, bb
+            all_faces.append(face_img)
+            all_bb.append(bb)
+        return all_faces, all_bb
     else:
-        return None
+        return all_faces, all_bb
 
 
 def embed_image(img, session, images_placeholder, phase_train_placeholder, embeddings, image_size):
@@ -133,19 +138,24 @@ def time_dura(dict_data, gap):
         x, y = 0, 1
         z = 0
         for i in range(len(dict_data[name])):
-            t1 = round(dict_data[name][x], 2)
-            t2 = round(dict_data[name][y], 2)
-            if(abs(t2 - t1) > gap):
-                new_list.append(
-                    (round(dict_data[name][z] / 1000, 2), round(dict_data[name][x] / 1000, 2)))
-                z = x + 1
-                x = y
-                y += 1
-            else:
-                x += 1
-                y += 1
-            if(x >= len(dict_data[name]) or y >= len(dict_data[name])):
-                break
+            try:
+                t1 = round(dict_data[name][x], 2)
+                t2 = round(dict_data[name][y], 2)
+                # print()
+                if(abs(t2 - t1) > gap):
+                    new_list.append(
+                        (round(dict_data[name][z] / 1000, 2), round(dict_data[name][x] / 1000, 2)))
+                    z = x + 1
+                    x = y
+                    y += 1
+                else:
+                    x += 1
+                    y += 1
+                if(x >= len(dict_data[name]) or y >= len(dict_data[name])):
+                    break
+            except Exception:
+                pass
+
         new_list.append(
             (round(dict_data[name][z] / 1000, 2), round(dict_data[name][-1] / 1000, 2)))
 
