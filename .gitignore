@@ -13,3 +13,4 @@ __pycache__
 /coverage.data
 /coverage/
 .coverage
+.vscode
