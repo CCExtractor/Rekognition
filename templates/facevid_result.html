@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 {% load static %}
 <html>
+
 <head>
     <title>Result</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
@@ -13,30 +14,32 @@
 
 <body>
 
-<div>
+    <div>
         <nav class="navbar navbar-light bg-light shadow-sm ounded">
-                <a class="navbar-brand" href="#"> Face Rekognition API </a>
+            <a class="navbar-brand" href="#"> Face Rekognition API </a>
         </nav>
-</div>
+    </div>
 
-<div class="container text-center">
+    <div class="container text-center">
         <br><br><br><br>
-    <h3>Result </h3>
-    <br>
+        <h3>Result </h3>
+        <br>
 
-    <video width='600' controls>
-        <source src='{{ MEDIA_URL }}videos/{{ videofile }}' type='video/mp4'>
-        Your browser does not support the video tag.
+        <video width='600' controls>
+            <source src='{{ MEDIA_URL }}videos/{{ videofile }}' type='video/mp4'>
+            Your browser does not support the video tag.
         </video>
 
         <br><br>
-    <p>{% for key,value in dura.items %}  <b> {{ key }} </b> : {% for val in value %} {{ val.0 }} >---> {{ val.1 }}  ,  {% endfor %} {{ linebreaks }} {% endfor %}</p>
+        <p>{% for key,value in dura.items %} <b> {{ key }} </b> : {% for val in value %} {{ val.0 }} >---> {{ val.1 }} ,
+            {% endfor %} {{ linebreaks }} {% endfor %}</p>
         <br>
-    <a href="{% url 'facevid_page' %}" class="btn btn-outline-secondary">Back</a>
+        <a href="{% url 'facevid_page' %}" class="btn btn-outline-secondary">Back</a>
 
-    <br>
+        <br>
 
-</div>
-<!-- <pre>{{ bytes }} </pre> -->
+    </div>
+    <!-- <pre>{{ bytes }} </pre> -->
 </body>
+
 </html>

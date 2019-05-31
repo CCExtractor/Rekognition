@@ -1,41 +1,42 @@
 <!DOCTYPE html>
 {% load static %}
 <html>
+
 <head>
-    <title>API</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="stylesheet" href=" {% static 'css/test.css' %}">
+	<title>API</title>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<link rel="stylesheet" href=" {% static 'css/test.css' %}">
 </head>
 
 <body>
 
-		<div>
-				<nav class="navbar navbar-light bg-light shadow-sm ounded">
-						<a class="navbar-brand" href="#"> Face Rekognition API </a>
-				</nav>
-	
+	<div>
+		<nav class="navbar navbar-light bg-light shadow-sm ounded">
+			<a class="navbar-brand" href="#"> Face Rekognition API </a>
+		</nav>
+
+	</div>
+
+	<div class="container text-center">
+		<h1>API Documentation</h1>
+	</div>
+
+	<div class="container text-center">
+		<div class="container text-left"> <b> POST </b> /api/image
 		</div>
+		<p class="container text-left"> currently It returns the face recognized and bounding box</p>
 
-		<div class="container text-center">
-			<h1>API Documentation</h1>
-			</div>
-
-		<div class="container text-center">
-			<div class="container text-left">  <b> POST </b>	/api/image
-				</div>
-				<p class="container text-left">			currently It returns the face recognized and bounding box</p>
-
-			<div class="container text-left">
+		<div class="container text-left">
 			example
 			<div>input
-					<pre id="coded">curl -F 'file=@/Users/amit/Desktop/11.jpg' http://127.0.0.1:8888/api/image</pre>
+				<pre id="coded">curl -F 'file=@/Users/amit/Desktop/11.jpg' http://127.0.0.1:8888/api/image</pre>
 			</div>
 			output
-			<div  id ="coded" >
-					<pre >
+			<div id="coded">
+				<pre>
 
 							{
 								"identity" : "Elon Musk",
@@ -51,23 +52,25 @@
 			</div>
 		</div>
 
-<div  class="container text-left">
-			<div> <b> POST </b>	/api/video</div>
+		<div class="container text-left">
+			<div> <b> POST </b> /api/video</div>
 
-			<p>			
-					currentlry It returns the name of the recognized faces and at what interval in the video they did appear.
-		</p>
+			<p>
+				currentlry It returns the name of the recognized faces and at what interval in the video they did
+				appear.
+			</p>
 
 			example
 
-			<div>	input		<pre id="coded">curl -F 'file=@/Users/amit/Desktop/test.mp4' http://127.0.0.1:8888/api/video</pre>
+			<div> input
+				<pre id="coded">curl -F 'file=@/Users/amit/Desktop/test.mp4' http://127.0.0.1:8888/api/video</pre>
 			</div>
 
 
 			output
 
-			<div id ="coded">
-				<pre >
+			<div id="coded">
+				<pre>
 
 						{
 							"face_id_1":[[0.3,0.3],[0.8,8.51],[22.22,25.53],[28.63,31.43]]
@@ -75,33 +78,37 @@
 						}
 				</pre>
 
-			</div >
-
-			<p>			Here all the values are in sec , "face_id_1":[0.8,8.51]",  It means face appeared from 0.8 >----> 8.51 secs.
-				</p>
 			</div>
 
-			
-			<div  class="container text-left">  <b> GET </b>	 /api/namelist
-
-			</div>
-			<p  class="container text-left">			it returns the list of total availabe faces_id / facename available in the database .
-			
-				</p>
-
-			<div  class="container text-left">  <b> POST </b>	 /api/feedback
-					<br>
-					WIP
-			</div>
+			<p> Here all the values are in sec , "face_id_1":[0.8,8.51]", It means face appeared from 0.8 >----> 8.51
+				secs.
+			</p>
+		</div>
 
 
+		<div class="container text-left"> <b> GET </b> /api/namelist
+
+		</div>
+		<p class="container text-left"> it returns the list of total availabe faces_id / facename available in the
+			database .
+
+		</p>
+
+		<div class="container text-left"> <b> POST </b> /api/feedback
+			<br>
+			WIP
+		</div>
 
 
-				<br>
-		<div class="text-center">    <a href="{% url 'index_page' %}" class="btn btn-outline-secondary">Back</a></div>
+
+
+		<br>
+		<div class="text-center"> <a href="{% url 'index_page' %}" class="btn btn-outline-secondary">Back</a></div>
 
 		<br><br>
 	</div>
-		<br><br>
+	<br><br>
 </body>
+
 </html>
+

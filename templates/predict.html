@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 {% load static %}
 <html>
+
 <head>
     <title>Image identity prediction</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
@@ -13,25 +14,26 @@
 
 <body>
 
-<div>
+    <div>
         <nav class="navbar navbar-light bg-light shadow-sm ounded">
-                <a class="navbar-brand" href="#"> Face Rekognition API </a>
+            <a class="navbar-brand" href="#"> Face Rekognition API </a>
         </nav>
-</div>
+    </div>
 
 
-<div class="container text-center">
+    <div class="container text-center">
         <br><br><br><br><br><br><br>
-    <h3>Upload your image file for identity prediction:</h3>
+        <h3>Upload your image file for identity prediction:</h3>
         <br> <br>
-    <form method=POST enctype=multipart/form-data action="{% url 'predict_image' %}">
-        <input type=file name=file class="btn btn-outline-secondary">
-        <input type="submit" class="btn btn-outline-secondary">
-    </form>
-     *.jpg, *.jpeg only
+        <form method=POST enctype=multipart/form-data action="{% url 'predict_image' %}">
+            <input type=file name=file class="btn btn-outline-secondary">
+            <input type="submit" class="btn btn-outline-secondary">
+        </form>
+        *.jpg, *.jpeg only
         <br><br>
-    <a href="{% url 'index_page' %}" class="btn btn-outline-secondary">Back</a>
-</div>
+        <a href="{% url 'index_page' %}" class="btn btn-outline-secondary">Back</a>
+    </div>
 
 </body>
+
 </html>

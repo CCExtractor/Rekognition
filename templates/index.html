@@ -1,76 +1,77 @@
 <!DOCTYPE html>
 {% load static %}
 <html>
+
 <head>
-    <title>Proceed</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"> -->
-    <link rel="stylesheet" href=" {% static 'css/test.css' %}">
+        <title>Proceed</title>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"> -->
+        <link rel="stylesheet" href=" {% static 'css/test.css' %}">
 </head>
 
 <body>
 
-    <div>
-            <nav class="navbar navbar-light bg-light shadow-sm ounded">
-                    <a class="navbar-brand" href="#"> Face Rekognition API </a>
-            </nav>
+        <div>
+                <nav class="navbar navbar-light bg-light shadow-sm ounded">
+                        <a class="navbar-brand" href="#"> Face Rekognition API </a>
+                </nav>
 
-    </div>
-    <div class="container text-center">
-        <br>
-        <br>
-        <h1>Face Recognition Engine</h1>
-        <br>
-        <br>
+        </div>
+        <div class="container text-center">
+                <br>
+                <br>
+                <h1>Face Recognition Engine</h1>
+                <br>
+                <br>
 
 
-        <!-- <h3>Upload your image file for storage and  embedding:</h3> -->
+                <!-- <h3>Upload your image file for storage and  embedding:</h3> -->
 
-            <!-- <form method=POST enctype=multipart/form-data action="{% url 'get_image' %}">{{ csrf_input }}
+                <!-- <form method=POST enctype=multipart/form-data action="{% url 'get_image' %}">{{ csrf_input }}
                 <input type=file name=file class="btn btn-outline-secondary">
                 <input type="submit" class="btn btn-outline-secondary">
             </form> -->
 
-            <a href="{% url 'predict_page' %}" class="btn btn-outline-secondary">Click here to proceed for image</a>
-            <br>
-            <br>
-            <a href="{% url 'facevid_page' %}" class="btn btn-outline-secondary">Click here to proceed for video</a>
-            <br>
+                <a href="{% url 'predict_page' %}" class="btn btn-outline-secondary">Click here to proceed for image</a>
+                <br>
+                <br>
+                <a href="{% url 'facevid_page' %}" class="btn btn-outline-secondary">Click here to proceed for video</a>
+                <br>
 
-            <br>
-            <a href="{% url 'api_page' %}" class="btn btn-outline-secondary">API Documentation</a>
+                <br>
+                <a href="{% url 'api_page' %}" class="btn btn-outline-secondary">API Documentation</a>
 
-            <br>
-            <br>
-            Currently Recognizing these faces :--
-            <br>
-
-
-
-</div>
-
-<div align="center" id= "namelist">
+                <br>
+                <br>
+                Currently Recognizing these faces :--
+                <br>
 
 
-        <!-- <ol> -->
+
+        </div>
+
+        <div align="center" id="namelist">
+
+
+                <!-- <ol> -->
                 <li><b>Mother Teresa</b></li>
                 <li><b>Narendra Modi</b></li>
                 <li><b>Cristiano Ronaldo</b></li>
                 <li><b>Elon Musk</b></li>
                 <li><b>M.S. Dhoni</b></li>
                 <li><b>Priyanka Chopra</b></li>
-        <!-- </ol> -->
-</div>
+                <!-- </ol> -->
+        </div>
 
 
 
-<footer class="page-footer font-small blue" id="indexfooter">
-         Link to
-          <a href="https://github.com/pymit/poorface" target="_blank" > GitHub Repo</a>
-</footer>
+        <footer class="page-footer font-small blue" id="indexfooter">
+                Link to
+                <a href="https://github.com/pymit/poorface" target="_blank"> GitHub Repo</a>
+        </footer>
 
 
 </body>

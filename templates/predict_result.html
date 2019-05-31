@@ -1,38 +1,39 @@
 <!DOCTYPE html>
 {% load static %}
 <html>
+
 <head>
-    <title>Image identity prediction</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"> -->
-    <link rel="stylesheet" href=" {% static 'css/test.css' %}">
+        <title>Image identity prediction</title>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"> -->
+        <link rel="stylesheet" href=" {% static 'css/test.css' %}">
 </head>
 
 <body>
 
-<div>
-        <nav class="navbar navbar-light bg-light shadow-sm ounded">
-                <a class="navbar-brand" href="#"> Face Rekognition API </a>
-        </nav>
-</div>
-
-<div class="container text-center">
-        <br><br><br><br><br><br><br>
-    <h3>Result of prediction:</h3>
-    <img src="{{ MEDIA_URL }}images/{{ imagefile }}" alt="" height='400'>
-        <br><br>
-    {% comment %} <p>Face detected :  {{ Faces }}</p> {% endcomment %}
-
-            <ul>
-        All the faces : <br>
-
         <div>
+                <nav class="navbar navbar-light bg-light shadow-sm ounded">
+                        <a class="navbar-brand" href="#"> Face Rekognition API </a>
+                </nav>
+        </div>
 
-        {% for key, value in Faces.items %}
-        <pre>
+        <div class="container text-center">
+                <br><br><br><br><br><br><br>
+                <h3>Result of prediction:</h3>
+                <img src="{{ MEDIA_URL }}images/{{ imagefile }}" alt="" height='400'>
+                <br><br>
+                {% comment %} <p>Face detected : {{ Faces }}</p> {% endcomment %}
+
+                <ul>
+                        All the faces : <br>
+
+                        <div>
+
+                                {% for key, value in Faces.items %}
+                                <pre>
                 {   <b> {{ key }} </b> :  {% for key_1, value_1 in value.items %}
                         { {{ key_1 }} :
                 { {% for key_2, value_2 in value_1.items %}
@@ -41,15 +42,16 @@
         }{% endfor %}
 }
          </pre>
-        {% endfor %}
+                                {% endfor %}
+                        </div>
+                </ul>
+                <br>
+                <a href="{% url 'predict_page' %}" class="btn btn-outline-secondary">Back</a>
+
+                <br>
+
         </div>
-        </ul>
-        <br>
-    <a href="{% url 'predict_page' %}" class="btn btn-outline-secondary">Back</a>
-
-    <br>
-
-</div>
-<!-- <pre>{{ bytes }} </pre> -->
+        <!-- <pre>{{ bytes }} </pre> -->
 </body>
+
 </html>
