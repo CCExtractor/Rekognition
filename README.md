@@ -38,6 +38,7 @@ pip3 install -r requirements.txt
         ALTER ROLE admin SET default_transaction_isolation TO 'read committed';
         ALTER ROLE admin SET timezone TO 'UTC';
         ALTER USER admin CREATEDB;
+        ALTER DATABASE pmr OWNER TO admin;
         ```
 
     * Exit psql by typing in \q and hitting enter.
