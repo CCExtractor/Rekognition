@@ -6,12 +6,12 @@ import math
 import tensorflow as tf
 from skimage.io import imread
 from django.shortcuts import render
-from cceface.facenet_lib.src.align import detect_face
+from corelib.facenet.align import detect_face
 from werkzeug.utils import secure_filename
 from django.http import HttpResponse
 from Rekognition.settings import BASE_DIR, MEDIA_ROOT
-from cceface.utils import (load_model, get_face, embed_image, save_embedding, load_embeddings,
-                           identify_face, allowed_file, remove_file_extension, save_image, time_dura, handle_uploaded_file, id_generator)
+from corelib.facenet.utils import (load_model, get_face, embed_image, save_embedding, load_embeddings,
+                                   identify_face, allowed_file, remove_file_extension, save_image, time_dura, handle_uploaded_file, id_generator)
 # from .forms import VideoForm, ImageForm
 
 from rest_framework import views
@@ -20,9 +20,9 @@ from rest_framework.response import Response
 
 # APP_ROOT = os.path.dirname(os.path.abspath(__file__))
 upload_path = os.path.join(BASE_DIR, 'cceface/uploads')
-embeddings_path = os.path.join(BASE_DIR, 'cceface/embeddings')
+embeddings_path = os.path.join(BASE_DIR, 'corelib/embeddings')
 allowed_set = set(['png', 'jpg', 'jpeg', 'PNG', 'JPEG', 'JPG'])
-model_path = BASE_DIR + '/cceface/model/2017/20170512-110547.pb'
+model_path = BASE_DIR + '/corelib/facenet/model/2017/20170512-110547.pb'
 facenet_model = load_model(model_path)
 config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
@@ -32,8 +32,6 @@ embeddings = tf.get_default_graph().get_tensor_by_name("embeddings:0")
 phase_train_placeholder = tf.get_default_graph().get_tensor_by_name("phase_train:0")
 facenet_persistent_session = tf.Session(graph=facenet_model, config=config)
 pnet, rnet, onet = detect_face.create_mtcnn(sess=facenet_persistent_session, model_path=None)
-
-# @api_view(['POST','GET'])
 
 
 def get_image(request):
@@ -96,7 +94,7 @@ def predict_image(request):
                 all_face_dict = {}
                 # print(len(all_faces))
                 if all_faces is not None:
-                    embedding_dict = load_embeddings()
+                    embedding_dict = load_embeddings(embeddings_path)
                     for img, bb in zip(all_faces, all_bb):
                         embedding = embed_image(
                             img=img, session=facenet_persistent_session,
@@ -151,7 +149,7 @@ def face_vid(request):
         count = 0
         cele = {}
         ids = []
-        embedding_dict = load_embeddings()
+        embedding_dict = load_embeddings(embeddings_path)
         while(cap.isOpened()):
             count = count + 1
             frame_exists, curr_frame = cap.read()
@@ -227,7 +225,7 @@ class API_predict_image(views.APIView):
                     all_faces, all_bb = get_face(img=img, pnet=pnet, rnet=rnet, onet=onet, image_size=image_size)
                     all_face_dict = {}
                     if all_faces is not None:
-                        embedding_dict = load_embeddings()
+                        embedding_dict = load_embeddings(embeddings_path)
                         for img, bb in zip(all_faces, all_bb):
                             embedding = embed_image(
                                 img=img, session=facenet_persistent_session,
@@ -280,7 +278,7 @@ class API_predict_video(views.APIView):
             count = 0
             cele = {}
             ids = []
-            embedding_dict = load_embeddings()
+            embedding_dict = load_embeddings(embeddings_path)
             while(cap.isOpened()):
                 count = count + 1
                 frame_exists, curr_frame = cap.read()

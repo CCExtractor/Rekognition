@@ -1,7 +1,8 @@
 *.ckpt
+*.pb
 /model/**
 model/**
-cceface/model/
+corelib/facenet/model/
 *.mp4
 *.jpg
 *.jpeg
