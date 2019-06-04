@@ -18,6 +18,9 @@ from corelib.constant import (pnet, rnet, onet, facenet_persistent_session, phas
                               embeddings, images_placeholder, image_size, allowed_set, embeddings_path, upload_path)
 
 
+from .models import InputImage, InputVideo
+from .forms import ImageForm,VideoForm
+
 def get_image(request):
     if request.method == 'POST':
         if 'file' not in request.FILES:
@@ -65,6 +68,12 @@ def predict_image(request):
         handle_uploaded_file(request.FILES['file'], file_path)
         file = request.FILES['file']
         # filename = file.name
+        try:
+            file_form = InputImage(title=filename,imagefile=file.read())
+            file_form.save()
+        except Exception as e:
+            print(e)
+
         if filename == "":
             return "No selected file"
 

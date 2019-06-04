@@ -6,16 +6,18 @@ import uuid
 class InputVideo(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=80)
-    video = models.FileField(upload_to='videos/')  # upload_to='videos', null=True, verbose_name=""
+    videofile = models.FileField(upload_to='videos/')  # upload_to='videos', null=True, verbose_name=""
+    created_on = models.DateField(auto_now_add=True)
 
     def __str__(self):
-        return self.title
+        return self.id
 
 
 class InputImage(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=80)
-    image = models.FileField(upload_to='images/')  # upload_to='videos', null=True, verbose_name=""
+    imagefile = models.FileField(upload_to='images/')  # upload_to='videos', null=True, verbose_name=""
+    created_on = models.DateField(auto_now_add=True)
 
     def __str__(self):
-        return self.title
+        return self.id
