@@ -3,9 +3,9 @@ import tensorflow as tf
 import numpy as np
 import glob
 from tensorflow.python.platform import gfile
-from corelib.facenet.facenet import get_model_filenames
-from corelib.facenet.align import detect_face
-from corelib.facenet.facenet import load_img
+from .facenet import get_model_filenames
+from .align import detect_face
+from .facenet import load_img
 from scipy.misc import imresize, imsave
 from collections import defaultdict
 import string

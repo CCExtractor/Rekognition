@@ -1,9 +1,18 @@
-from django import forms
+from django.forms import ModelForm
+from .models import InputImage, InputVideo
 
 
-class VideoForm(forms.Form):
-    video = forms.FileField(label="Upload a video File")
+class VideoForm(ModelForm):
+    # required_css_class = 'required'
+
+    class Meta:
+        model = InputVideo
+        fields = '__all__'
 
 
-class ImageForm(forms.Form):
-    image = forms.FileField(label="Upload a image File")
+class ImageForm(ModelForm):
+    # required_css_class = 'required'
+
+    class Meta:
+        model = InputImage
+        fields = '__all__'
