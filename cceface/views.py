@@ -3,7 +3,7 @@ import json
 import os
 import cv2
 import math
-import uuid
+# import uuid
 from skimage.io import imread
 from django.shortcuts import render
 from werkzeug.utils import secure_filename
@@ -20,7 +20,8 @@ from corelib.constant import (pnet, rnet, onet, facenet_persistent_session, phas
 
 
 from .models import InputImage, InputVideo
-from .forms import ImageForm,VideoForm
+from .forms import ImageForm, VideoForm
+
 
 def get_image(request):
     if request.method == 'POST':
@@ -57,7 +58,7 @@ def get_image(request):
                 return render(request, "upload_result.html", {'status': "Humein khed hai ,tasveer upload nai ho pa saka!"})
     else:
         return "POST HTTP method required!"
-
+ 
 
 def predict_image(request):
     if request.method == 'POST':
@@ -65,14 +66,14 @@ def predict_image(request):
             return "No file part"
 
         file_ext = str((request.FILES['file'].name)).split('.')[-1]
-        filename =  id_generator()+'.' +file_ext
+        filename = id_generator() + '.' + file_ext
         # filename = str(uuid.uuid4())+'.' +file_ext
         file_path = os.path.join(MEDIA_ROOT, 'images/' + filename)
         handle_uploaded_file(request.FILES['file'], file_path)
         file = request.FILES['file']
         # filename = file.name
         try:
-            file_form = InputImage(title=filename,imagefile=file.read())
+            file_form = InputImage(title=filename, imagefile=file.read())
             file_form.save()
         except Exception as e:
             print(e)
@@ -122,10 +123,19 @@ def face_vid(request):
     print('hola')
     try:
         if request.method == 'POST':
-            filename = 'vid_' + id_generator() + '_' + str(request.FILES['file'].name)
+
+            file_ext = str((request.FILES['file'].name)).split('.')[-1]
+            filename = id_generator() + '.' + file_ext
+            # filename = str(uuid.uuid4())+'.' +file_ext
             file_path = os.path.join(MEDIA_ROOT, 'videos/' + filename)
-            # form = VideoForm(request.POST, request.FILES)
             handle_uploaded_file(request.FILES['file'], file_path)
+            file = request.FILES['file']
+            # filename = file.name
+            try:
+                file_form = VideoForm(title=filename, videofile=file.read())
+                file_form.save()
+            except Exception as e:
+                print(e)
 
         else:
             pass
@@ -254,7 +264,6 @@ class API_predict_video(views.APIView):
             if request.method == 'POST':
                 filename = 'vid_' + id_generator() + '_' + str(request.FILES['file'].name)
                 file_path = os.path.join(MEDIA_ROOT, 'videos/' + filename)
-                # form = VideoForm(request.POST, request.FILES)
                 handle_uploaded_file(request.FILES['file'], file_path)
 
             else:
