@@ -4,6 +4,7 @@ import os
 import cv2
 import math
 import uuid
+import skvideo.io
 from skimage.io import imread
 from django.shortcuts import render
 from werkzeug.utils import secure_filename
@@ -79,40 +80,44 @@ class API_predict_video(views.APIView):
     def post(self, request):
         try:
             if request.method == 'POST':
+
                 file_ext = str((request.FILES['file'].name)).split('.')[-1]
                 filename = id_generator() + '.' + file_ext
+                # filename = str(uuid.uuid4())+'.' +file_ext
                 file_path = os.path.join(MEDIA_ROOT, 'videos/' + filename)
                 handle_uploaded_file(request.FILES['file'], file_path)
                 file = request.FILES['file']
+                # filename = file.name
                 try:
                     file_form = InputVideo(title=filename, videofile=file.read())
                     file_form.save()
                 except Exception as e:
                     print(e)
-                    pass
-            else:
-                pass
+                # form = VideoForm()
+                videofile = file_path
+                metadata = skvideo.io.ffprobe(videofile)
+                str_fps = metadata["video"]['@avg_frame_rate'].split('/')
+                fps = float(float(str_fps[0]) / float(str_fps[1]))
 
-            videofile = file_path
-            cap = cv2.VideoCapture(videofile)
-            fps = cap.get(cv2.CAP_PROP_FPS)
-            timestamps = [cap.get(cv2.CAP_PROP_POS_MSEC)]
-            total_frame = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-            total_duration = total_frame / fps
-            sim_cal = int(math.ceil(fps / 10))
-            gap = (total_duration / total_frame) * sim_cal * 3 * 1000
-            calc_timestamps = [0.0]
-            count = 0
-            cele = {}
-            ids = []
-            embedding_dict = load_embeddings(embeddings_path)
+                timestamps = [(float(1) / fps)]
+                total_frame=float(metadata["video"]["@nb_frames"])
+                total_duration=float(metadata["video"]["@duration"])
 
-            while(cap.isOpened()):
-                count = count + 1
-                frame_exists, curr_frame = cap.read()
-                if (frame_exists):
+                sim_cal=int(math.ceil(fps / 10))
+                gap=(total_duration / total_frame) * sim_cal * 3 * 1000
+
+                print(' fps : ',fps,' | tf : ' ,total_frame,' | dur: ', total_duration, ' | frame_hop :' ,sim_cal, ' |  frame gap in ms : ',gap)
+                count=0
+                cele={}
+                ids=[]
+                embedding_dict=load_embeddings(embeddings_path)
+
+                videogen=skvideo.io.vreader(videofile)
+
+                for curr_frame in (videogen):
+                    count = count + 1
                     if count % sim_cal == 0:
-                        timestamps = (cap.get(cv2.CAP_PROP_POS_MSEC))
+                        timestamps = (float(count) / fps)*1000 # multiplying to get the timestamps in milliseconds
                         print(count)
                         try:
                             all_faces, all_bb = get_face(img=curr_frame, pnet=pnet, rnet=rnet, onet=onet, image_size=image_size)
@@ -140,12 +145,8 @@ class API_predict_video(views.APIView):
                                 pass
                         except Exception as e:
                             print(e)
-                            continue
-                        calc_timestamps.append(calc_timestamps[-1] + 1000 / fps)
-                else:
-                    break
-            output_dur = time_dura(cele, gap)
-            cap.release()
-            return Response(output_dur, status=status.HTTP_200_OK)
+                            pass
+                output_dur = time_dura(cele, gap)
+                return Response(output_dur, status=status.HTTP_200_OK)
         except Exception as e:
             print(e)
