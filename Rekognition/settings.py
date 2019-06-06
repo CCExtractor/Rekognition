@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'cceface.apps.CcefaceConfig',
     'django.contrib.staticfiles',
     'rest_framework',
+    'coreapi',
 ]
 
 MIDDLEWARE = [
