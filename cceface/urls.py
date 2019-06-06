@@ -8,7 +8,7 @@ urlpatterns = [
     path('predictImage', views.predict_image, name='predict_image'),
     path('predict', views.predict_page, name='predict_page'),
     path('facevid', views.facevid_page, name='facevid_page'),
-    path('facevid_result', views.face_vid, name='face_vid'),
+    path('facevid_result', views.newface_vid, name='face_vid'),
     path('apidoc', views.api_page, name='api_page'),
 
 ]

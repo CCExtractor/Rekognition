@@ -1,5 +1,6 @@
 absl-py==0.7.1
 astor==0.8.0
+autopep8==1.4.4
 certifi==2019.3.9
 chardet==3.0.4
 cloudpickle==1.1.1
@@ -9,6 +10,7 @@ cycler==0.10.0
 dask==1.2.2
 decorator==4.4.0
 Django==2.2.1
+django-cors-headers==3.0.2
 djangorestframework==3.9.4
 docopt==0.6.2
 entrypoints==0.3
@@ -29,6 +31,7 @@ mock==3.0.5
 networkx==2.3
 numpy==1.16.1
 opencv-python==4.1.0.25
+pep8==1.7.1
 pickleshare==0.7.5
 Pillow==6.0.0
 protobuf==3.7.1
@@ -43,6 +46,7 @@ PyWavelets==1.0.3
 requests==2.22.0
 scikit-image==0.14.2
 scikit-learn==0.19.0
+scikit-video==1.1.11
 scipy==1.0.0
 six==1.12.0
 sklearn==0.0
@@ -50,6 +54,7 @@ sqlparse==0.3.0
 tensorboard==1.13.1
 tensorflow==1.13.1
 tensorflow-estimator==1.13.0
+tensorflow-serving-api==1.13.0
 termcolor==1.1.0
 toolz==0.9.0
 urllib3==1.25.3
