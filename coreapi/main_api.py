@@ -1,14 +1,14 @@
-import datetime
-import json
+# import datetime
+# import json
 import os
-import cv2
+# import cv2
 import math
-import uuid
+# import uuid
 import skvideo.io
 from skimage.io import imread
-from django.shortcuts import render
-from werkzeug.utils import secure_filename
-from django.http import HttpResponse
+# from django.shortcuts import render
+# from werkzeug.utils import secure_filename
+# from django.http import HttpResponse
 from Rekognition.settings import MEDIA_ROOT
 from corelib.facenet.utils import (get_face, embed_image, save_embedding, load_embeddings,
                                    identify_face, allowed_file, remove_file_extension, save_image, time_dura, handle_uploaded_file, id_generator)
@@ -100,24 +100,24 @@ class API_predict_video(views.APIView):
                 fps = float(float(str_fps[0]) / float(str_fps[1]))
 
                 timestamps = [(float(1) / fps)]
-                total_frame=float(metadata["video"]["@nb_frames"])
-                total_duration=float(metadata["video"]["@duration"])
+                total_frame = float(metadata["video"]["@nb_frames"])
+                total_duration = float(metadata["video"]["@duration"])
 
-                sim_cal=int(math.ceil(fps / 10))
-                gap=(total_duration / total_frame) * sim_cal * 3 * 1000
+                sim_cal = int(math.ceil(fps / 10))
+                gap = (total_duration / total_frame) * sim_cal * 3 * 1000
 
-                print(' fps : ',fps,' | tf : ' ,total_frame,' | dur: ', total_duration, ' | frame_hop :' ,sim_cal, ' |  frame gap in ms : ',gap)
-                count=0
-                cele={}
-                ids=[]
-                embedding_dict=load_embeddings(embeddings_path)
+                print(' fps : ', fps, ' | tf : ', total_frame, ' | dur: ', total_duration, ' | frame_hop :', sim_cal, ' |  frame gap in ms : ', gap)
+                count = 0
+                cele = {}
+                ids = []
+                embedding_dict = load_embeddings(embeddings_path)
 
-                videogen=skvideo.io.vreader(videofile)
+                videogen = skvideo.io.vreader(videofile)
 
                 for curr_frame in (videogen):
                     count = count + 1
                     if count % sim_cal == 0:
-                        timestamps = (float(count) / fps)*1000 # multiplying to get the timestamps in milliseconds
+                        timestamps = (float(count) / fps) * 1000  # multiplying to get the timestamps in milliseconds
                         print(count)
                         try:
                             all_faces, all_bb = get_face(img=curr_frame, pnet=pnet, rnet=rnet, onet=onet, image_size=image_size)
