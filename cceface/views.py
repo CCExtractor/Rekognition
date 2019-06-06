@@ -58,7 +58,7 @@ def get_image(request):
                 return render(request, "upload_result.html", {'status': "Humein khed hai ,tasveer upload nai ho pa saka!"})
     else:
         return "POST HTTP method required!"
- 
+
 
 def predict_image(request):
     if request.method == 'POST':
@@ -206,7 +206,6 @@ def face_vid(request):
         return render(request, 'facevid_result.html', {'dura': output_dur, 'videofile': filename})
     except Exception as e:
         raise(e)
-
 
 
 class API_name_list(views.APIView):

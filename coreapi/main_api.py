@@ -39,8 +39,7 @@ class API_predict_image(views.APIView):
                 file_form = InputImage(title=filename, imagefile=file.read())
                 file_form.save()
             except Exception as e:
-
-                return Response(str('err'), status=status.HTTP_400_BAD_REQUEST)
+                return Response(str('Database error' + str(e)), status=status.HTTP_400_BAD_REQUEST)
 
             if file and allowed_file(filename=filename, allowed_set=allowed_set):
                 img = imread(fname=file, mode='RGB')
@@ -86,7 +85,7 @@ class API_predict_video(views.APIView):
                 handle_uploaded_file(request.FILES['file'], file_path)
                 file = request.FILES['file']
                 try:
-                    file_form = VideoForm(title=filename, videofile=file.read())
+                    file_form = InputVideo(title=filename, videofile=file.read())
                     file_form.save()
                 except Exception as e:
                     print(e)
