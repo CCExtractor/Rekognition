@@ -4,7 +4,7 @@ from . import views
 
 urlpatterns = [
 
-    path('image/', views.API_predict_image.as_view(), name='api_image'),
-    path('video/', views.API_predict_video.as_view(), name='api_video'),
+    path('image/', views.IMAGE_API.as_view(), name='image_api'),
+    path('video/', views.VIDEO_API.as_view(), name='video_api'),
 
 ]

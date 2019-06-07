@@ -168,3 +168,13 @@ def handle_uploaded_file(file, fname):
     with open(fname, 'wb+') as destination:
         for chunk in file.chunks():
             destination.write(chunk)
+
+
+def getNewUniqueFileName(request):
+    file_ext = str((request.FILES['file'].name)).split('.')[-1]
+    filename = id_generator() + '.' + file_ext
+    return filename
+
+
+def saveImageInfoToDB(request, filename):
+    pass
