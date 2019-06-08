@@ -3,12 +3,11 @@ import tensorflow as tf
 import numpy as np
 import glob
 from tensorflow.python.platform import gfile
-from cceface.facenet_lib.src.facenet import get_model_filenames
-from cceface.facenet_lib.src.align import detect_face
-from cceface.facenet_lib.src.facenet import load_img
+from .facenet import get_model_filenames
+from .align import detect_face
+from .facenet import load_img
 from scipy.misc import imresize, imsave
 from collections import defaultdict
-from Rekognition.settings import BASE_DIR
 import string
 import random
 import logging
@@ -95,9 +94,9 @@ def save_embedding(embedding, filename, embeddings_path):
         logging.warning(e)
 
 
-def load_embeddings():
+def load_embeddings(embeddings_path):
     embedding_dict = defaultdict()
-    pathname = os.path.join(BASE_DIR, 'cceface/embeddings')
+    pathname = embeddings_path
 
     for embedding in glob.iglob(pathname=pathname + '/*.npy'):
         name = remove_file_extension(embedding)
@@ -169,3 +168,13 @@ def handle_uploaded_file(file, fname):
     with open(fname, 'wb+') as destination:
         for chunk in file.chunks():
             destination.write(chunk)
+
+
+def getNewUniqueFileName(request):
+    file_ext = str((request.FILES['file'].name)).split('.')[-1]
+    filename = id_generator() + '.' + file_ext
+    return filename
+
+
+def saveImageInfoToDB(request, filename):
+    pass

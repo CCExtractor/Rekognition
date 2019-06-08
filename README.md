@@ -54,6 +54,7 @@ pip3 install -r requirements.txt
     python manage.py collectstatic  --dry-run
     ```
 
+You also need to install ffmpeg to be able to use scikit-video
 Start django application
 
 ```

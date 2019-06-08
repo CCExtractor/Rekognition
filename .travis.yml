@@ -38,6 +38,7 @@ before_script:
   - psql -U postgres -c "ALTER ROLE admin SET default_transaction_isolation TO 'read committed'"
   - psql -U postgres -c "ALTER ROLE admin SET timezone TO 'UTC'"
   - psql -U postgres -c "ALTER USER admin CREATEDB"
+  - psql -U postgres -c "ALTER DATABASE pmr OWNER TO admin"
 
 script:
   - flake8 .
