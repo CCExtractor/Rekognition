@@ -139,7 +139,7 @@ def createEmbedding(request, filename):
                     image_size=image_size
                 )
                 save_embedding(embedding=embedding, filename=filename, embeddings_path=embeddings_path)
-                return {"success": 'embeddings created'}
+                return 'success'
             else:
                 return {"Error": 'No face found'}
         except Exception as e:

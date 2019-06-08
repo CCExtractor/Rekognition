@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework import views, status
 from rest_framework.response import Response
 from corelib.facenet.utils import (getNewUniqueFileName,)
-from .main_api import FaceRecogniseInImage, FaceRecogniseInVideo
+from .main_api import FaceRecogniseInImage, FaceRecogniseInVideo, createEmbedding
 
 
 class IMAGE_API(views.APIView):
@@ -27,6 +27,19 @@ class VIDEO_API(views.APIView):
                 return Response(result, status=status.HTTP_200_OK)
             else:
                 return Response(str('error'), status=status.HTTP_400_BAD_REQUEST)
+        else:
+            Response(str('Bad GET Request'), status=status.HTTP_400_BAD_REQUEST)
+
+
+class EMBEDDING_API(views.APIView):
+    def post(self, request):
+        if request.method == 'POST':
+            filename = request.FILES['file'].name
+            result = createEmbedding(request, filename)
+            if 'success' in result:
+                return Response(result, status=status.HTTP_200_OK)
+            else:
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
         else:
             Response(str('Bad GET Request'), status=status.HTTP_400_BAD_REQUEST)
 
