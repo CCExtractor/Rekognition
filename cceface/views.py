@@ -97,8 +97,6 @@ class API_feedback(views.APIView):
 def index_page(request):
     return render(request, "index.html")
 
-# @api_view(['POST','GET'])
-
 
 def predict_page(request):
     return render(request, "predict.html")

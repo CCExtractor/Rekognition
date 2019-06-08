@@ -130,16 +130,16 @@ def createEmbedding(request, filename):
             img = img[..., :3]
 
         try:
-            img, tmp = get_face(img=img, pnet=pnet, rnet=rnet, onet=onet, image_size=image_size)
-            if img is not None:
+            face, bb = get_face(img=img, pnet=pnet, rnet=rnet, onet=onet, image_size=image_size)
+            if face is not None:
                 embedding = embed_image(
-                    img=img[0], session=facenet_persistent_session,
+                    img=face[0], session=facenet_persistent_session,
                     images_placeholder=images_placeholder, embeddings=embeddings,
                     phase_train_placeholder=phase_train_placeholder,
                     image_size=image_size
                 )
                 save_embedding(embedding=embedding, filename=filename, embeddings_path=embeddings_path)
-                return 'success'
+                return {"success": 'embeddings created'}
             else:
                 return {"Error": 'No face found'}
         except Exception as e:
