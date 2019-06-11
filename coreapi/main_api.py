@@ -18,7 +18,7 @@ def FaceRecogniseInImage(request, filename):
 
     if file and allowed_file(filename=filename, allowed_set=allowed_set):
         try:
-            file_form = InputImage(title=filename, imagefile=file.read())
+            file_form = InputImage(title=filename, imagefile=file)
             file_form.save()
         except Exception as e:
             return (e)
@@ -60,7 +60,7 @@ def FaceRecogniseInVideo(request, filename):
     handle_uploaded_file(request.FILES['file'], file_path)
     file = request.FILES['file']
     try:
-        file_form = InputVideo(title=filename, videofile=file.read())
+        file_form = InputVideo(title=filename, videofile=file)
         file_form.save()
     except Exception as e:
         return e

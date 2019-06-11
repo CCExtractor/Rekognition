@@ -53,7 +53,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'Rekognition.urls'
 
-FILE_UPLOAD_PERMISSIONS = '0760'
+FILE_UPLOAD_PERMISSIONS = 0o760
 
 FILE_UPLOAD_HANDLERS = [
     'django.core.files.uploadhandler.MemoryFileUploadHandler',
