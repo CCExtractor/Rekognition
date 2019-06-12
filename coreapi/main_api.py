@@ -10,7 +10,6 @@ from corelib.constant import (pnet, rnet, onet, facenet_persistent_session, phas
                               embeddings, images_placeholder, image_size, allowed_set, embeddings_path)
 from .models import InputImage, InputVideo
 
-
 def FaceRecogniseInImage(request, filename):
     file_path = os.path.join(MEDIA_ROOT, 'images/' + filename)
     handle_uploaded_file(request.FILES['file'], file_path)
@@ -18,7 +17,7 @@ def FaceRecogniseInImage(request, filename):
 
     if file and allowed_file(filename=filename, allowed_set=allowed_set):
         try:
-            file_form = InputImage(title=filename, imagefile=file)
+            file_form = InputImage(title=filename)
             file_form.save()
         except Exception as e:
             return (e)
@@ -60,7 +59,7 @@ def FaceRecogniseInVideo(request, filename):
     handle_uploaded_file(request.FILES['file'], file_path)
     file = request.FILES['file']
     try:
-        file_form = InputVideo(title=filename, videofile=file)
+        file_form = InputVideo(title=filename)
         file_form.save()
     except Exception as e:
         return e
