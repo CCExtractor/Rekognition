@@ -93,9 +93,9 @@ def FaceRecogniseInVideo(request, filename):
                         if embedding_dict:
                             if cache_embeddings:
                                 id_name = identify_face(embedding=embedding, embedding_dict=cache_embeddings)
-                                if id_name is "Unknown":
+                                if id_name == "Unknown":
                                     id_name = identify_face(embedding=embedding, embedding_dict=embedding_dict)
-                                    if id_name is not "Unknown":
+                                    if id_name != "Unknown":
                                         cache_embeddings[id_name] = embedding
                             else:
                                 id_name = identify_face(embedding=embedding, embedding_dict=embedding_dict)
