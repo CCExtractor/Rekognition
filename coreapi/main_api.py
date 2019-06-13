@@ -41,9 +41,7 @@ def FaceRecogniseInImage(request, filename):
                     )
 
                     if embedding_dict:
-                        identity = identify_face(embedding=embedding, embedding_dict=embedding_dict)
-                        identity = identity.split('/')
-                        id_name = identity[len(identity) - 1]
+                        id_name = identify_face(embedding=embedding, embedding_dict=embedding_dict)
                         bounding_box = {"top": bb[1], "bottom": bb[3], "left": bb[0], "right": bb[2]}
                         all_face_dict[id_name] = {"Bounding Boxes": bounding_box}
                 return all_face_dict
@@ -93,18 +91,11 @@ def FaceRecogniseInVideo(request, filename):
                 if all_faces is not None:
                     cele_id = []
                     for img, bb in zip(all_faces, all_bb):
-                        embedding = embed_image(
-                            img=img, session=facenet_persistent_session,
-                            images_placeholder=images_placeholder, embeddings=embeddings,
-                            phase_train_placeholder=phase_train_placeholder,
-                            image_size=image_size
-                        )
+                        embedding = embed_image(img=img, session=facenet_persistent_session, images_placeholder=images_placeholder, embeddings=embeddings,
+                                                phase_train_placeholder=phase_train_placeholder, image_size=image_size)
 
                         if embedding_dict:
-                            identity = identify_face(embedding=embedding, embedding_dict=embedding_dict)
-                            identity = identity.split('/')
-                            id_name = identity[len(identity) - 1]
-
+                            id_name = identify_face(embedding=embedding, embedding_dict=embedding_dict)
                             if(str(id_name) not in ids):
                                 ids.append(str(id_name))
                                 cele[str(id_name)] = []
@@ -131,12 +122,8 @@ def createEmbedding(request, filename):
         try:
             face, bb = get_face(img=img, pnet=pnet, rnet=rnet, onet=onet, image_size=image_size)
             if face is not None:
-                embedding = embed_image(
-                    img=face[0], session=facenet_persistent_session,
-                    images_placeholder=images_placeholder, embeddings=embeddings,
-                    phase_train_placeholder=phase_train_placeholder,
-                    image_size=image_size
-                )
+                embedding = embed_image(img=face[0], session=facenet_persistent_session, images_placeholder=images_placeholder, embeddings=embeddings,
+                                        phase_train_placeholder=phase_train_placeholder, image_size=image_size)
                 save_embedding(embedding=embedding, filename=filename, embeddings_path=embeddings_path)
                 return 'success'
             else:

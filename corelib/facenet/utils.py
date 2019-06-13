@@ -99,7 +99,7 @@ def load_embeddings(embeddings_path):
     pathname = embeddings_path
 
     for embedding in glob.iglob(pathname=pathname + '/*.npy'):
-        name = remove_file_extension(embedding)
+        name = remove_file_extension(embedding).split('/')[-1]
         dict_embedding = np.load(embedding)
         embedding_dict[name] = dict_embedding
 
@@ -108,16 +108,15 @@ def load_embeddings(embeddings_path):
 
 def identify_face(embedding, embedding_dict):
     min_dis = 100
+    identity = ''
     try:
         for(name, dict_embedding) in embedding_dict.items():
             distance = np.linalg.norm(embedding - dict_embedding)
             if distance < min_dis:
                 min_dis = distance
                 identity = name
-        if min_dis <= 1.1:
-            identity = identity[11:]
-            result = str(identity)  # + ", the distance is " + str(min_dis)
-            return result
+        if min_dis <= 1.1:# + ", the distance is " + str(min_dis)
+            return identity
         else:
             result = "Unknown"
             return result
@@ -140,7 +139,6 @@ def time_dura(dict_data, gap):
             try:
                 t1 = round(dict_data[name][x], 2)
                 t2 = round(dict_data[name][y], 2)
-                # print()
                 if(abs(t2 - t1) > gap):
                     new_list.append(
                         (round(dict_data[name][z] / 1000, 2), round(dict_data[name][x] / 1000, 2)))
