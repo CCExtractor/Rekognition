@@ -115,7 +115,7 @@ def identify_face(embedding, embedding_dict):
             if distance < min_dis:
                 min_dis = distance
                 identity = name
-        if min_dis <= 1.1:# + ", the distance is " + str(min_dis)
+        if min_dis <= 1.1:  # + ", the distance is " + str(min_dis)
             return identity
         else:
             result = "Unknown"

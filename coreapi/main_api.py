@@ -33,12 +33,8 @@ def FaceRecogniseInImage(request, filename):
             if all_faces is not None:
                 embedding_dict = load_embeddings(embeddings_path)
                 for img, bb in zip(all_faces, all_bb):
-                    embedding = embed_image(
-                        img=img, session=facenet_persistent_session,
-                        images_placeholder=images_placeholder, embeddings=embeddings,
-                        phase_train_placeholder=phase_train_placeholder,
-                        image_size=image_size
-                    )
+                    embedding = embed_image(img=img, session=facenet_persistent_session, images_placeholder=images_placeholder, embeddings=embeddings,
+                                            phase_train_placeholder=phase_train_placeholder, image_size=image_size)
 
                     if embedding_dict:
                         id_name = identify_face(embedding=embedding, embedding_dict=embedding_dict)
