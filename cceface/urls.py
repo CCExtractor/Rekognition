@@ -5,7 +5,6 @@ from coreapi.views import ImageWebUI, VideoWebUI
 
 urlpatterns = [
     path('', views.index_page, name='index_page'),
-    path('upload', views.get_image, name='get_image'),
     path('predictImage', ImageWebUI, name='predict_image'),
     path('predict', views.predict_page, name='predict_page'),
     path('facevid', views.facevid_page, name='facevid_page'),
