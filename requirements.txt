@@ -1,6 +1,9 @@
 absl-py==0.7.1
+amqp==2.5.0
 astor==0.8.0
 autopep8==1.4.4
+billiard==3.6.0.0
+celery==4.3.0
 certifi==2019.3.9
 chardet==3.0.4
 cloudpickle==1.1.1
@@ -10,7 +13,10 @@ cycler==0.10.0
 dask==1.2.2
 decorator==4.4.0
 Django==2.2.1
+django-celery-beat==1.5.0
+django-celery-results==1.1.2
 django-cors-headers==3.0.2
+django-timezone-field==3.0
 djangorestframework==3.9.4
 docopt==0.6.2
 entrypoints==0.3
@@ -24,6 +30,7 @@ joblib==0.13.2
 Keras-Applications==1.0.7
 Keras-Preprocessing==1.0.9
 kiwisolver==1.1.0
+kombu==4.6.1
 Markdown==3.1.1
 matplotlib==3.1.0
 mccabe==0.6.1
@@ -40,9 +47,11 @@ psycopg2-binary==2.8.2
 pycodestyle==2.5.0
 pyflakes==2.1.1
 pyparsing==2.4.0
+python-crontab==2.3.6
 python-dateutil==2.8.0
 pytz==2019.1
 PyWavelets==1.0.3
+redis==3.2.1
 requests==2.22.0
 scikit-image==0.14.2
 scikit-learn==0.19.0
@@ -58,4 +67,5 @@ tensorflow-serving-api==1.13.0
 termcolor==1.1.0
 toolz==0.9.0
 urllib3==1.25.3
+vine==1.3.0
 Werkzeug==0.15.4
