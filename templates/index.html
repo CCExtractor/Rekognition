@@ -9,7 +9,6 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
         <!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"> -->
-        <link rel="stylesheet" href=" {% static 'css/test.css' %}">
 </head>
 
 <body>
@@ -28,12 +27,12 @@
                 <br>
 
 
-                <!-- <h3>Upload your image file for storage and  embedding:</h3> -->
+       {% comment %}         <!-- <h3>Upload your image file for storage and  embedding:</h3> -->
 
                 <!-- <form method=POST enctype=multipart/form-data action="{% url 'get_image' %}">{{ csrf_input }}
                 <input type=file name=file class="btn btn-outline-secondary">
                 <input type="submit" class="btn btn-outline-secondary">
-            </form> -->
+            </form> -->{% endcomment %}
 
                 <a href="{% url 'predict_page' %}" class="btn btn-outline-secondary">Click here to proceed for image</a>
                 <br>
