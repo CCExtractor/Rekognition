@@ -1,4 +1,5 @@
 from celery import shared_task
+from Rekognition.celery import app
 import os
 import math
 import json
@@ -40,7 +41,7 @@ def CFRVideo(file_path, filename):
     sim_cal = int(math.ceil(fps / 10))
     gap = (total_duration / total_frame) * sim_cal * 3 * 1000
 
-    # print(' fps : ', fps, ' | tf : ', total_frame, ' | dur: ', total_duration, ' | frame_hop :', sim_cal, ' |  frame gap in ms : ', gap)
+    print(' fps : ', fps, ' | tf : ', total_frame, ' | dur: ', total_duration, ' | frame_hop :', sim_cal, ' |  frame gap in ms : ', gap)
     count = 0
     cele = {}
     ids = []
@@ -54,9 +55,9 @@ def CFRVideo(file_path, filename):
             print("hola")
             timestamps = (float(count) / fps) * 1000  # multiplying to get the timestamps in milliseconds
             try:
-                print("ppppppppp")
+                print("ppppppppp", len(embedding_dict))
                 all_faces, all_bb = get_face(img=curr_frame, pnet=pnet, rnet=rnet, onet=onet, image_size=image_size)
-                print("66666")
+                print("66666", len(all_faces))
                 if all_faces is not None:
                     print("la")
                     cele_id = []
@@ -90,6 +91,6 @@ def CFRVideo(file_path, filename):
                 return e
 
     output_dur = time_dura(cele, gap)
-    with open(os.path.join(MEDIA_ROOT,'result.json'), 'w') as fp:
+    with open(os.path.join(MEDIA_ROOT, 'result.json'), 'w') as fp:
         json.dump(output_dur, fp)
     return output_dur
