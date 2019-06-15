@@ -52,7 +52,7 @@ def CFRVideo(file_path, filename):
     for curr_frame in (videogen):
         count = count + 1
         if count % sim_cal == 0:
-            print("hola")
+            print("hola",count)
             timestamps = (float(count) / fps) * 1000  # multiplying to get the timestamps in milliseconds
             try:
                 print("ppppppppp", len(embedding_dict))
