@@ -137,9 +137,9 @@ def time_dura(dict_data, gap):
         z = 0
         for i in range(len(dict_data[name])):
             try:
-                t1 = round(dict_data[name][x], 2)
-                t2 = round(dict_data[name][y], 2)
-                if(abs(t2 - t1) > gap):
+                pre_time_stamp = round(dict_data[name][x], 2)
+                post_time_stamp = round(dict_data[name][y], 2)
+                if(abs(post_time_stamp - pre_time_stamp) > gap):
                     new_list.append(
                         (round(dict_data[name][z] / 1000, 2), round(dict_data[name][x] / 1000, 2)))
                     z = x + 1
