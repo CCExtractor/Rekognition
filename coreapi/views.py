@@ -1,11 +1,13 @@
+import os
 from django.shortcuts import render
 from rest_framework import views, status
 from rest_framework.response import Response
 from corelib.facenet.utils import (getNewUniqueFileName,)
 from .main_api import FaceRecogniseInImage, FaceRecogniseInVideo, createEmbedding
+from corelib.constant import embeddings_path
 
 
-class IMAGE_API(views.APIView):
+class IMAGE_FR(views.APIView):
     def post(self, request):
         if request.method == 'POST':
             filename = getNewUniqueFileName(request)
@@ -18,7 +20,7 @@ class IMAGE_API(views.APIView):
             Response(str('Bad GET Request'), status=status.HTTP_400_BAD_REQUEST)
 
 
-class VIDEO_API(views.APIView):
+class VIDEO_FR(views.APIView):
     def post(self, request):
         if request.method == 'POST':
             filename = getNewUniqueFileName(request)
@@ -31,7 +33,7 @@ class VIDEO_API(views.APIView):
             Response(str('Bad GET Request'), status=status.HTTP_400_BAD_REQUEST)
 
 
-class EMBEDDING_API(views.APIView):
+class CREATE_EMBEDDING(views.APIView):
     def post(self, request):
         if request.method == 'POST':
             filename = request.FILES['file'].name
@@ -42,6 +44,17 @@ class EMBEDDING_API(views.APIView):
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
         else:
             Response(str('Bad GET Request'), status=status.HTTP_400_BAD_REQUEST)
+
+
+class LIST_EMBEDDING(views.APIView):
+    def get(self, request):
+        result = []
+        for fname in os.listdir(embeddings_path):
+            fname = os.path.splitext(os.path.join(embeddings_path, fname))
+            if fname[1] == ".npy":
+                fname = fname[0].split('/')
+                result.append(fname[-1])
+        return Response(result, status=status.HTTP_200_OK)
 
 
 def ImageWebUI(request):
