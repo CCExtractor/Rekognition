@@ -5,10 +5,10 @@ from skimage.io import imread
 from werkzeug.utils import secure_filename
 from Rekognition.settings import MEDIA_ROOT
 from corelib.facenet.utils import (get_face, embed_image, save_embedding, load_embeddings,
-                                   identify_face, allowed_file, time_dura, handle_uploaded_file)
+                                   identify_face, allowed_file, time_dura, handle_uploaded_file, save_face)
 from corelib.constant import (pnet, rnet, onet, facenet_persistent_session, phase_train_placeholder,
                               embeddings, images_placeholder, image_size, allowed_set, embeddings_path)
-from .models import InputImage, InputVideo
+from .models import InputImage, InputVideo, InputEmbed
 
 
 def FaceRecogniseInImage(request, filename):
@@ -119,6 +119,12 @@ def createEmbedding(request, filename):
     file = request.FILES['file']
     if file and allowed_file(filename=filename, allowed_set=allowed_set):
         filename = secure_filename(filename=filename).replace('_', ' ').split('.')[0].title()
+        try:
+            file_form = InputEmbed(title=filename)
+            file_form.save()
+            unid = file_form.id
+        except Exception as e:
+            return (e)
 
         img = imread(fname=file, mode='RGB')
         if (img.shape[2] == 4):
@@ -129,7 +135,9 @@ def createEmbedding(request, filename):
             if face is not None:
                 embedding = embed_image(img=face[0], session=facenet_persistent_session, images_placeholder=images_placeholder, embeddings=embeddings,
                                         phase_train_placeholder=phase_train_placeholder, image_size=image_size)
+                save_face(img=face[0],filename=unid)
                 save_embedding(embedding=embedding, filename=filename, embeddings_path=embeddings_path)
+
                 return 'success'
             else:
                 return {"Error": 'No face found'}
