@@ -145,3 +145,13 @@ def createEmbedding(request, filename):
             return e
     else:
         return {"Error": 'bad file format'}
+
+
+def stream_video_download(url,filename):
+    output_dir = "{}/{}/".format(MEDIA_ROOT, 'videos')
+    command = "youtube-dl -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4'  \"{}\" -o {}.mp4".format(url, filename)
+    try:
+        download = subprocess.Popen(shlex.split(command), cwd=output_dir)
+        download.wait()
+    except Exception as e:
+        return e
