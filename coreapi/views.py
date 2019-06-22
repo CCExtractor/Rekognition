@@ -1,10 +1,12 @@
-import os
 from django.shortcuts import render
 from rest_framework import views, status
 from rest_framework.response import Response
 from corelib.facenet.utils import (getNewUniqueFileName,)
 from .main_api import FaceRecogniseInImage, FaceRecogniseInVideo, createEmbedding
-from corelib.constant import embeddings_path
+from .serializers import EmbedSerializer
+from .models import InputEmbed
+from rest_framework.views import APIView
+from rest_framework.parsers import MultiPartParser, FormParser
 
 
 class IMAGE_FR(views.APIView):
@@ -46,15 +48,23 @@ class CREATE_EMBEDDING(views.APIView):
             Response(str('Bad GET Request'), status=status.HTTP_400_BAD_REQUEST)
 
 
-class LIST_EMBEDDING(views.APIView):
-    def get(self, request):
-        result = []
-        for fname in os.listdir(embeddings_path):
-            fname = os.path.splitext(os.path.join(embeddings_path, fname))
-            if fname[1] == ".npy":
-                fname = fname[0].split('/')
-                result.append(fname[-1])
-        return Response(result, status=status.HTTP_200_OK)
+class LIST_AVAILABLE_EMBEDDING_DETAILS(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+
+    def get(self, request, *args, **kwargs):
+        EmbedList = InputEmbed.objects.all()
+        serializer = EmbedSerializer(EmbedList, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, *args, **kwargs):
+        pass
+        # Images_serializer = ImageSerializer(data=request.data)
+        # if Images_serializer.is_valid():
+        #     Images_serializer.save()
+        #     return Response(Images_serializer.data, status=status.HTTP_201_CREATED)
+        # else:
+        #     print('error', Images_serializer.errors)
+        #     return Response(Images_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 def ImageWebUI(request):
