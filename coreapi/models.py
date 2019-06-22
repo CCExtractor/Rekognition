@@ -23,8 +23,10 @@ class InputImage(models.Model):
 
 
 class InputEmbed(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    unid = uuid.uuid4()
+    id = models.UUIDField(primary_key=True, default=unid, editable=False)
     title = models.CharField(max_length=80)
+    fileurl = models.CharField(max_length=100, default="/media/face/" + str(unid) + '.jpg', editable=False)
     created_on = models.DateTimeField(default=timezone.now, blank=True)
 
     def __str__(self):
