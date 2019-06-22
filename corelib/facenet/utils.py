@@ -11,6 +11,7 @@ from collections import defaultdict
 import string
 import random
 import logging
+from Rekognition.settings import MEDIA_ROOT
 
 
 def allowed_file(filename, allowed_set):
@@ -84,6 +85,14 @@ def embed_image(img, session, images_placeholder, phase_train_placeholder, embed
         return embedding
     else:
         return None
+
+
+def save_face(img, filename):
+    path = os.path.join(MEDIA_ROOT, 'face', str(filename) + '.jpg')
+    try:
+        imsave(path, arr=np.squeeze(img))
+    except Exception as e:
+        logging.warning(e)
 
 
 def save_embedding(embedding, filename, embeddings_path):
