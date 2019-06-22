@@ -88,11 +88,12 @@ def embed_image(img, session, images_placeholder, phase_train_placeholder, embed
 
 
 def save_face(img, filename):
-    path = os.path.join(MEDIA_ROOT, 'face', str(filename)+'.jpg')
+    path = os.path.join(MEDIA_ROOT, 'face', str(filename) + '.jpg')
     try:
         imsave(path, arr=np.squeeze(img))
     except Exception as e:
         logging.warning(e)
+
 
 def save_embedding(embedding, filename, embeddings_path):
     path = os.path.join(embeddings_path, str(filename))

@@ -135,7 +135,7 @@ def createEmbedding(request, filename):
             if face is not None:
                 embedding = embed_image(img=face[0], session=facenet_persistent_session, images_placeholder=images_placeholder, embeddings=embeddings,
                                         phase_train_placeholder=phase_train_placeholder, image_size=image_size)
-                save_face(img=face[0],filename=unid)
+                save_face(img=face[0], filename=unid)
                 save_embedding(embedding=embedding, filename=filename, embeddings_path=embeddings_path)
 
                 return 'success'
