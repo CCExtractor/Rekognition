@@ -1,4 +1,3 @@
-import os
 from django.shortcuts import render
 from rest_framework import views, status
 from rest_framework.response import Response
@@ -8,7 +7,6 @@ from .serializers import EmbedSerializer
 from .models import InputEmbed
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
-
 
 
 class IMAGE_FR(views.APIView):
@@ -97,4 +95,3 @@ def VideoWebUI(request):
                 return render(request, 'facevid_result.html', {'dura': result, 'videofile': filename})
     else:
         return "POST HTTP method required!"
-
