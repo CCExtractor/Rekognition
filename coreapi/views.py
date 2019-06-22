@@ -48,7 +48,7 @@ class CREATE_EMBEDDING(views.APIView):
             Response(str('Bad GET Request'), status=status.HTTP_400_BAD_REQUEST)
 
 
-class EMBEDAPITEST(APIView):
+class LIST_AVAILABLE_EMBEDDING_DETAILS(APIView):
     parser_classes = (MultiPartParser, FormParser)
 
     def get(self, request, *args, **kwargs):
