@@ -54,7 +54,7 @@ class LIST_AVAILABLE_EMBEDDING_DETAILS(APIView):
     def get(self, request, *args, **kwargs):
         EmbedList = InputEmbed.objects.all()
         serializer = EmbedSerializer(EmbedList, many=True)
-        return Response({'data': serializer.data })
+        return Response({'data': serializer.data})
 
     def post(self, request, *args, **kwargs):
         pass
