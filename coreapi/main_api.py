@@ -1,6 +1,9 @@
 import os
 import math
+import uuid
 import skvideo.io
+import subprocess
+import shlex
 from skimage.io import imread
 from werkzeug.utils import secure_filename
 from Rekognition.settings import MEDIA_ROOT
@@ -119,10 +122,11 @@ def createEmbedding(request, filename):
     file = request.FILES['file']
     if file and allowed_file(filename=filename, allowed_set=allowed_set):
         filename = secure_filename(filename=filename).replace('_', ' ').split('.')[0].title()
+        unid = uuid.uuid4().hex
         try:
-            file_form = InputEmbed(title=filename)
+            filepath = "/media/face/" + str(unid) + '.jpg'
+            file_form = InputEmbed(id=unid, title=filename, fileurl=filepath)
             file_form.save()
-            unid = file_form.id
         except Exception as e:
             return (e)
 
@@ -147,7 +151,7 @@ def createEmbedding(request, filename):
         return {"Error": 'bad file format'}
 
 
-def stream_video_download(url,filename):
+def stream_video_download(url, filename):
     output_dir = "{}/{}/".format(MEDIA_ROOT, 'videos')
     command = "youtube-dl -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4'  \"{}\" -o {}.mp4".format(url, filename)
     try:
