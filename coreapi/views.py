@@ -6,8 +6,12 @@ from .main_api import FaceRecogniseInImage, FaceRecogniseInVideo, createEmbeddin
 from .tasks import CFRVideo, addi
 import os
 from Rekognition.settings import MEDIA_ROOT
+from .serializers import EmbedSerializer
+from .models import InputEmbed
+from rest_framework.views import APIView
+from rest_framework.parsers import MultiPartParser, FormParser
 
-class IMAGE_API(views.APIView):
+class IMAGE_FR(views.APIView):
     def post(self, request):
         if request.method == 'POST':
             filename = getNewUniqueFileName(request)
@@ -20,7 +24,7 @@ class IMAGE_API(views.APIView):
             Response(str('Bad GET Request'), status=status.HTTP_400_BAD_REQUEST)
 
 
-class VIDEO_API(views.APIView):
+class VIDEO_FR(views.APIView):
     def post(self, request):
         if request.method == 'POST':
             filename = getNewUniqueFileName(request)
@@ -33,7 +37,7 @@ class VIDEO_API(views.APIView):
             Response(str('Bad GET Request'), status=status.HTTP_400_BAD_REQUEST)
 
 
-class EMBEDDING_API(views.APIView):
+class CREATE_EMBEDDING(views.APIView):
     def post(self, request):
         if request.method == 'POST':
             filename = request.FILES['file'].name
@@ -44,6 +48,25 @@ class EMBEDDING_API(views.APIView):
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
         else:
             Response(str('Bad GET Request'), status=status.HTTP_400_BAD_REQUEST)
+
+
+class LIST_AVAILABLE_EMBEDDING_DETAILS(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+
+    def get(self, request, *args, **kwargs):
+        EmbedList = InputEmbed.objects.all()
+        serializer = EmbedSerializer(EmbedList, many=True)
+        return Response({'data': serializer.data})
+
+    def post(self, request, *args, **kwargs):
+        pass
+        # Images_serializer = ImageSerializer(data=request.data)
+        # if Images_serializer.is_valid():
+        #     Images_serializer.save()
+        #     return Response(Images_serializer.data, status=status.HTTP_201_CREATED)
+        # else:
+        #     print('error', Images_serializer.errors)
+        #     return Response(Images_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 def ImageWebUI(request):

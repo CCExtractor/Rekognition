@@ -20,3 +20,13 @@ class InputImage(models.Model):
 
     def __str__(self):
         return self.id
+
+
+class InputEmbed(models.Model):
+    id = models.UUIDField(primary_key=True, editable=False)
+    title = models.CharField(max_length=80)
+    fileurl = models.CharField(max_length=100, editable=False)
+    created_on = models.DateTimeField(default=timezone.now, blank=True)
+
+    def __str__(self):
+        return self.id
