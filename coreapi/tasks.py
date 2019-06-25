@@ -1,28 +1,21 @@
-from celery import shared_task
+from celery import shared_task, task
 from Rekognition.celery import app
 import os
 import math
 import json
-
+from skimage.io import imread
 import skvideo.io
 from Rekognition.settings import MEDIA_ROOT
-from corelib.facenet.utils import (get_face, embed_image, load_embeddings,
-                                   identify_face, time_dura, handle_uploaded_file)
+from corelib.facenet.utils import (get_face, embed_image, save_embedding, load_embeddings,
+                                   identify_face, allowed_file, time_dura, handle_uploaded_file, save_face)
 from corelib.constant import (pnet, rnet, onet, facenet_persistent_session, phase_train_placeholder,
-                              embeddings, images_placeholder, image_size, embeddings_path)
-from .models import InputVideo
+                              embeddings, images_placeholder, image_size, allowed_set, embeddings_path)
+from .models import InputImage, InputVideo, InputEmbed
 
 
-@shared_task
-def addi(x, y):
-    print('*' * (x + y))
-    return x + y
+import asyncio
 
-
-@shared_task
 def CFRVideo(file_path, filename):
-    # file_path = os.path.join(MEDIA_ROOT, 'videos/' + filename)
-    # handle_uploaded_file(request.FILES['file'], file_path)
     try:
         file_form = InputVideo(title=filename)
         file_form.save()
@@ -52,7 +45,7 @@ def CFRVideo(file_path, filename):
     for curr_frame in (videogen):
         count = count + 1
         if count % sim_cal == 0:
-            print("hola",count)
+            print("hola", count)
             timestamps = (float(count) / fps) * 1000  # multiplying to get the timestamps in milliseconds
             try:
                 print("ppppppppp", len(embedding_dict))

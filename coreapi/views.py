@@ -1,15 +1,19 @@
+import time
 from django.shortcuts import render
 from rest_framework import views, status
 from rest_framework.response import Response
-from corelib.facenet.utils import (getNewUniqueFileName,handle_uploaded_file)
+from corelib.facenet.utils import (getNewUniqueFileName, handle_uploaded_file)
 from .main_api import FaceRecogniseInImage, FaceRecogniseInVideo, createEmbedding
-from .tasks import CFRVideo, addi
+from .tasks import CFRVideo, addi, holobolo
 import os
 from Rekognition.settings import MEDIA_ROOT
 from .serializers import EmbedSerializer
 from .models import InputEmbed
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
+import asyncio
+from threading import Thread
+
 
 class IMAGE_FR(views.APIView):
     def post(self, request):
@@ -98,25 +102,25 @@ def VideoWebUI(request):
     else:
         return "POST HTTP method required!"
 
-import time
+
+def thr(i):
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(bagula())
+    loop.close()
+
+
+async def bagula():
+    (CFRVideo('/Users/amit/Desktop/11.mp4', 'test.mp4'))
+
+
 class Celerytest(views.APIView):
+
     def post(self, request):
         if request.method == 'POST':
-            filename = getNewUniqueFileName(request)
-            print("hola it's starting")
-            # test = addi.delay(5,9)
-            # print(' ############ ',test.id,test.status,test.get())
-            file_path = os.path.join(MEDIA_ROOT, 'videos/' + filename)
-            handle_uploaded_file(request.FILES['file'], file_path)
-            result = CFRVideo.delay(file_path, filename)
-            print("hola it's working")
-            print("#"*30,result.id,result.status)
-            # time.sleep(10)
-
-            # if 'error' or 'Error' not in result:
+            num_threads = 1
+            threads = [Thread(target=thr, args=(i,)) for i in range(num_threads)]
+            [t.start() for t in threads]
             return Response('success', status=status.HTTP_200_OK)
-            # else:
-            #     return Response(str('error'), status=status.HTTP_400_BAD_REQUEST)
         else:
             Response(str('Bad GET Request'), status=status.HTTP_400_BAD_REQUEST)
-

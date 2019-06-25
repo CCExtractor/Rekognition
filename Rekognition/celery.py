@@ -12,11 +12,8 @@ app = Celery('Rekognition')
 # the configuration object to child processes.
 # - namespace='CELERY' means all celery-related configuration keys
 #   should have a `CELERY_` prefix.
-app.config_from_object('django.conf:settings')
-app.conf.update(
-    CELERY_RESULT_BACKEND='django-db',
+app.config_from_object('django.conf:settings', namespace='CELERY')
 
-)
 
 # app.conf.task_queue_max_priority = 10
 

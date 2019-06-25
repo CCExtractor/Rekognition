@@ -3,9 +3,9 @@ import tensorflow as tf
 import numpy as np
 import glob
 from tensorflow.python.platform import gfile
-from .facenet import get_model_filenames
-from .align import detect_face
-from .facenet import load_img
+from corelib.facenet.facenet import get_model_filenames
+from corelib.facenet.align import detect_face
+from corelib.facenet.facenet import load_img
 from scipy.misc import imresize, imsave
 from collections import defaultdict
 import string
@@ -54,7 +54,6 @@ def get_face(img, pnet, rnet, onet, image_size):
     img_size = np.asarray(img.shape)[0:2]
     bounding_boxes, _ = detect_face.detect_face(
         img=img, minsize=minsize, pnet=pnet, rnet=rnet, onet=onet, threshold=threshold, factor=factor)
-
     all_faces = []
     all_bb = []
 

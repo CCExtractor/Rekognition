@@ -51,7 +51,9 @@ def FaceRecogniseInImage(request, filename):
     else:
         return {"Error": 'bad file format'}
 
+import json
 
+import asyncio
 def FaceRecogniseInVideo(request, filename):
     file_path = os.path.join(MEDIA_ROOT, 'videos/' + filename)
     handle_uploaded_file(request.FILES['file'], file_path)
@@ -115,6 +117,8 @@ def FaceRecogniseInVideo(request, filename):
                 return e
 
     output_dur = time_dura(cele, gap)
+    with open(os.path.join(MEDIA_ROOT, 'result.json'), 'w') as fp:
+        json.dump(output_dur, fp)
     return output_dur
 
 
