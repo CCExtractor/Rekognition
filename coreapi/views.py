@@ -1,11 +1,10 @@
+import os
 import time
 from django.shortcuts import render
 from rest_framework import views, status
 from rest_framework.response import Response
 from corelib.facenet.utils import (getNewUniqueFileName, handle_uploaded_file)
 from .main_api import FaceRecogniseInImage, FaceRecogniseInVideo, createEmbedding
-from .tasks import CFRVideo, addi, holobolo
-import os
 from Rekognition.settings import MEDIA_ROOT
 from .serializers import EmbedSerializer
 from .models import InputEmbed
@@ -103,24 +102,24 @@ def VideoWebUI(request):
         return "POST HTTP method required!"
 
 
-def thr(i):
+
+async def ASYNC_VIDEO_FR(request,filename):
+    return (FaceRecogniseInVideo(request, filename))
+
+
+def AsyncThread(file_path,filename):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
-    loop.run_until_complete(bagula())
+    loop.run_until_complete(ASYNC_VIDEO_FR(file_path,filename))
     loop.close()
 
 
-async def bagula():
-    (CFRVideo('/Users/amit/Desktop/11.mp4', 'test.mp4'))
-
-
 class Celerytest(views.APIView):
-
     def post(self, request):
         if request.method == 'POST':
-            num_threads = 1
-            threads = [Thread(target=thr, args=(i,)) for i in range(num_threads)]
-            [t.start() for t in threads]
-            return Response('success', status=status.HTTP_200_OK)
+            filename = getNewUniqueFileName(request)
+            thread = Thread(target=AsyncThread, args=(request,filename))
+            thread.start()
+            return Response(str(filename.split('.')[0]), status=status.HTTP_200_OK)
         else:
-            Response(str('Bad GET Request'), status=status.HTTP_400_BAD_REQUEST)
+            Response(str('Bad POST Request'), status=status.HTTP_400_BAD_REQUEST)
