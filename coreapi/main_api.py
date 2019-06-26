@@ -50,6 +50,8 @@ def FaceRecogniseInImage(request, filename):
                 # except Exception as e:
                 #     print(e)
                     # pass
+                file_form.isProcessed = True
+                file_form.save()
                 return all_face_dict
             else:
                 return 'error no faces'
@@ -128,6 +130,8 @@ def FaceRecogniseInVideo(request, filename):
     except Exception as e:
         print(e)
         pass
+    file_form.isProcessed = True
+    file_form.save()
     return output_dur
 
 

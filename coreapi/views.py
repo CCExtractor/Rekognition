@@ -1,11 +1,8 @@
-import os
-import time
 from django.shortcuts import render
 from rest_framework import views, status
 from rest_framework.response import Response
-from corelib.facenet.utils import (getNewUniqueFileName, handle_uploaded_file)
+from corelib.facenet.utils import (getNewUniqueFileName)
 from .main_api import FaceRecogniseInImage, FaceRecogniseInVideo, createEmbedding
-from Rekognition.settings import MEDIA_ROOT
 from .serializers import EmbedSerializer
 from .models import InputEmbed
 from rest_framework.views import APIView
@@ -102,23 +99,22 @@ def VideoWebUI(request):
         return "POST HTTP method required!"
 
 
-
-async def ASYNC_VIDEO_FR(request,filename):
+async def ASYNC_helper(request, filename):
     return (FaceRecogniseInVideo(request, filename))
 
 
-def AsyncThread(file_path,filename):
+def AsyncThread(request, filename):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
-    loop.run_until_complete(ASYNC_VIDEO_FR(file_path,filename))
+    loop.run_until_complete(ASYNC_helper(request, filename))
     loop.close()
 
 
-class Celerytest(views.APIView):
+class ASYNC_VIDEOFR(views.APIView):
     def post(self, request):
         if request.method == 'POST':
             filename = getNewUniqueFileName(request)
-            thread = Thread(target=AsyncThread, args=(request,filename))
+            thread = Thread(target=AsyncThread, args=(request, filename))
             thread.start()
             return Response(str(filename.split('.')[0]), status=status.HTTP_200_OK)
         else:
