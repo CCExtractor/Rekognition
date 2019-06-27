@@ -6,6 +6,7 @@ corelib/facenet/model/
 *.mp4
 *.jpg
 *.jpeg
+*.json
 *.png
 *.mov
 *.DS_Store

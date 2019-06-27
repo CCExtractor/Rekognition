@@ -1,12 +1,14 @@
 from django.shortcuts import render
 from rest_framework import views, status
 from rest_framework.response import Response
-from corelib.facenet.utils import (getNewUniqueFileName,)
+from corelib.facenet.utils import (getNewUniqueFileName)
 from .main_api import FaceRecogniseInImage, FaceRecogniseInVideo, createEmbedding
 from .serializers import EmbedSerializer
 from .models import InputEmbed
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
+import asyncio
+from threading import Thread
 
 
 class IMAGE_FR(views.APIView):
@@ -95,3 +97,25 @@ def VideoWebUI(request):
                 return render(request, 'facevid_result.html', {'dura': result, 'videofile': filename})
     else:
         return "POST HTTP method required!"
+
+
+async def ASYNC_helper(request, filename):
+    return (FaceRecogniseInVideo(request, filename))
+
+
+def AsyncThread(request, filename):
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(ASYNC_helper(request, filename))
+    loop.close()
+
+
+class ASYNC_VIDEOFR(views.APIView):
+    def post(self, request):
+        if request.method == 'POST':
+            filename = getNewUniqueFileName(request)
+            thread = Thread(target=AsyncThread, args=(request, filename))
+            thread.start()
+            return Response(str(filename.split('.')[0]), status=status.HTTP_200_OK)
+        else:
+            Response(str('Bad POST Request'), status=status.HTTP_400_BAD_REQUEST)
