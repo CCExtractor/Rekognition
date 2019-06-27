@@ -1,6 +1,7 @@
 import os
 import math
 import uuid
+import json
 import skvideo.io
 import subprocess
 import shlex
@@ -43,6 +44,14 @@ def FaceRecogniseInImage(request, filename):
                         id_name = identify_face(embedding=embedding, embedding_dict=embedding_dict)
                         bounding_box = {"top": bb[1], "bottom": bb[3], "left": bb[0], "right": bb[2]}
                         all_face_dict[id_name] = {"Bounding Boxes": bounding_box}
+                # try:
+                #     with open(os.path.join(MEDIA_ROOT, 'output/image',filename.split('.')[0]+'.json'), 'w') as fp:
+                #         json.dump(all_face_dict, fp)
+                # except Exception as e:
+                #     print(e)
+                    # pass
+                file_form.isProcessed = True
+                file_form.save()
                 return all_face_dict
             else:
                 return 'error no faces'
@@ -115,6 +124,14 @@ def FaceRecogniseInVideo(request, filename):
                 return e
 
     output_dur = time_dura(cele, gap)
+    try:
+        with open(os.path.join(MEDIA_ROOT, 'output/video', filename.split('.')[0] + '.json'), 'w') as fp:
+            json.dump(output_dur, fp)
+    except Exception as e:
+        print(e)
+        pass
+    file_form.isProcessed = True
+    file_form.save()
     return output_dur
 
 
