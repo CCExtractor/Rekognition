@@ -8,7 +8,7 @@ import shlex
 from skimage.io import imread
 from werkzeug.utils import secure_filename
 from Rekognition.settings import MEDIA_ROOT
-from corelib.facenet.utils import (get_face, embed_image, save_embedding, load_embeddings,
+from corelib.facenet.utils import (get_face, embed_image, save_embedding, embedding_dict,
                                    identify_face, allowed_file, time_dura, handle_uploaded_file, save_face)
 from corelib.constant import (pnet, rnet, onet, facenet_persistent_session, phase_train_placeholder,
                               embeddings, images_placeholder, image_size, allowed_set, embeddings_path)
@@ -35,7 +35,6 @@ def FaceRecogniseInImage(request, filename):
             all_faces, all_bb = get_face(img=img, pnet=pnet, rnet=rnet, onet=onet, image_size=image_size)
             all_face_dict = {}
             if all_faces is not None:
-                embedding_dict = load_embeddings(embeddings_path)
                 for img, bb in zip(all_faces, all_bb):
                     embedding = embed_image(img=img, session=facenet_persistent_session, images_placeholder=images_placeholder, embeddings=embeddings,
                                             phase_train_placeholder=phase_train_placeholder, image_size=image_size)
@@ -86,7 +85,6 @@ def FaceRecogniseInVideo(request, filename):
     count = 0
     cele = {}
     ids = []
-    embedding_dict = load_embeddings(embeddings_path)
     cache_embeddings = {}
 
     videogen = skvideo.io.vreader(videofile)
