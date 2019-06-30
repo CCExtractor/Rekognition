@@ -1,5 +1,5 @@
 from Rekognition.settings import BASE_DIR
-from corelib.facenet.utils import load_model
+from corelib.facenet.utils import load_model, load_embeddings
 from corelib.facenet.align import detect_face
 import tensorflow as tf
 import os
@@ -18,3 +18,4 @@ embeddings = tf.get_default_graph().get_tensor_by_name("embeddings:0")
 phase_train_placeholder = tf.get_default_graph().get_tensor_by_name("phase_train:0")
 facenet_persistent_session = tf.Session(graph=facenet_model, config=config)
 pnet, rnet, onet = detect_face.create_mtcnn(sess=facenet_persistent_session, model_path=None)
+embedding_dict = load_embeddings(embeddings_path)
