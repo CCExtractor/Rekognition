@@ -8,8 +8,8 @@ import os
 upload_path = os.path.join(BASE_DIR, 'cceface/uploads')
 embeddings_path = os.path.join(BASE_DIR, 'corelib/embeddings')
 allowed_set = set(['png', 'jpg', 'jpeg', 'PNG', 'JPEG', 'JPG'])
-model_path = BASE_DIR + '/corelib/facenet/model/2017/20170512-110547.pb'
-facenet_model = load_model(model_path)
+facenet_model_path = BASE_DIR + '/corelib/model/facenet/2017/20170512-110547.pb'
+facenet_model = load_model(facenet_model_path)
 config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
 image_size = 160
