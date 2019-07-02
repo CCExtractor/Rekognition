@@ -16,6 +16,15 @@ from .models import InputImage, InputVideo, InputEmbed
 
 
 def FaceRecogniseInImage(request, filename):
+    """Face Recognition in image
+
+    Args:
+        request: Post https request containing a image file
+        filename: filename of the video
+
+    Returns:
+        Dictionary having all the faces and corresponding bounding boxes
+    """
     file_path = os.path.join(MEDIA_ROOT, 'images/' + filename)
     handle_uploaded_file(request.FILES['file'], file_path)
     file = request.FILES['file']
@@ -61,6 +70,15 @@ def FaceRecogniseInImage(request, filename):
 
 
 def FaceRecogniseInVideo(request, filename):
+    """Face Recognition in Video
+
+    Args:
+        request: Post https request containing a video file
+        filename: filename of the video
+
+    Returns:
+        Dictionary having all the faces and corresponding time durations
+    """
     file_path = os.path.join(MEDIA_ROOT, 'videos/' + filename)
     handle_uploaded_file(request.FILES['file'], file_path)
     try:
@@ -134,6 +152,16 @@ def FaceRecogniseInVideo(request, filename):
 
 
 def createEmbedding(request, filename):
+    """
+    To create embeddings of face
+
+    Args:
+        request: Post https request containing a image file
+        filename: filename of the video
+
+    Returns:
+        success flag
+    """
     file = request.FILES['file']
     if file and allowed_file(filename=filename, allowed_set=allowed_set):
         filename = secure_filename(filename=filename).replace('_', ' ').split('.')[0].title()
@@ -167,6 +195,16 @@ def createEmbedding(request, filename):
 
 
 def stream_video_download(url, filename):
+    """
+    to download a youtube video
+
+    Args:
+        url: url of the youtube video
+        filename: filename of the video
+
+    Returns:
+        Nothing
+    """
     output_dir = "{}/{}/".format(MEDIA_ROOT, 'videos')
     command = "youtube-dl -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4'  \"{}\" -o {}.mp4".format(url, filename)
     try:
