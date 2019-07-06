@@ -15,14 +15,38 @@ from Rekognition.settings import MEDIA_ROOT
 
 
 def allowed_file(filename, allowed_set):
+    """ to check whether the file being uploaded is a valid file or not
+    Args:
+        filename: filename of the file
+        allowed_set: all the supported image format as set
+    Returns:
+            boolean value
+    """
     return "." in filename and filename.rsplit('.', 1)[1].lower() in allowed_set
 
 
 def remove_file_extension(filename):
     return os.path.splitext(filename)[0]
+    """ to remove the file extension
 
+    Args:
+        filename: filename of the file
+
+        Returns:
+            string (filename without extension)
+    """
 
 def save_image(img, filename, upload_path):
+    """ to save the image
+
+    Args:
+        img: image file
+        filename: filename of the file
+        upload_path: path to upload
+
+        Returns:
+    """
+
     try:
         imsave(os.path.join(upload_path, filename), arr=np.squeeze(img))
     except Exception as e:
@@ -30,6 +54,14 @@ def save_image(img, filename, upload_path):
 
 
 def load_model(model):
+    """to load the deep learning model
+
+    Args:
+        model: model path
+    Returns:
+        tensorflow graph
+
+    """
     model_exp = os.path.expanduser(model)
     if os.path.isfile(model_exp):
         with gfile.FastGFile(model_exp, 'rb') as f:
@@ -46,6 +78,15 @@ def load_model(model):
 
 
 def get_face(img, pnet, rnet, onet, image_size):
+
+    """ to get the face from the image
+
+    Args:
+        img: image file
+    Returns:
+        numpy arrays of faces and corresponding faces
+
+    """
     minsize = 20
     threshold = [0.6, 0.7, 0.7]
     factor = 0.709
