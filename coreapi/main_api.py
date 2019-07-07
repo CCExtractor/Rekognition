@@ -8,10 +8,10 @@ import shlex
 from skimage.io import imread
 from werkzeug.utils import secure_filename
 from Rekognition.settings import MEDIA_ROOT
-from corelib.facenet.utils import (get_face, embed_image, save_embedding, embedding_dict,
+from corelib.facenet.utils import (get_face, embed_image, save_embedding,
                                    identify_face, allowed_file, time_dura, handle_uploaded_file, save_face)
 from corelib.constant import (pnet, rnet, onet, facenet_persistent_session, phase_train_placeholder,
-                              embeddings, images_placeholder, image_size, allowed_set, embeddings_path)
+                              embeddings, images_placeholder, image_size, allowed_set, embeddings_path, embedding_dict)
 from .models import InputImage, InputVideo, InputEmbed
 
 
