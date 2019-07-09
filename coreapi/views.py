@@ -3,7 +3,7 @@ from rest_framework import views, status
 from rest_framework.response import Response
 from corelib.facenet.utils import (getNewUniqueFileName)
 from .main_api import FaceRecogniseInImage, FaceRecogniseInVideo, createEmbedding
-from .serializers import EmbedSerializer
+from .serializers import EmbedSerializer,NameSuggestedSerializer
 from .models import InputEmbed
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -68,6 +68,7 @@ class LIST_AVAILABLE_EMBEDDING_DETAILS(APIView):
         #     print('error', Images_serializer.errors)
         #     return Response(Images_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 class FeedbackFeature(APIView):
     parser_classes = (MultiPartParser, FormParser)
 
@@ -77,15 +78,14 @@ class FeedbackFeature(APIView):
         return Response({'data': serializer.data})
 
     def post(self, request, *args, **kwargs):
-        pass
-        # Images_serializer = ImageSerializer(data=request.data)
-        # if Images_serializer.is_valid():
-        #     Images_serializer.save()
-        #     return Response(Images_serializer.data, status=status.HTTP_201_CREATED)
-        # else:
-        #     print('error', Images_serializer.errors)
-        #     return Response(Images_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+        feedback_serializer = NameSuggestedSerializer(data=request.data)
+        feedback_serializer.feedback = InputEmbed.objects.get(id=feedback_serializer.feedBackId_id)
+        if feedback_serializer.is_valid():
+            feedback_serializer.save()
+            return Response(feedback_serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            print('error', feedback_serializer.errors)
+            return Response(feedback_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 def ImageWebUI(request):
     if request.method == 'POST':
