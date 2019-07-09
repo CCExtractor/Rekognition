@@ -68,6 +68,24 @@ class LIST_AVAILABLE_EMBEDDING_DETAILS(APIView):
         #     print('error', Images_serializer.errors)
         #     return Response(Images_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class FeedbackFeature(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+
+    def get(self, request, *args, **kwargs):
+        EmbedList = InputEmbed.objects.all()
+        serializer = EmbedSerializer(EmbedList, many=True)
+        return Response({'data': serializer.data})
+
+    def post(self, request, *args, **kwargs):
+        pass
+        # Images_serializer = ImageSerializer(data=request.data)
+        # if Images_serializer.is_valid():
+        #     Images_serializer.save()
+        #     return Response(Images_serializer.data, status=status.HTTP_201_CREATED)
+        # else:
+        #     print('error', Images_serializer.errors)
+        #     return Response(Images_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 def ImageWebUI(request):
     if request.method == 'POST':
