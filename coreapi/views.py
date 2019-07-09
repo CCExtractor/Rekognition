@@ -3,7 +3,7 @@ from rest_framework import views, status
 from rest_framework.response import Response
 from corelib.facenet.utils import (getNewUniqueFileName)
 from .main_api import FaceRecogniseInImage, FaceRecogniseInVideo, createEmbedding
-from .serializers import EmbedSerializer,NameSuggestedSerializer
+from .serializers import EmbedSerializer, NameSuggestedSerializer
 from .models import InputEmbed
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -88,6 +88,7 @@ class FeedbackFeature(APIView):
         else:
             print('error', feedback_serializer.errors)
             return Response(feedback_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 def ImageWebUI(request):
     if request.method == 'POST':

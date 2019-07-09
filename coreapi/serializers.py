@@ -19,6 +19,7 @@ class EmbedSerializer(serializers.ModelSerializer):
         model = InputEmbed
         fields = '__all__'
 
+
 class NameSuggestedSerializer(serializers.ModelSerializer):
     class Meta:
         model = NameSuggested
