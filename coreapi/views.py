@@ -78,8 +78,10 @@ class FeedbackFeature(APIView):
         return Response({'data': serializer.data})
 
     def post(self, request, *args, **kwargs):
+        request.data._mutable = True
+        feedbackModel = InputEmbed.objects.get(id=request.data["feedback_id"])
+        request.data["feedback"] = feedbackModel
         feedback_serializer = NameSuggestedSerializer(data=request.data)
-        feedback_serializer.feedback = InputEmbed.objects.get(id=feedback_serializer.feedBackId_id)
         if feedback_serializer.is_valid():
             feedback_serializer.save()
             return Response(feedback_serializer.data, status=status.HTTP_201_CREATED)

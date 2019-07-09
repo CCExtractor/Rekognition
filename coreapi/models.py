@@ -43,7 +43,7 @@ class NameSuggested(models.Model):
     suggestedName = models.CharField(max_length=80)
     upvote = models.IntegerField(default=0)
     downvote = models.IntegerField(default=0)
-    feedBack = models.ForeignKey(InputEmbed, on_delete=models.CASCADE)
+    feedback = models.ForeignKey(InputEmbed, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.suggestedName
