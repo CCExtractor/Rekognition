@@ -4,11 +4,12 @@ from rest_framework.response import Response
 from corelib.facenet.utils import (getNewUniqueFileName)
 from .main_api import FaceRecogniseInImage, FaceRecogniseInVideo, createEmbedding
 from .serializers import EmbedSerializer, NameSuggestedSerializer
-from .models import InputEmbed
+from .models import InputEmbed, NameSuggested
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
 import asyncio
 from threading import Thread
+import random
 
 
 class IMAGE_FR(views.APIView):
@@ -73,8 +74,13 @@ class FeedbackFeature(APIView):
     parser_classes = (MultiPartParser, FormParser)
 
     def get(self, request, *args, **kwargs):
-        EmbedList = InputEmbed.objects.all()
-        serializer = EmbedSerializer(EmbedList, many=True)
+        embedList = InputEmbed.objects.all()
+        randomFaceObject = embedList[random.randrange(len(embedList))]
+        try:
+            nameSuggestedObject = NameSuggested.objects.get(feedback_id=randomFaceObject.id)
+        except NameSuggested.DoesNotExist:
+            nameSuggestedObject = NameSuggested.objects.create(suggestedName=randomFaceObject.title, feedback=randomFaceObject)
+        serializer = NameSuggestedSerializer([nameSuggestedObject, ], many=True)
         return Response({'data': serializer.data})
 
     def post(self, request, *args, **kwargs):
