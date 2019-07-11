@@ -77,10 +77,13 @@ class FeedbackFeature(APIView):
         embedList = InputEmbed.objects.all()
         randomFaceObject = embedList[random.randrange(len(embedList))]
         try:
-            nameSuggestedObject = NameSuggested.objects.get(feedback_id=randomFaceObject.id)
+            nameSuggestedObject = NameSuggested.objects.filter(feedback_id=randomFaceObject.id)
         except NameSuggested.DoesNotExist:
             nameSuggestedObject = NameSuggested.objects.create(suggestedName=randomFaceObject.title, feedback=randomFaceObject)
-        serializer = NameSuggestedSerializer([nameSuggestedObject, ], many=True)
+            nameSuggestedObject.save()
+
+        nameSuggestedList = NameSuggested.objects.filter(feedback_id=randomFaceObject.id)
+        serializer = NameSuggestedSerializer(nameSuggestedList, many=True)
         return Response({'data': serializer.data})
 
     def post(self, request, *args, **kwargs):
