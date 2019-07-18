@@ -19,19 +19,21 @@ from skimage.color import rgb2gray
 from skimage.transform import resize
 
 
-def FaceExp(filepath):
-    cropped_face = imread(filepath)
+def FaceExp(cropped_face):
     img = rgb2gray(cropped_face)
     raw_img = resize(img, (48, 48, 1), anti_aliasing=True) / 255.0
-    img = (np.expand_dims(raw_img, 0))
+    img = np.expand_dims(raw_img, 0)
     data = json.dumps({"signature_name": "serving_default", "instances": img.tolist()})
     headers = {"content-type": "application/json"}
-    json_response = requests.post('http://localhost:8501/v1/models/fer2013:predict', data=data, headers=headers)
+    try:
+        json_response = requests.post('http://localhost:8501/v1/models/fer2013:predict', data=data, headers=headers)
+    except Exception as e:
+        print(e, "\n TensorFlow Serving is not working properly")
+        return " "
     predictions = json.loads(json_response.text)["predictions"]
     final_result = {}
     for key, value in zip(Facial_expression_class_names, predictions[0]):
         final_result[key] = value
-    print(final_result)
     return final_result
 
 
@@ -61,8 +63,9 @@ def FaceRecogniseInImage(request, filename):
 
                     if embedding_dict:
                         id_name = identify_face(embedding=embedding, embedding_dict=embedding_dict)
+                        facial_expression = FaceExp(img)
                         bounding_box = {"top": bb[1], "bottom": bb[3], "left": bb[0], "right": bb[2]}
-                        all_face_dict[id_name] = {"Bounding Boxes": bounding_box}
+                        all_face_dict[id_name] = {"Bounding Boxes": bounding_box, "Facial Expression": facial_expression}
                 # try:
                 #     with open(os.path.join(MEDIA_ROOT, 'output/image',filename.split('.')[0]+'.json'), 'w') as fp:
                 #         json.dump(all_face_dict, fp)
@@ -71,7 +74,7 @@ def FaceRecogniseInImage(request, filename):
                     # pass
                 file_form.isProcessed = True
                 file_form.save()
-                return all_face_dict
+                return {"Faces": all_face_dict}
             else:
                 return 'error no faces'
         except Exception as e:
