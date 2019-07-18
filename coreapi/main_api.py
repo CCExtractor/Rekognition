@@ -11,8 +11,28 @@ from Rekognition.settings import MEDIA_ROOT
 from corelib.facenet.utils import (get_face, embed_image, save_embedding,
                                    identify_face, allowed_file, time_dura, handle_uploaded_file, save_face)
 from corelib.constant import (pnet, rnet, onet, facenet_persistent_session, phase_train_placeholder,
-                              embeddings, images_placeholder, image_size, allowed_set, embeddings_path, embedding_dict)
+                              embeddings, images_placeholder, image_size, allowed_set, embeddings_path, embedding_dict, Facial_expression_class_names)
 from .models import InputImage, InputVideo, InputEmbed
+import numpy as np
+import requests
+from skimage.color import rgb2gray
+from skimage.transform import resize
+
+
+def FaceExp(filepath):
+    cropped_face = imread(filepath)
+    img = rgb2gray(cropped_face)
+    raw_img = resize(img, (48, 48, 1), anti_aliasing=True) / 255.0
+    img = (np.expand_dims(raw_img, 0))
+    data = json.dumps({"signature_name": "serving_default", "instances": img.tolist()})
+    headers = {"content-type": "application/json"}
+    json_response = requests.post('http://localhost:8501/v1/models/fer2013:predict', data=data, headers=headers)
+    predictions = json.loads(json_response.text)["predictions"]
+    final_result = {}
+    for key, value in zip(Facial_expression_class_names, predictions[0]):
+        final_result[key] = value
+    print(final_result)
+    return final_result
 
 
 def FaceRecogniseInImage(request, filename):
