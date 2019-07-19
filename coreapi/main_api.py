@@ -142,14 +142,48 @@ def FaceRecogniseInImage(request, filename):
 
 
 def FaceRecogniseInVideo(request, filename):
-    """Face Recognition in Video
+    """     Face Recognition in Video
 
     Args:
-        request: Post https request containing a video file
-        filename: filename of the video
+            *   request: Post https request containing a video file
+            *   filename: filename of the video
+
+    Workflow
+            *   Video file is first saved into videos which is subfolder of MEDIA_ROOT directory.
+
+            *   Information about the video is saved into database
+
+            *   Using skvideo meta information of the video is extracted
+
+            *   With the help of extracted metadata frame/sec (fps) is calculated and with this frame_hop is calculated.
+                Now this frame_hop is actually useful in decreasing the number of frames to be processed,
+                say for example if a video is of 30 fps then with frame_hop of 2, every third frame is processed, It reduces
+                the computation work. Ofcourse for more accuracy the frame_hop can be reduced, but It is observed that this
+                affect the output very little.
+
+            *   Now videofile is read using skvideo.io.vreader(), Now, each frame is read from the videogen.
+                Now timestamp of the particular image or face calculated using above metadata.
+
+            *   Now a locallist is maintained which keeps the all face ids.
+
+            *   Now Faces and corresponding boundingbox is being calculated, if there is even a single face in output then it
+                is taken for further processing like creating embedding for each face.
+
+            *   After embedding is created for any particular face then , It is checked whether the global embedding_dict contains
+                any already embedding or not with which the current embedding is to be compared. Initially cache_embeddings is empty
+                therefore else condition is true and executed first. cache embedding is created to reduce the computation by a huge margin.
+                It checks whether the embeddings of the faces in current frames were present in the previous frames or not. If there is
+                a hit then it moves to identify the next face else It looks globally for the face embeddings and on hit, current face embedding
+                is added to the local cache_embeddings. This works since it embedding is first checked in local dictionary and no need to compare
+                with all the available embeddings in the global embedding_dict. In videos it is very likely that the face might be distorted in next
+                frame and this may bring more error . By this method it also minimizes this error by a great margin.
+
+            *   After that a dictionary is maintained which keeps the face id as key and corrensponding timestamps of the faces in array
+
+            *   time_dura coalesces small timestamps into a time interval duration of each face ids.
 
     Returns:
-        Dictionary having all the faces and corresponding time durations
+            *   Dictionary having all the faces and corresponding time durations
     """
     file_path = os.path.join(MEDIA_ROOT, 'videos/' + filename)
     handle_uploaded_file(request.FILES['file'], file_path)
@@ -168,8 +202,8 @@ def FaceRecogniseInVideo(request, filename):
     total_frame = float(metadata["video"]["@nb_frames"])
     total_duration = float(metadata["video"]["@duration"])
 
-    sim_cal = int(math.ceil(fps / 10))
-    gap = (total_duration / total_frame) * sim_cal * 3 * 1000
+    frame_hop = int(math.ceil(fps / 10))
+    gap_in_sec = (total_duration / total_frame) * frame_hop * 3 * 1000
 
     # print(' fps : ', fps, ' | tf : ', total_frame, ' | dur: ', total_duration, ' | frame_hop :', sim_cal, ' |  frame gap in ms : ', gap)
     count = 0
@@ -180,7 +214,7 @@ def FaceRecogniseInVideo(request, filename):
     videogen = skvideo.io.vreader(videofile)
     for curr_frame in (videogen):
         count = count + 1
-        if count % sim_cal == 0:
+        if count % frame_hop == 0:
             timestamps = (float(count) / fps) * 1000  # multiplying to get the timestamps in milliseconds
             try:
                 all_faces, all_bb = get_face(img=curr_frame, pnet=pnet, rnet=rnet, onet=onet, image_size=image_size)
@@ -211,7 +245,7 @@ def FaceRecogniseInVideo(request, filename):
             except Exception as e:
                 return e
 
-    output_dur = time_dura(cele, gap)
+    output_dur = time_dura(cele, gap_in_sec)
     try:
         with open(os.path.join(MEDIA_ROOT, 'output/video', filename.split('.')[0] + '.json'), 'w') as fp:
             json.dump(output_dur, fp)
