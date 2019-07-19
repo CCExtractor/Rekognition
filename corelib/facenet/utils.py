@@ -26,7 +26,6 @@ def allowed_file(filename, allowed_set):
 
 
 def remove_file_extension(filename):
-    return os.path.splitext(filename)[0]
     """ to remove the file extension
 
     Args:
@@ -35,6 +34,8 @@ def remove_file_extension(filename):
         Returns:
             string (filename without extension)
     """
+    return os.path.splitext(filename)[0]
+
 
 def save_image(img, filename, upload_path):
     """ to save the image
@@ -78,7 +79,6 @@ def load_model(model):
 
 
 def get_face(img, pnet, rnet, onet, image_size):
-
     """ to get the face from the image
 
     Args:
