@@ -19,3 +19,6 @@ phase_train_placeholder = tf.get_default_graph().get_tensor_by_name("phase_train
 facenet_persistent_session = tf.Session(graph=facenet_model, config=config)
 pnet, rnet, onet = detect_face.create_mtcnn(sess=facenet_persistent_session, model_path=None)
 embedding_dict = load_embeddings(embeddings_path)
+
+Facial_expression_class_names = ['Angry', 'Fear', 'Happy',
+                                 'Sad', 'Surprise', 'Neutral']  # Don't change the order
