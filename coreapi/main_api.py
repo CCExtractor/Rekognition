@@ -258,15 +258,21 @@ def FaceRecogniseInVideo(request, filename):
 
 
 def createEmbedding(request, filename):
-    """
-    To create embeddings of face
+    """      To create face embedding
 
     Args:
-        request: Post https request containing a image file
-        filename: filename of the video
+            *   request: Post https request containing a image file
+            *   filename: filename of the video
+
+    Workflow
+            *   First it checks whether is there any image file in the post request.
+
+            *   Image information is saved in the database
+
+            *   face and corresponding bounding box is extracted followed by creating and saving bounding box.
 
     Returns:
-        success flag
+            *   success flag
     """
     file = request.FILES['file']
     if file and allowed_file(filename=filename, allowed_set=allowed_set):
@@ -301,15 +307,16 @@ def createEmbedding(request, filename):
 
 
 def stream_video_download(url, filename):
-    """
-    to download a youtube video
+    """     To download a youtube video
 
     Args:
-        url: url of the youtube video
-        filename: filename of the video
+            *   url: url of the youtube video
+            *   filename: filename of the video
 
+    Workflow
+            *   It uses youtube-dl to download the best available
     Returns:
-        Nothing
+            *   Nothing
     """
     output_dir = "{}/{}/".format(MEDIA_ROOT, 'videos')
     command = "youtube-dl -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4'  \"{}\" -o {}.mp4".format(url, filename)
