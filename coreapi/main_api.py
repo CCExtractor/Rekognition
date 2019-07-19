@@ -33,6 +33,8 @@ def FaceExp(cropped_face):
 
             *   Then a http post request is made at localhost:8501 . The post request contain data and headers.
 
+            * incase of any exception, it return empty string.
+
             *   output from TensorFlow Serving is then parsed and a dictionary is defined which keeps the facial expression name as key and prediction's output
                     as value. The prediction values are floating point values which tells the probability of the particular facial expression.
 
