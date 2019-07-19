@@ -20,12 +20,36 @@ from skimage.transform import resize
 
 
 def FaceExp(cropped_face):
+    """     Facical Expression Recognition of faces in image
+
+    Args:
+            *   cropped_face: numpy array of cropped face
+
+    Workflow:
+            *   A numpy array of a cropped face is taken as input (RGB). inference input dimension requires
+                a dimension of (1,48,48,1) therefore the RGB input is first converted to grayscale image followed by
+                normalizing and resizing the required input dimension.
+
+            *   Now the processed output is further processed to make it a json format which is compatible to TensorFlow
+                Serving input.
+
+            *   Then a http post request is made at localhost:8501 . The post request contain data and headers.
+
+            *   Incase of any exception, it return empty string.
+
+            *   output from TensorFlow Serving is then parsed and a dictionary is defined which keeps the facial expression
+                name as key and prediction's output as value. The prediction values are floating point values which tells the
+                probability of the particular facial expression.
+
+    Returns:
+            *   Dictionary having all the faces and corresponding facial expression and it's values.
+    """
     img = rgb2gray(cropped_face)
     raw_img = resize(img, (48, 48, 1), anti_aliasing=True) / 255.0
     img = np.expand_dims(raw_img, 0)
     data = json.dumps({"signature_name": "serving_default", "instances": img.tolist()})
-    headers = {"content-type": "application/json"}
     try:
+        headers = {"content-type": "application/json"}
         json_response = requests.post('http://localhost:8501/v1/models/fer2013:predict', data=data, headers=headers)
     except Exception as e:
         print(e, "\n TensorFlow Serving is not working properly")
@@ -38,14 +62,39 @@ def FaceExp(cropped_face):
 
 
 def FaceRecogniseInImage(request, filename):
-    """Face Recognition in image
+    """     Face Recognition in image
 
     Args:
-        request: Post https request containing a image file
-        filename: filename of the video
+            *   request: Post https request containing a image file
+            *   filename: filename of the video
+
+    Workflow:
+            *   Image file is first saved into images which is subfolder of MEDIA_ROOT directory.
+
+            *   If there is any file in the post request and the file extension is mentioned in allowed_set then it is
+                allowed for further processing else the returns an error.
+
+            *   Then, the image is converted into numpy array, followed by reshaping the image dimension if it contains 4 channels.
+                It is actually done to process .png files.
+
+            *   Then, all the faces present in an image is extracted along with corresponding boundingbox using method get_face.
+
+            *   if number of faces is greater than 0 then for each face and corresponding bounding box is taken for further processing.
+
+            *   embedding for each face is created with the help of embed_image and returned to the vairable embedding
+
+            *   Now this embedding is compared with already available embeddings, It returns the name of the embedding which has the
+                lowest difference in them else if it crosses the limit then 'unknown' id returned.
+
+            *   Next step is to get the facial expression of the face using the method FaceExp.
+
+            *   Then, all the information which currently includes face id, bounding box and facial expression is saved into a dictionary.
+
+            *   Information about the face is saved into database.
+
 
     Returns:
-        Dictionary having all the faces and corresponding bounding boxes
+            *   Dictionary having all the faces and corresponding bounding boxes with facial expression
     """
     file_path = os.path.join(MEDIA_ROOT, 'images/' + filename)
     handle_uploaded_file(request.FILES['file'], file_path)
