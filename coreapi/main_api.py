@@ -20,12 +20,31 @@ from skimage.transform import resize
 
 
 def FaceExp(cropped_face):
+    """     Facical Expression Recognition of faces in image
+
+    Args:
+            *   cropped_face: numpy array of cropped face
+
+    Workflow:
+            *    A numpy array of a cropped face is taken as input (RGB). Our inference input dimension requires a dimension of (1,48,48,1)
+                    therefore the RGB input is first converted to grayscale image followed by normalizing and resizing the required input dimension.
+
+            *   Now the processed output is further processed to make it a json format which is compatible to TensorFlow Serving input.
+
+            *   Then a http post request is made at localhost:8501 . The post request contain data and headers.
+
+            *   output from TensorFlow Serving is then parsed and a dictionary is defined which keeps the facial expression name as key and prediction's output
+                    as value. The prediction values are floating point values which tells the probability of the particular facial expression.
+
+    Returns:
+            Dictionary having all the faces and corresponding facial expression and it's values.
+    """
     img = rgb2gray(cropped_face)
     raw_img = resize(img, (48, 48, 1), anti_aliasing=True) / 255.0
     img = np.expand_dims(raw_img, 0)
     data = json.dumps({"signature_name": "serving_default", "instances": img.tolist()})
-    headers = {"content-type": "application/json"}
     try:
+        headers = {"content-type": "application/json"}
         json_response = requests.post('http://localhost:8501/v1/models/fer2013:predict', data=data, headers=headers)
     except Exception as e:
         print(e, "\n TensorFlow Serving is not working properly")
