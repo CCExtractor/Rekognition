@@ -91,11 +91,18 @@ class FeedbackFeature(APIView):
 
     def post(self, request, *args, **kwargs):
         request.data._mutable = True
+        print(request.data)
         feedbackModel = InputEmbed.objects.get(id=request.data["feedback_id"])
         request.data["feedback"] = feedbackModel
         feedback_serializer = NameSuggestedSerializer(data=request.data)
         if feedback_serializer.is_valid():
-            feedback_serializer.save()
+            try:
+                obj = NameSuggested.objects.get(id=request.data["id"])
+                obj.upvote = request.data["upvote"]
+                obj.downvote = request.data["downvote"]
+                obj.save()
+            except NameSuggested.DoesNotExist:
+                feedback_serializer.save()
             return Response(feedback_serializer.data, status=status.HTTP_201_CREATED)
         else:
             print('error', feedback_serializer.errors)
