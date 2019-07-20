@@ -91,7 +91,7 @@ class FeedbackFeature(APIView):
 
     def post(self, request, *args, **kwargs):
         request.data._mutable = True
-        print(request.data)
+        # print(request.data)
         feedbackModel = InputEmbed.objects.get(id=request.data["feedback_id"])
         request.data["feedback"] = feedbackModel
         feedback_serializer = NameSuggestedSerializer(data=request.data)
