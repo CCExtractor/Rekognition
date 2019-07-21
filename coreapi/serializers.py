@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import InputImage, InputVideo, InputEmbed
+from .models import InputImage, InputVideo, InputEmbed, NameSuggested
 
 
 class ImageSerializer(serializers.ModelSerializer):
@@ -17,4 +17,10 @@ class VideoSerializer(serializers.ModelSerializer):
 class EmbedSerializer(serializers.ModelSerializer):
     class Meta:
         model = InputEmbed
+        fields = '__all__'
+
+
+class NameSuggestedSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NameSuggested
         fields = '__all__'

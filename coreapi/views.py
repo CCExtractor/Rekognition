@@ -3,12 +3,13 @@ from rest_framework import views, status
 from rest_framework.response import Response
 from corelib.facenet.utils import (getNewUniqueFileName)
 from .main_api import FaceRecogniseInImage, FaceRecogniseInVideo, createEmbedding
-from .serializers import EmbedSerializer
-from .models import InputEmbed
+from .serializers import EmbedSerializer, NameSuggestedSerializer
+from .models import InputEmbed, NameSuggested
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
 import asyncio
 from threading import Thread
+import random
 
 
 class IMAGE_FR(views.APIView):
@@ -67,6 +68,45 @@ class LIST_AVAILABLE_EMBEDDING_DETAILS(APIView):
         # else:
         #     print('error', Images_serializer.errors)
         #     return Response(Images_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class FeedbackFeature(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+
+    def get(self, request, *args, **kwargs):
+        embedList = InputEmbed.objects.all()
+        randomFaceObject = embedList[random.randrange(len(embedList))]
+        try:
+            nameSuggestedObject = NameSuggested.objects.get(feedback_id=randomFaceObject.id)
+        except NameSuggested.MultipleObjectsReturned:
+            pass
+        except NameSuggested.DoesNotExist:
+            nameSuggestedObject = NameSuggested.objects.create(suggestedName=randomFaceObject.title, feedback=randomFaceObject)
+            nameSuggestedObject.save()
+
+        nameSuggestedList = NameSuggested.objects.filter(feedback_id=randomFaceObject.id)
+        serializer = NameSuggestedSerializer(nameSuggestedList, many=True)
+        result = {'data': serializer.data, 'fileurl': randomFaceObject.fileurl}
+        return Response(result)
+
+    def post(self, request, *args, **kwargs):
+        request.data._mutable = True
+        # print(request.data)
+        feedbackModel = InputEmbed.objects.get(id=request.data["feedback_id"])
+        request.data["feedback"] = feedbackModel
+        feedback_serializer = NameSuggestedSerializer(data=request.data)
+        if feedback_serializer.is_valid():
+            try:
+                obj = NameSuggested.objects.get(id=request.data["id"])
+                obj.upvote = request.data["upvote"]
+                obj.downvote = request.data["downvote"]
+                obj.save()
+            except NameSuggested.DoesNotExist:
+                feedback_serializer.save()
+            return Response(feedback_serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            print('error', feedback_serializer.errors)
+            return Response(feedback_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 def ImageWebUI(request):
