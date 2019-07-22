@@ -325,3 +325,18 @@ def stream_video_download(url, filename):
         download.wait()
     except Exception as e:
         return e
+
+
+def process_streaming_video(url, filename):
+    output_dir = "{}/{}/".format(MEDIA_ROOT, 'videos')
+    command = "youtube-dl -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4'  \"{}\" -o {}.mp4".format(url, filename)
+    try:
+        download = subprocess.Popen(shlex.split(command), cwd=output_dir)
+        download.wait()
+    except Exception as e:
+        return e
+    file_dir = os.path.join(output_dir, filename+'.mp4')
+    files =  {'file': open(file_dir, 'rb')}
+    requests.post('http://localhost:8000/api/old_video/', files=files)
+    return 'success'
+    # FaceRecogniseInVideo(files,)
