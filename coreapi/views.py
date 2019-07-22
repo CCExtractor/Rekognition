@@ -13,6 +13,16 @@ import random
 
 
 class IMAGE_FR(views.APIView):
+    """     To recognise faces in image
+
+    Workflow
+            *   if  POST method request is made, then initially a random filename is generated
+                and then FaceRecogniseInImage method is called which process the image and outputs
+                the result containing all the information about the faces available in the image.
+
+    Returns:
+            *   output by FaceRecogniseInImage
+    """
     def post(self, request):
         if request.method == 'POST':
             filename = getNewUniqueFileName(request)
@@ -26,6 +36,16 @@ class IMAGE_FR(views.APIView):
 
 
 class VIDEO_FR(views.APIView):
+    """     To recognise faces in video
+
+    Workflow
+            *   if  POST method request is made, then initially a random filename is generated
+                and then FaceRecogniseInVideo method is called which process the video and outputs
+                the result containing all the information about the faces available in the video.
+
+    Returns:
+            *   output by FaceRecogniseInVideo
+    """
     def post(self, request):
         if request.method == 'POST':
             filename = getNewUniqueFileName(request)
@@ -39,6 +59,15 @@ class VIDEO_FR(views.APIView):
 
 
 class CREATE_EMBEDDING(views.APIView):
+    """     To create embedding of faces
+
+    Workflow
+            *   if  POST method request is made, then the file is sent to createEmbedding
+                to create the embedding
+
+    Returns:
+            *   output whether it was successful or not
+    """
     def post(self, request):
         if request.method == 'POST':
             filename = request.FILES['file'].name
@@ -52,6 +81,15 @@ class CREATE_EMBEDDING(views.APIView):
 
 
 class LIST_AVAILABLE_EMBEDDING_DETAILS(APIView):
+    """     To list the available embeddings or faceid
+
+    Workflow
+            *   if  GET method request is made, then the file is sent to createEmbedding
+                to create the embedding
+
+    Returns:
+            *   output list containing all the faceid and their details
+    """
     parser_classes = (MultiPartParser, FormParser)
 
     def get(self, request, *args, **kwargs):
@@ -71,6 +109,30 @@ class LIST_AVAILABLE_EMBEDDING_DETAILS(APIView):
 
 
 class FeedbackFeature(APIView):
+    """     Feedback feature
+
+    Workflow
+            *   if  GET method request is made, then first all the embeddings objects are loaded
+                followed by randomly selecting anyone of them.
+
+            *   with the help of id of the randomly selected object , an attempt is made to get the object
+                available in NameSuggested model. If the object is available then it is selected else a new
+                object is created in NameSuggested model .
+
+            *   All the objects having the ids are fetched and serialized and then passed to reponse the request.
+
+            *   if POST method request is made, then first the received data is made mutable so later the embedding object can be included in the data.
+
+            *   With the help of id contained in the POST request embedding object is fetched and attached to the data followed by serializing it , Now here
+                is a catch, How the POST request know the id which is present in the database? This is actually answered by the GET request. When GET request is
+                made it sends a feedback_id which is used to make POST request when ever a new name is suggested to the faceid.
+
+            *   So, if the there is any action on already available NameSuggested object i.e. upvote or downvote then the object is updated
+                in the database else a new object is made with the same id having upvote = downvote = 0.
+                Here don't mix id and primary key. Primary key in this case is different than this id.
+
+
+    """
     parser_classes = (MultiPartParser, FormParser)
 
     def get(self, request, *args, **kwargs):
