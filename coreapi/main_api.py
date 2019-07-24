@@ -327,7 +327,7 @@ def stream_video_download(url, filename):
         return e
 
 
-=def process_streaming_video(url, filename):
+def process_streaming_video(url, filename):
     output_dir = "{}/{}/".format(MEDIA_ROOT, 'videos')
     command = "youtube-dl -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4'  \"{}\" -o {}.mp4".format(url, filename)
     try:
