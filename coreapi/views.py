@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework import views, status
 from rest_framework.response import Response
 from corelib.facenet.utils import (getNewUniqueFileName)
-from .main_api import FaceRecogniseInImage, FaceRecogniseInVideo, createEmbedding
+from .main_api import FaceRecogniseInImage, FaceRecogniseInVideo, createEmbedding, process_streaming_video
 from .serializers import EmbedSerializer, NameSuggestedSerializer
 from .models import InputEmbed, NameSuggested
 from rest_framework.views import APIView
@@ -23,6 +23,7 @@ class IMAGE_FR(views.APIView):
     Returns:
             *   output by FaceRecogniseInImage
     """
+
     def post(self, request):
         if request.method == 'POST':
             filename = getNewUniqueFileName(request)
@@ -46,6 +47,7 @@ class VIDEO_FR(views.APIView):
     Returns:
             *   output by FaceRecogniseInVideo
     """
+
     def post(self, request):
         if request.method == 'POST':
             filename = getNewUniqueFileName(request)
@@ -68,6 +70,7 @@ class CREATE_EMBEDDING(views.APIView):
     Returns:
             *   output whether it was successful or not
     """
+
     def post(self, request):
         if request.method == 'POST':
             filename = request.FILES['file'].name
@@ -221,3 +224,31 @@ class ASYNC_VIDEOFR(views.APIView):
             return Response(str(filename.split('.')[0]), status=status.HTTP_200_OK)
         else:
             Response(str('Bad POST Request'), status=status.HTTP_400_BAD_REQUEST)
+
+
+class STREAM_VIDEO_FR(views.APIView):
+    """     To recognise faces in video
+
+    Workflow
+            *   if  POST method request is made, then initially a random filename is generated
+                and then FaceRecogniseInVideo method is called which process the video and outputs
+                the result containing all the information about the faces available in the video.
+
+    Returns:
+            *   output by FaceRecogniseInVideo
+    """
+
+    def post(self, request):
+        if request.method == 'POST':
+            streamlink = request.data["StreamLink"]
+            videoid = (str(streamlink).split('/')[-1]).split('\"')[0]
+            ytlink = str("https://www.youtube.com/watch?v=" + str(videoid))
+            print(ytlink)
+            result = process_streaming_video(ytlink, (videoid))
+            result = ''
+            if 'error' or 'Error' not in result:
+                return Response(result, status=status.HTTP_200_OK)
+            else:
+                return Response(str('error'), status=status.HTTP_400_BAD_REQUEST)
+        else:
+            Response(str('Bad GET Request'), status=status.HTTP_400_BAD_REQUEST)
