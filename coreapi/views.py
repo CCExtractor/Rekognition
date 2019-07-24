@@ -227,12 +227,11 @@ class ASYNC_VIDEOFR(views.APIView):
 
 
 class STREAM_VIDEO_FR(views.APIView):
-    """     To recognise faces in video
+    """     To recognise faces in YouTube video
 
     Workflow
-            *   if  POST method request is made, then initially a random filename is generated
-                and then FaceRecogniseInVideo method is called which process the video and outputs
-                the result containing all the information about the faces available in the video.
+            *   youtube embed link is received by reactjs post request then it is preprocessed to get the original
+                youtube link and then it is passed
 
     Returns:
             *   output by FaceRecogniseInVideo
@@ -243,9 +242,7 @@ class STREAM_VIDEO_FR(views.APIView):
             streamlink = request.data["StreamLink"]
             videoid = (str(streamlink).split('/')[-1]).split('\"')[0]
             ytlink = str("https://www.youtube.com/watch?v=" + str(videoid))
-            print(ytlink)
             result = process_streaming_video(ytlink, (videoid))
-            result = ''
             if 'error' or 'Error' not in result:
                 return Response(result, status=status.HTTP_200_OK)
             else:
