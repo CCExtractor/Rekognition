@@ -22,3 +22,4 @@ embedding_dict = load_embeddings(embeddings_path)
 
 Facial_expression_class_names = ['Angry', 'Fear', 'Happy',
                                  'Sad', 'Surprise', 'Neutral']  # Don't change the order
+nsfw_class_names = {0: 'Drawings', 1: 'Hentai', 2: 'Neutral', 3: 'Porn', 4: 'Sexy'}
