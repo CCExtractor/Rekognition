@@ -61,8 +61,12 @@ def FaceExp(cropped_face):
     return final_result
 
 
-def nsfwClassifier(filepath):
-    img = imread(filepath)
+def nsfwClassifier(request, filename):
+
+    file_path = os.path.join(MEDIA_ROOT, 'images/' + filename)
+    handle_uploaded_file(request.FILES['file'], file_path)
+
+    img = imread(file_path)
     img = resize(img, (64, 64), anti_aliasing=True)
     if (img.shape[2] == 4):
         img = img[..., :3]
