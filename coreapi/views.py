@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework import views, status
 from rest_framework.response import Response
 from corelib.facenet.utils import (getNewUniqueFileName)
-from .main_api import FaceRecogniseInImage, FaceRecogniseInVideo, createEmbedding, nsfwClassifier
+from .main_api import FaceRecogniseInImage, FaceRecogniseInVideo, createEmbedding, process_streaming_video, nsfwClassifier
 from .serializers import EmbedSerializer, NameSuggestedSerializer
 from .models import InputEmbed, NameSuggested
 from rest_framework.views import APIView
@@ -248,3 +248,28 @@ class ASYNC_VIDEOFR(views.APIView):
             return Response(str(filename.split('.')[0]), status=status.HTTP_200_OK)
         else:
             Response(str('Bad POST Request'), status=status.HTTP_400_BAD_REQUEST)
+
+
+class STREAM_VIDEO_FR(views.APIView):
+    """     To recognise faces in YouTube video
+
+    Workflow
+            *   youtube embed link is received by reactjs post request then it is preprocessed to get the original
+                youtube link and then it is passed
+
+    Returns:
+            *   output by FaceRecogniseInVideo
+    """
+
+    def post(self, request):
+        if request.method == 'POST':
+            streamlink = request.data["StreamLink"]
+            videoid = (str(streamlink).split('/')[-1]).split('\"')[0]
+            ytlink = str("https://www.youtube.com/watch?v=" + str(videoid))
+            result = process_streaming_video(ytlink, (videoid))
+            if 'error' or 'Error' not in result:
+                return Response(result, status=status.HTTP_200_OK)
+            else:
+                return Response(str('error'), status=status.HTTP_400_BAD_REQUEST)
+        else:
+            Response(str('Bad GET Request'), status=status.HTTP_400_BAD_REQUEST)
