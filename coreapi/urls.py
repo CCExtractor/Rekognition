@@ -9,5 +9,6 @@ urlpatterns = [
     path('embednow/', views.CREATE_EMBEDDING.as_view(), name='embed_api'),
     path('video/', views.ASYNC_VIDEOFR.as_view(), name='celery_test_api'),
     path('feedback/', views.FeedbackFeature.as_view(), name='feedback_api'),
+    path('ytstream/', views.STREAM_VIDEO_FR.as_view(), name='youtube_process'),
 
 ]
