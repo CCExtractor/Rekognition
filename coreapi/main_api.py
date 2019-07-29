@@ -9,9 +9,9 @@ from skimage.io import imread
 from werkzeug.utils import secure_filename
 from Rekognition.settings import MEDIA_ROOT
 from corelib.facenet.utils import (get_face, embed_image, save_embedding,
-                                   identify_face, allowed_file, time_dura, handle_uploaded_file, save_face)
+                                   identify_face, allowed_file, time_dura, handle_uploaded_file, save_face, img_standardize)
 from corelib.constant import (pnet, rnet, onet, facenet_persistent_session, phase_train_placeholder,
-                              embeddings, images_placeholder, image_size, allowed_set, embeddings_path, embedding_dict, Facial_expression_class_names)
+                              embeddings, images_placeholder, image_size, allowed_set, embeddings_path, embedding_dict, Facial_expression_class_names, nsfw_class_names)
 from .models import InputImage, InputVideo, InputEmbed
 import numpy as np
 import requests
@@ -59,6 +59,29 @@ def FaceExp(cropped_face):
     for key, value in zip(Facial_expression_class_names, predictions[0]):
         final_result[key] = value
     return final_result
+
+
+def nsfwClassifier(request, filename):
+
+    file_path = os.path.join(MEDIA_ROOT, 'images/' + filename)
+    handle_uploaded_file(request.FILES['file'], file_path)
+
+    img = imread(file_path)
+    img = resize(img, (64, 64), anti_aliasing=True)
+    if (img.shape[2] == 4):
+        img = img[..., :3]
+
+    data = np.asarray(img, dtype="float32")
+    data = img_standardize(data)
+    image_data = data.astype(np.float16, copy=False)
+    SERVER_URL = 'http://localhost:8501/v1/models/nsfw:predict'
+    jsonData = json.dumps({"inputs": [image_data.tolist()]})
+    response = requests.post(SERVER_URL, data=jsonData)
+    data = response.json()
+    outputs = data['outputs']
+    predict_result = {"classes": nsfw_class_names.get(outputs['classes'][0])}
+    predict_result['probabilities'] = {nsfw_class_names.get(i): l for i, l in enumerate(outputs['probabilities'][0])}
+    return predict_result
 
 
 def FaceRecogniseInImage(request, filename):

@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework import views, status
 from rest_framework.response import Response
 from corelib.facenet.utils import (getNewUniqueFileName)
-from .main_api import FaceRecogniseInImage, FaceRecogniseInVideo, createEmbedding, process_streaming_video
+from .main_api import FaceRecogniseInImage, FaceRecogniseInVideo, createEmbedding, process_streaming_video, nsfwClassifier
 from .serializers import EmbedSerializer, NameSuggestedSerializer
 from .models import InputEmbed, NameSuggested
 from rest_framework.views import APIView
@@ -28,6 +28,30 @@ class IMAGE_FR(views.APIView):
         if request.method == 'POST':
             filename = getNewUniqueFileName(request)
             result = FaceRecogniseInImage(request, filename)
+            if 'error' or 'Error' not in result:
+                return Response(result, status=status.HTTP_200_OK)
+            else:
+                return Response(str('error'), status=status.HTTP_400_BAD_REQUEST)
+        else:
+            Response(str('Bad GET Request'), status=status.HTTP_400_BAD_REQUEST)
+
+
+class NSFW_Recognise(views.APIView):
+    """     To recognise whether a image is nsfw or not
+
+    Workflow
+            *   if  POST method request is made, then initially a random filename is generated
+                and then nsfwClassifier method is called which process the image and outputs
+                the result containing the dictionary of probability of type of content in the image
+
+    Returns:
+            *   output dictionary of probability content in the image
+    """
+
+    def post(self, request):
+        if request.method == 'POST':
+            filename = getNewUniqueFileName(request)
+            result = nsfwClassifier(request, filename)
             if 'error' or 'Error' not in result:
                 return Response(result, status=status.HTTP_200_OK)
             else:

@@ -225,3 +225,10 @@ def getNewUniqueFileName(request):
 
 def saveImageInfoToDB(request, filename):
     pass
+
+
+def img_standardize(img):
+    mean = np.mean(img)
+    std = np.std(img)
+    img = (img - mean) / std
+    return img
