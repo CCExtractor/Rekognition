@@ -16,7 +16,7 @@ This project aims at providing a free alternative to Amazon Rekognition services
 To setup the project locally for development environment check this wiki [link](https://github.com/pymit/Rekognition/wiki/Project-Setup-in-Ubuntu-18.04)
 
 ## Communication
-Real-time communication for this project happens on slack channel of CCExtractor Development. You may join thi channel via this [link](https://ccextractor.org/public:general:support)
+Real-time communication for this project happens on slack channel of CCExtractor Development, channel [link](https://rhccgsoc15.slack.com/). You may join this channel via this [link](https://ccextractor.org/public:general:support)
 
 
 ---
