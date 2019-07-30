@@ -12,7 +12,7 @@ from corelib.facenet.utils import (get_face, embed_image, save_embedding,
                                    identify_face, allowed_file, time_dura, handle_uploaded_file, save_face, img_standardize)
 from corelib.constant import (pnet, rnet, onet, facenet_persistent_session, phase_train_placeholder,
                               embeddings, images_placeholder, image_size, allowed_set, embeddings_path, embedding_dict, Facial_expression_class_names, nsfw_class_names)
-from .models import InputImage, InputVideo, InputEmbed
+from .models import InputImage, InputVideo, InputEmbed, SimilarFaceInImage
 import numpy as np
 import requests
 from skimage.color import rgb2gray
@@ -375,6 +375,13 @@ def SimilarFace(request, filename):
     handle_uploaded_file(request.FILES['file'], file_path)
     handle_uploaded_file(request.FILES['compareImage'], file_folder + '/compareImage.jpg')
 
+    try:
+        # filepath = "/media/similarFace/" + str(filename.split('.')[0]) +'/'+'referenceImage.jpg'
+        file_form = SimilarFaceInImage(title=filename.split('.')[0])
+        file_form.save()
+    except Exception as e:
+        return (e)
+
     ref_img = request.FILES['file']
     com_img = request.FILES['compareImage']
 
@@ -387,6 +394,7 @@ def SimilarFace(request, filename):
         com_img = com_img[..., :3]
 
     ref_img_face, ref_img_bb = get_face(img=ref_img, pnet=pnet, rnet=rnet, onet=onet, image_size=image_size)
+    save_face(ref_img_face[0], file_folder, 'referenceImage')
     ref_face_embedding = embed_image(img=ref_img_face[0], session=facenet_persistent_session, images_placeholder=images_placeholder, embeddings=embeddings,
                                      phase_train_placeholder=phase_train_placeholder, image_size=image_size)
 
@@ -405,9 +413,11 @@ def SimilarFace(request, filename):
         id_name = identify_face(embedding=ref_face_embedding, embedding_dict=all_face_dict)
 
         if id_name != "Unknown":
-            return(True)
+            file_form.similarwith = id_name
+            file_form.save()
+            return({str(filename.split('.')[0]): True})
         else:
-            return(False)
+            return({str(filename.split('.')[0]): False})
 
     except Exception as e:
         return (e)

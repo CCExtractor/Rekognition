@@ -60,5 +60,5 @@ class SimilarFaceInImage(models.Model):
 
     def save(self, **kwargs):
         if not self.id:
-            self.id = "{}".format(self.fileurl.split('/')[-1].split('.')[0])
+            self.id = "{}".format(self.title)
         super().save(*kwargs)
