@@ -3,7 +3,7 @@ from rest_framework import views, status
 from rest_framework.response import Response
 from corelib.facenet.utils import (getNewUniqueFileName)
 from .main_api import FaceRecogniseInImage, FaceRecogniseInVideo, createEmbedding, process_streaming_video, nsfwClassifier, SimilarFace
-from .serializers import EmbedSerializer, NameSuggestedSerializer
+from .serializers import EmbedSerializer, NameSuggestedSerializer, SimilarFaceSerializer
 from .models import InputEmbed, NameSuggested
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -276,6 +276,11 @@ class STREAM_VIDEO_FR(views.APIView):
 
 
 class SIMILAR_FACE(views.APIView):
+
+    def get(self, request, *args, **kwargs):
+        SimilarFaceList = SimilarFaceInImage.objects.all()
+        serializer = SimilarFaceSerializer(SimilarFaceList, many=True)
+        return Response({'data': serializer.data})
 
     def post(self, request):
         if request.method == 'POST':
