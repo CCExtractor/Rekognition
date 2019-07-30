@@ -371,7 +371,6 @@ def SimilarFace(request, filename):
     if not os.path.exists(file_folder):
         os.makedirs(file_folder)
 
-    file_path = os.path.join(file_folder, filename)
     handle_uploaded_file(request.FILES['file'], file_folder + '/referenceImage.jpg')
     handle_uploaded_file(request.FILES['compareImage'], file_folder + '/compareImage.jpg')
 

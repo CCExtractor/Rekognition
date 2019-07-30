@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from corelib.facenet.utils import (getNewUniqueFileName)
 from .main_api import FaceRecogniseInImage, FaceRecogniseInVideo, createEmbedding, process_streaming_video, nsfwClassifier, SimilarFace
 from .serializers import EmbedSerializer, NameSuggestedSerializer, SimilarFaceSerializer
-from .models import InputEmbed, NameSuggested
+from .models import InputEmbed, NameSuggested, SimilarFaceInImage
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
 import asyncio
