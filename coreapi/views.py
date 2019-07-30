@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework import views, status
 from rest_framework.response import Response
 from corelib.facenet.utils import (getNewUniqueFileName)
-from .main_api import FaceRecogniseInImage, FaceRecogniseInVideo, createEmbedding, process_streaming_video, nsfwClassifier
+from .main_api import FaceRecogniseInImage, FaceRecogniseInVideo, createEmbedding, process_streaming_video, nsfwClassifier, SimilarFace
 from .serializers import EmbedSerializer, NameSuggestedSerializer
 from .models import InputEmbed, NameSuggested
 from rest_framework.views import APIView
@@ -267,6 +267,20 @@ class STREAM_VIDEO_FR(views.APIView):
             videoid = (str(streamlink).split('/')[-1]).split('\"')[0]
             ytlink = str("https://www.youtube.com/watch?v=" + str(videoid))
             result = process_streaming_video(ytlink, (videoid))
+            if 'error' or 'Error' not in result:
+                return Response(result, status=status.HTTP_200_OK)
+            else:
+                return Response(str('error'), status=status.HTTP_400_BAD_REQUEST)
+        else:
+            Response(str('Bad GET Request'), status=status.HTTP_400_BAD_REQUEST)
+
+
+class SIMILAR_FACE(views.APIView):
+
+    def post(self, request):
+        if request.method == 'POST':
+            filename = getNewUniqueFileName(request)
+            result = SimilarFace(request, filename)
             if 'error' or 'Error' not in result:
                 return Response(result, status=status.HTTP_200_OK)
             else:

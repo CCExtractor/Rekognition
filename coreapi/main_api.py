@@ -317,7 +317,7 @@ def createEmbedding(request, filename):
             if face is not None:
                 embedding = embed_image(img=face[0], session=facenet_persistent_session, images_placeholder=images_placeholder, embeddings=embeddings,
                                         phase_train_placeholder=phase_train_placeholder, image_size=image_size)
-                save_face(img=face[0], filename=unid)
+                save_face(img=face[0], where='face', filename=unid)
                 save_embedding(embedding=embedding, filename=filename, embeddings_path=embeddings_path)
 
                 return 'success'
@@ -363,4 +363,51 @@ def process_streaming_video(url, filename):
     files = {'file': open(file_dir, 'rb')}
     result = requests.post('http://localhost:8000/api/old_video/', files=files)
     return result
-    # FaceRecogniseInVideo(files,)
+
+
+def SimilarFace(request, filename):
+    file_folder = MEDIA_ROOT + '/' + 'similarFace' + '/' + str(filename.split('.')[0])
+
+    if not os.path.exists(file_folder):
+        os.makedirs(file_folder)
+
+    file_path = os.path.join(file_folder, filename)
+    handle_uploaded_file(request.FILES['file'], file_path)
+    handle_uploaded_file(request.FILES['compareImage'], file_folder + '/compareImage.jpg')
+
+    ref_img = request.FILES['file']
+    com_img = request.FILES['compareImage']
+
+    ref_img = imread(fname=ref_img, mode='RGB')
+    if (ref_img.shape[2] == 4):
+        ref_img = ref_img[..., :3]
+
+    com_img = imread(fname=com_img, mode='RGB')
+    if (com_img.shape[2] == 4):
+        com_img = com_img[..., :3]
+
+    ref_img_face, ref_img_bb = get_face(img=ref_img, pnet=pnet, rnet=rnet, onet=onet, image_size=image_size)
+    ref_face_embedding = embed_image(img=ref_img_face[0], session=facenet_persistent_session, images_placeholder=images_placeholder, embeddings=embeddings,
+                                     phase_train_placeholder=phase_train_placeholder, image_size=image_size)
+
+    try:
+        all_faces, all_bb = get_face(img=com_img, pnet=pnet, rnet=rnet, onet=onet, image_size=image_size)
+        all_face_dict = {}
+        if all_faces is not None:
+            face_no = 0
+            for img, bb in zip(all_faces, all_bb):
+                save_face(img=img, where=file_folder, filename=face_no)
+
+                embedding = embed_image(img=img, session=facenet_persistent_session, images_placeholder=images_placeholder, embeddings=embeddings,
+                                        phase_train_placeholder=phase_train_placeholder, image_size=image_size)
+                all_face_dict[face_no] = embedding
+                face_no += 1
+        id_name = identify_face(embedding=ref_face_embedding, embedding_dict=all_face_dict)
+
+        if id_name != "Unknown":
+            return(True)
+        else:
+            return(False)
+
+    except Exception as e:
+        return (e)
