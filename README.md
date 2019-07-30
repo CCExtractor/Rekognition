@@ -9,58 +9,14 @@ Google Summer Of Code 2019 Project under CCExtractor Development
 [![GPLv3 license](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/pymit/Rekognition/blob/master/LICENSE)
 
 ---
+This project aims at providing a free alternative to Amazon Rekognition services.
 
 
-Setting up the project locally
+## Setup
+To setup the project locally for development environment check this wiki [link](https://github.com/pymit/Rekognition/wiki/Project-Setup-in-Ubuntu-18.04)
 
-Run the following command to setup the virtualenv.
-```
-pip3 install virtualenv
-virtualenv -p python3 myenv  
-source myenv/bin/activate
-```
-Clone the repo
-```
-git clone https://github.com/pymit/Rekognition
-cd Rekognition
-pip3 install -r requirements.txt
-```
-
-
-* Setup postgres database
-	* Start postgresql by typing ```sudo service postgresql start```
-	* Now login as user postgres by running ```sudo -u postgres psql``` and type the commands below:
-
-        ```
-        CREATE DATABASE pmr;
-        CREATE USER admin WITH PASSWORD 'admin';
-        ALTER ROLE admin SET client_encoding TO 'utf8';
-        ALTER ROLE admin SET default_transaction_isolation TO 'read committed';
-        ALTER ROLE admin SET timezone TO 'UTC';
-        ALTER USER admin CREATEDB;
-        ALTER DATABASE pmr OWNER TO admin;
-        ```
-
-    * Exit psql by typing in \q and hitting enter.
-
-* Migrate
-
-    ```
-    python manage.py makemigrations
-    python manage.py migrate
-    ```
-* Staticfiles
-    ```
-    python manage.py collectstatic  --dry-run
-    ```
-
-You also need to install ffmpeg to be able to use scikit-video
-Start django application
-
-```
-python manage.py runserver 8000
-```
-Django app can be accessed at http://localhost:8000
+## Communication
+Real-time communication for this project happens on slack channel of CCExtractor Development. You may join thi channel via this [link](https://ccextractor.org/public:general:support)
 
 
 ---
