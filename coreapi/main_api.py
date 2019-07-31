@@ -416,7 +416,9 @@ def SimilarFace(request, filename):
             file_form.save()
             return([str(filename.split('.')[0]), id_name])
         else:
-            return([str(filename.split('.')[0]), False])
+            file_form.similarwith = "None"
+            file_form.save()
+            return([str(filename.split('.')[0]), "None"])
 
     except Exception as e:
         return (e)
