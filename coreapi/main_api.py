@@ -12,7 +12,7 @@ from corelib.facenet.utils import (get_face, embed_image, save_embedding,
                                    identify_face, allowed_file, time_dura, handle_uploaded_file, save_face, img_standardize)
 from corelib.constant import (pnet, rnet, onet, facenet_persistent_session, phase_train_placeholder,
                               embeddings, images_placeholder, image_size, allowed_set, embeddings_path, embedding_dict, Facial_expression_class_names, nsfw_class_names)
-from .models import InputImage, InputVideo, InputEmbed
+from .models import InputImage, InputVideo, InputEmbed, SimilarFaceInImage
 import numpy as np
 import requests
 from skimage.color import rgb2gray
@@ -317,7 +317,7 @@ def createEmbedding(request, filename):
             if face is not None:
                 embedding = embed_image(img=face[0], session=facenet_persistent_session, images_placeholder=images_placeholder, embeddings=embeddings,
                                         phase_train_placeholder=phase_train_placeholder, image_size=image_size)
-                save_face(img=face[0], filename=unid)
+                save_face(img=face[0], where='face', filename=unid)
                 save_embedding(embedding=embedding, filename=filename, embeddings_path=embeddings_path)
 
                 return 'success'
@@ -363,4 +363,62 @@ def process_streaming_video(url, filename):
     files = {'file': open(file_dir, 'rb')}
     result = requests.post('http://localhost:8000/api/old_video/', files=files)
     return result
-    # FaceRecogniseInVideo(files,)
+
+
+def SimilarFace(request, filename):
+    file_folder = MEDIA_ROOT + '/' + 'similarFace' + '/' + str(filename.split('.')[0])
+
+    if not os.path.exists(file_folder):
+        os.makedirs(file_folder)
+
+    handle_uploaded_file(request.FILES['file'], file_folder + '/referenceImage.jpg')
+    handle_uploaded_file(request.FILES['compareImage'], file_folder + '/compareImage.jpg')
+
+    try:
+        # filepath = "/media/similarFace/" + str(filename.split('.')[0]) +'/'+'referenceImage.jpg'
+        file_form = SimilarFaceInImage(title=filename.split('.')[0])
+        file_form.save()
+    except Exception as e:
+        return (e)
+
+    ref_img = request.FILES['file']
+    com_img = request.FILES['compareImage']
+
+    ref_img = imread(fname=ref_img, mode='RGB')
+    if (ref_img.shape[2] == 4):
+        ref_img = ref_img[..., :3]
+
+    com_img = imread(fname=com_img, mode='RGB')
+    if (com_img.shape[2] == 4):
+        com_img = com_img[..., :3]
+
+    ref_img_face, ref_img_bb = get_face(img=ref_img, pnet=pnet, rnet=rnet, onet=onet, image_size=image_size)
+    save_face(ref_img_face[0], file_folder, filename.split('.')[0])
+    ref_face_embedding = embed_image(img=ref_img_face[0], session=facenet_persistent_session, images_placeholder=images_placeholder, embeddings=embeddings,
+                                     phase_train_placeholder=phase_train_placeholder, image_size=image_size)
+
+    try:
+        all_faces, all_bb = get_face(img=com_img, pnet=pnet, rnet=rnet, onet=onet, image_size=image_size)
+        all_face_dict = {}
+        if all_faces is not None:
+            face_no = 0
+            for img, bb in zip(all_faces, all_bb):
+                save_face(img=img, where=file_folder, filename=face_no)
+
+                embedding = embed_image(img=img, session=facenet_persistent_session, images_placeholder=images_placeholder, embeddings=embeddings,
+                                        phase_train_placeholder=phase_train_placeholder, image_size=image_size)
+                all_face_dict[face_no] = embedding
+                face_no += 1
+        id_name = identify_face(embedding=ref_face_embedding, embedding_dict=all_face_dict)
+
+        if id_name != "Unknown":
+            file_form.similarwith = id_name
+            file_form.save()
+            return([str(filename.split('.')[0]), id_name])
+        else:
+            file_form.similarwith = "None"
+            file_form.save()
+            return([str(filename.split('.')[0]), "None"])
+
+    except Exception as e:
+        return (e)

@@ -47,3 +47,18 @@ class NameSuggested(models.Model):
 
     def __str__(self):
         return self.suggestedName
+
+
+class SimilarFaceInImage(models.Model):
+    id = models.CharField(primary_key=True, editable=False, max_length=50)
+    title = models.CharField(max_length=80)
+    similarwith = models.CharField(max_length=80)
+    created_on = models.DateTimeField(default=timezone.now, blank=True)
+
+    def __str__(self):
+        return self.id
+
+    def save(self, **kwargs):
+        if not self.id:
+            self.id = "{}".format(self.title)
+        super().save(*kwargs)
