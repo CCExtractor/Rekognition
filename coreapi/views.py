@@ -84,16 +84,25 @@ class VIDEO_FR(views.APIView):
             Response(str('Bad GET Request'), status=status.HTTP_400_BAD_REQUEST)
 
 
-class CREATE_EMBEDDING(views.APIView):
+class EMBEDDING(views.APIView):
     """     To create embedding of faces
 
     Workflow
+            *   if  GET method request is made, all the faceid are returned
+
             *   if  POST method request is made, then the file is sent to createEmbedding
                 to create the embedding
 
     Returns:
-            *   output whether it was successful or not
+            *   POST : output whether it was successful or not
+            *   GET  : List the data stored in database
     """
+    parser_classes = (MultiPartParser, FormParser)
+
+    def get(self, request, *args, **kwargs):
+        EmbedList = InputEmbed.objects.all()
+        serializer = EmbedSerializer(EmbedList, many=True)
+        return Response({'data': serializer.data})
 
     def post(self, request):
         if request.method == 'POST':
@@ -105,34 +114,6 @@ class CREATE_EMBEDDING(views.APIView):
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
         else:
             Response(str('Bad GET Request'), status=status.HTTP_400_BAD_REQUEST)
-
-
-class LIST_AVAILABLE_EMBEDDING_DETAILS(APIView):
-    """     To list the available embeddings or faceid
-
-    Workflow
-            *   if  GET method request is made, then the file is sent to createEmbedding
-                to create the embedding
-
-    Returns:
-            *   output list containing all the faceid and their details
-    """
-    parser_classes = (MultiPartParser, FormParser)
-
-    def get(self, request, *args, **kwargs):
-        EmbedList = InputEmbed.objects.all()
-        serializer = EmbedSerializer(EmbedList, many=True)
-        return Response({'data': serializer.data})
-
-    def post(self, request, *args, **kwargs):
-        pass
-        # Images_serializer = ImageSerializer(data=request.data)
-        # if Images_serializer.is_valid():
-        #     Images_serializer.save()
-        #     return Response(Images_serializer.data, status=status.HTTP_201_CREATED)
-        # else:
-        #     print('error', Images_serializer.errors)
-        #     return Response(Images_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class FeedbackFeature(APIView):
