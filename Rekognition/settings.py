@@ -37,12 +37,21 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'cceface.apps.CcefaceConfig',
     'django.contrib.staticfiles',
-    'rest_framework',
-    'coreapi',
+    'django.contrib.sites',
     'django_celery_beat',
     'django_celery_results',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
     'corsheaders',
+    'rest_auth',
+    'rest_auth.registration',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'coreapi',
 ]
+
+SITE_ID = 1
 
 CORS_ORIGIN_ALLOW_ALL = True
 
@@ -149,3 +158,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+ACCOUNT_EMAIL_VERIFICATION = 'none'
+ACCOUNT_AUTHENTICATION_METHOD = 'username'
+ACCOUNT_EMAIL_REQUIRED = 'false'
