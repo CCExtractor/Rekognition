@@ -8,7 +8,6 @@ class InputVideoTest(TestCase):
         InputVideo.objects.create(title='VideoUnittest', id=1)
         pass
 
-
     def test_video_object(self):
         expected_video_object = InputVideo.objects.get(id=1)
         expected_object_title = f'{expected_video_object.title}'
@@ -20,7 +19,6 @@ class InputImageTest(TestCase):
     def setUp(self):
         InputImage.objects.create(title='ImageUnittest', id=2)
         pass
-
 
     def test_image_object(self):
         expected_image_object = InputImage.objects.get(id=2)
