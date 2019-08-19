@@ -5,10 +5,9 @@ from coreapi.models import (InputVideo, InputImage)
 class InputVideoTest(TestCase):
 
     def setUp(self):
+        InputVideo.objects.create(title='VideoUnittest', id=1)
         pass
 
-    def create_video_object(self):
-        return InputVideo.objects.create(title='VideoUnittest', id=1)
 
     def test_video_object(self):
         expected_video_object = InputVideo.objects.get(id=1)
@@ -19,10 +18,9 @@ class InputVideoTest(TestCase):
 class InputImageTest(TestCase):
 
     def setUp(self):
+        InputImage.objects.create(title='ImageUnittest', id=2)
         pass
 
-    def create_image_object(self):
-        return InputImage.objects.create(title='ImageUnittest', id=2)
 
     def test_image_object(self):
         expected_image_object = InputImage.objects.get(id=2)
