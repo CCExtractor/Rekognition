@@ -39,10 +39,13 @@ before_script:
   - psql -U postgres -c "ALTER ROLE admin SET timezone TO 'UTC'"
   - psql -U postgres -c "ALTER USER admin CREATEDB"
   - psql -U postgres -c "ALTER DATABASE pmr OWNER TO admin"
+  - chmod +x download_model.sh
+  - ./download_model.sh
 
 script:
   - flake8 .
   - coverage run --source=coreapi/tests  ./manage.py test
+ge run --source=coreapi/tests  ./manage.py test
 
 after_success:
   - coveralls
