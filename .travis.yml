@@ -42,7 +42,7 @@ before_script:
 
 script:
   - flake8 .
-  - coverage run cceface/tests.py
+  - coverage run --source=coreapi/tests  ./manage.py test
 
 after_success:
   - coveralls
