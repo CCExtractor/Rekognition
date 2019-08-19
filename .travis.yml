@@ -45,7 +45,6 @@ before_script:
 script:
   - flake8 .
   - coverage run --source=coreapi/tests  ./manage.py test
-ge run --source=coreapi/tests  ./manage.py test
 
 after_success:
   - coveralls
