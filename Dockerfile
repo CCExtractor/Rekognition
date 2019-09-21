@@ -1,5 +1,4 @@
 FROM python:3.6
-RUN apt-get update -y && apt-get install apt-file -y && apt-file update -y && apt-get install -y python3-dev build-essential
 
 # set work directory
 WORKDIR /app
