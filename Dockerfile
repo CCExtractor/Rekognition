@@ -24,14 +24,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # install dependencies
 COPY ./requirements.txt .
 RUN pip install -r requirements.txt
-RUN pip install psycopg2
+
 
 # copy project
 COPY . .
 
 # add and run as non-root user
-RUN adduser -D myuser
-USER myuser
+# RUN adduser -D myuser
+# USER myuser
 
 # run gunicorn
 CMD gunicorn Rekognition.wsgi:application --bind 0.0.0.0:$PORT
