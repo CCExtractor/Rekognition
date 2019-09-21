@@ -16,3 +16,6 @@ __pycache__
 /coverage/
 .coverage
 .vscode
+*.pyc
+env/
+db.sqlite3
