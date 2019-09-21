@@ -1,4 +1,4 @@
-FROM python:3.7-alpine
+FROM python:3.6
 RUN apt-get update -y && apt-get install apt-file -y && apt-file update -y && apt-get install -y python3-dev build-essential
 
 # set work directory
@@ -10,15 +10,22 @@ ENV PYTHONUNBUFFERED 1
 ENV DEBUG 0
 
 # install psycopg2
-RUN apk update \
-    && apk add --virtual build-deps gcc python3-dev musl-dev \
-    && apk add postgresql-dev \
-    && pip install psycopg2 \
-    && apk del build-deps
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        tzdata \
+        python3-setuptools \
+        python3-pip \
+        python3-dev \
+        python3-venv \
+        git \
+        && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 
 # install dependencies
 COPY ./requirements.txt .
 RUN pip install -r requirements.txt
+RUN pip install psycopg2
 
 # copy project
 COPY . .
