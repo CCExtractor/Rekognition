@@ -24,6 +24,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # install dependencies
 COPY ./requirements.txt .
 RUN pip install -r requirements.txt
+
+COPY ./download_model.sh .
 RUN chmod +x download_model.sh
 RUN ./download_model.sh
 
