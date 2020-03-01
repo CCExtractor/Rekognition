@@ -17,7 +17,18 @@ To setup the project locally for development environment check this wiki [link](
 ## Communication
 Real-time communication for this project happens on slack channel of CCExtractor Development, channel [link](https://rhccgsoc15.slack.com/). You may join this channel via this [link](https://ccextractor.org/public:general:support)
 
+APIs Documentation [Link](https://rekoui.netlify.com/doc)
+
+
+This project uses Open Source components.
+
+[FaceNet](https://github.com/davidsandberg/facenet) License: MIT License
+
+MTCNN
+
 
 ---
 ## License
 This software is licensed under GNU GPLv3. Please see the included License file.
+
+
