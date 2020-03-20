@@ -111,9 +111,7 @@ def get_face(img, pnet, rnet, onet, image_size):
                 input_image_size, input_image_size), mode='RGB')
             all_faces.append(face_img)
             all_bb.append(bb)
-        return all_faces, all_bb
-    else:
-        return all_faces, all_bb
+    return all_faces, all_bb
 
 
 def embed_image(img, session, images_placeholder, phase_train_placeholder, embeddings, image_size):
