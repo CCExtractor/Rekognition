@@ -168,35 +168,9 @@ class FeedbackFeature(APIView):
             return Response(feedback_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-
-def make_box(filename,result):
-    fig,ax = plt.subplots(1)
-    img=ax.imshow(plt.imread('media/images/'+filename))
-    for box in list(result["Faces"].values()):
-        box=box["Bounding Boxes"]
-        rect = patches.Rectangle((box["left"],box["top"]),box["right"]-box["left"],box["bottom"]-box["top"],linewidth=1,edgecolor='r',facecolor='none')
-        ax.add_patch(rect)
-    
-    plt.savefig('media/images/out_'+filename)
-    
 
 
-def ImageWebUI(request):
-    if request.method == 'POST':
-        if 'file' not in request.FILES:
-            return render(request, '404.html')
-        else:
-            filename = getNewUniqueFileName(request)
-            result = FaceRecogniseInImage(request, filename)
 
-            if 'error' or 'Error' not in result:
-                make_box(filename,result)
-                return render(request, 'predict_result.html', {'Faces': result, 'imagefile': filename,'imagefilebb': 'out_'+filename})
-            else:
-                return render(request, 'predict_result.html', {'Faces': result, 'imagefile': filename})
-    else:
         return "POST HTTP method required!"
 
 
@@ -208,9 +182,9 @@ def VideoWebUI(request):
             filename = getNewUniqueFileName(request)
             result = FaceRecogniseInVideo(request, filename)
             if 'error' or 'Error' not in result:
-                return render(request, 'facevid_result.html', {'dura': result, 'videofile': filename})
+                return render(request, 'predict_result.html', {'Faces': result, 'imagefile': filename})
             else:
-                return render(request, 'facevid_result.html', {'dura': result, 'videofile': filename})
+                return render(request, 'predict_result.html', {'Faces': result, 'imagefile': filename})
     else:
         return "POST HTTP method required!"
 
