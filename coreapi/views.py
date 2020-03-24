@@ -15,25 +15,22 @@ import random
 class IMAGE_FR(views.APIView):
     """     To recognise faces in image
 
-    Workflow
+    Workflow\n
             *   if  POST method request is made, then initially a random filename is generated
                 and then FaceRecogniseInImage method is called which process the image and outputs
                 the result containing all the information about the faces available in the image.
 
-    Returns:
+    Returns\n
             *   output by FaceRecogniseInImage
     """
 
     def post(self, request):
-        if request.method == 'POST':
-            filename = getNewUniqueFileName(request)
-            result = FaceRecogniseInImage(request, filename)
-            if 'error' or 'Error' not in result:
-                return Response(result, status=status.HTTP_200_OK)
-            else:
-                return Response(str('error'), status=status.HTTP_400_BAD_REQUEST)
+        filename = getNewUniqueFileName(request)
+        result = FaceRecogniseInImage(request, filename)
+        if 'error' or 'Error' not in result:
+            return Response(result, status=status.HTTP_200_OK)
         else:
-            Response(str('Bad GET Request'), status=status.HTTP_400_BAD_REQUEST)
+            return Response(str('error'), status=status.HTTP_400_BAD_REQUEST)
 
 
 class NSFW_Recognise(views.APIView):
@@ -49,15 +46,13 @@ class NSFW_Recognise(views.APIView):
     """
 
     def post(self, request):
-        if request.method == 'POST':
-            filename = getNewUniqueFileName(request)
-            result = nsfwClassifier(request, filename)
-            if 'error' or 'Error' not in result:
-                return Response(result, status=status.HTTP_200_OK)
-            else:
-                return Response(str('error'), status=status.HTTP_400_BAD_REQUEST)
+
+        filename = getNewUniqueFileName(request)
+        result = nsfwClassifier(request, filename)
+        if 'error' or 'Error' not in result:
+            return Response(result, status=status.HTTP_200_OK)
         else:
-            Response(str('Bad GET Request'), status=status.HTTP_400_BAD_REQUEST)
+            return Response(str('error'), status=status.HTTP_400_BAD_REQUEST)
 
 
 class VIDEO_FR(views.APIView):
@@ -73,15 +68,12 @@ class VIDEO_FR(views.APIView):
     """
 
     def post(self, request):
-        if request.method == 'POST':
-            filename = getNewUniqueFileName(request)
-            result = FaceRecogniseInVideo(request, filename)
-            if 'error' or 'Error' not in result:
-                return Response(result, status=status.HTTP_200_OK)
-            else:
-                return Response(str('error'), status=status.HTTP_400_BAD_REQUEST)
+        filename = getNewUniqueFileName(request)
+        result = FaceRecogniseInVideo(request, filename)
+        if 'error' or 'Error' not in result:
+            return Response(result, status=status.HTTP_200_OK)
         else:
-            Response(str('Bad GET Request'), status=status.HTTP_400_BAD_REQUEST)
+            return Response(str('error'), status=status.HTTP_400_BAD_REQUEST)
 
 
 class EMBEDDING(views.APIView):
@@ -105,15 +97,12 @@ class EMBEDDING(views.APIView):
         return Response({'data': serializer.data})
 
     def post(self, request):
-        if request.method == 'POST':
-            filename = request.FILES['file'].name
-            result = createEmbedding(request, filename)
-            if 'success' in result:
-                return Response(result, status=status.HTTP_200_OK)
-            else:
-                return Response(result, status=status.HTTP_400_BAD_REQUEST)
+        filename = request.FILES['file'].name
+        result = createEmbedding(request, filename)
+        if 'success' in result:
+            return Response(result, status=status.HTTP_200_OK)
         else:
-            Response(str('Bad GET Request'), status=status.HTTP_400_BAD_REQUEST)
+            return Response(result, status=status.HTTP_400_BAD_REQUEST)
 
 
 class FeedbackFeature(APIView):
@@ -239,13 +228,10 @@ def AsyncThread(request, filename):
 
 class ASYNC_VIDEOFR(views.APIView):
     def post(self, request):
-        if request.method == 'POST':
-            filename = getNewUniqueFileName(request)
-            thread = Thread(target=AsyncThread, args=(request, filename))
-            thread.start()
-            return Response(str(filename.split('.')[0]), status=status.HTTP_200_OK)
-        else:
-            Response(str('Bad POST Request'), status=status.HTTP_400_BAD_REQUEST)
+        filename = getNewUniqueFileName(request)
+        thread = Thread(target=AsyncThread, args=(request, filename))
+        thread.start()
+        return Response(str(filename.split('.')[0]), status=status.HTTP_200_OK)
 
 
 class STREAM_VIDEO_FR(views.APIView):
@@ -260,17 +246,14 @@ class STREAM_VIDEO_FR(views.APIView):
     """
 
     def post(self, request):
-        if request.method == 'POST':
-            streamlink = request.data["StreamLink"]
-            videoid = (str(streamlink).split('/')[-1]).split('\"')[0]
-            ytlink = str("https://www.youtube.com/watch?v=" + str(videoid))
-            result = process_streaming_video(ytlink, (videoid))
-            if 'error' or 'Error' not in result:
-                return Response(result, status=status.HTTP_200_OK)
-            else:
-                return Response(str('error'), status=status.HTTP_400_BAD_REQUEST)
+        streamlink = request.data["StreamLink"]
+        videoid = (str(streamlink).split('/')[-1]).split('\"')[0]
+        ytlink = str("https://www.youtube.com/watch?v=" + str(videoid))
+        result = process_streaming_video(ytlink, (videoid))
+        if 'error' or 'Error' not in result:
+            return Response(result, status=status.HTTP_200_OK)
         else:
-            Response(str('Bad GET Request'), status=status.HTTP_400_BAD_REQUEST)
+            return Response(str('error'), status=status.HTTP_400_BAD_REQUEST)
 
 
 class SIMILAR_FACE(views.APIView):
@@ -281,12 +264,9 @@ class SIMILAR_FACE(views.APIView):
         return Response({'data': serializer.data})
 
     def post(self, request):
-        if request.method == 'POST':
-            filename = getNewUniqueFileName(request)
-            result = SimilarFace(request, filename)
-            if 'error' or 'Error' not in result:
-                return Response(result, status=status.HTTP_200_OK)
-            else:
-                return Response(str('error'), status=status.HTTP_400_BAD_REQUEST)
+        filename = getNewUniqueFileName(request)
+        result = SimilarFace(request, filename)
+        if 'error' or 'Error' not in result:
+            return Response(result, status=status.HTTP_200_OK)
         else:
-            Response(str('Bad GET Request'), status=status.HTTP_400_BAD_REQUEST)
+            return Response(str('error'), status=status.HTTP_400_BAD_REQUEST)

@@ -11,17 +11,17 @@ class InputVideo(models.Model):
     created_on = models.DateTimeField(default=timezone.now, blank=True)
 
     def __str__(self):
-        return self.id
+        return self.title
 
 
 class InputImage(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    title = models.CharField(max_length=80)
+    title = models.CharField(max_length=80,)
     isProcessed = models.BooleanField(default=False)
     created_on = models.DateTimeField(default=timezone.now, blank=True)
 
     def __str__(self):
-        return self.id
+        return self.title
 
 
 class InputEmbed(models.Model):
@@ -31,12 +31,12 @@ class InputEmbed(models.Model):
     created_on = models.DateTimeField(default=timezone.now, blank=True)
 
     def __str__(self):
-        return self.id
+        return self.title
 
     def save(self, **kwargs):
         if not self.id:
             self.id = "{}".format(self.fileurl.split('/')[-1].split('.')[0])
-        super().save(*kwargs)
+        super().save(**kwargs)
 
 
 class NameSuggested(models.Model):
@@ -56,9 +56,9 @@ class SimilarFaceInImage(models.Model):
     created_on = models.DateTimeField(default=timezone.now, blank=True)
 
     def __str__(self):
-        return self.id
+        return self.title
 
     def save(self, **kwargs):
         if not self.id:
             self.id = "{}".format(self.title)
-        super().save(*kwargs)
+        super().save(**kwargs)

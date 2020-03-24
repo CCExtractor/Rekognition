@@ -62,6 +62,30 @@ def FaceExp(cropped_face):
 
 
 def nsfwClassifier(request, filename):
+    """     NSFW classifier of images
+
+    Args:
+            *   request: Post https request containing a image file
+            *   filename: filename of the video
+
+    Workflow:
+            *   A numpy array of an image is taken as input (RGB). inference input dimension requires dimension of
+                (64,64,1) and therefore the RGB input is resized to the required input dimension.
+
+            *   Now the processed output is further processed to make it a json format which is compatible to TensorFlow
+                Serving input.
+
+            *   Then a http post request is made at localhost:8501 . The post request contain data and headers.
+
+            *   Incase of any exception, it return empty string.
+
+            *   output from TensorFlow Serving is then parsed and a dictionary is defined which keeps classes and probabilities
+                as the two keys. Value of Classes is the class with maximum probability and value of probabilities is a dictionary
+                of classes with their respective probabilities
+
+    Returns:
+            *   Dictionary having the class with maximum probability and probabilities of all classes.
+    """
 
     file_path = os.path.join(MEDIA_ROOT, 'images/' + filename)
     handle_uploaded_file(request.FILES['file'], file_path)
@@ -76,7 +100,11 @@ def nsfwClassifier(request, filename):
     image_data = data.astype(np.float16, copy=False)
     SERVER_URL = 'http://localhost:8501/v1/models/nsfw:predict'
     jsonData = json.dumps({"inputs": [image_data.tolist()]})
-    response = requests.post(SERVER_URL, data=jsonData)
+    try:
+        response = requests.post(SERVER_URL, data=jsonData)
+    except Exception as e:
+        print(e, "\n TensorFlow Serving is not working properly")
+        return " "
     data = response.json()
     outputs = data['outputs']
     predict_result = {"classes": nsfw_class_names.get(outputs['classes'][0])}
