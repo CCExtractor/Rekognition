@@ -136,9 +136,8 @@ def FaceRecogniseInImage(request, filename):
 
         try:
             all_faces, all_bb = get_face(img=img, pnet=pnet, rnet=rnet, onet=onet, image_size=image_size)
-            all_face_dict = {}
+            all_face_arr = []
             if all_faces is not None:
-                i=0
                 for img, bb in zip(all_faces, all_bb):
                     embedding = embed_image(img=img, session=facenet_persistent_session, images_placeholder=images_placeholder, embeddings=embeddings,
                                             phase_train_placeholder=phase_train_placeholder, image_size=image_size)
@@ -147,17 +146,17 @@ def FaceRecogniseInImage(request, filename):
                         id_name = identify_face(embedding=embedding, embedding_dict=embedding_dict)
                         facial_expression = FaceExp(img)
                         bounding_box = {"top": bb[1], "bottom": bb[3], "left": bb[0], "right": bb[2]}
-                        all_face_dict[id_name+'_'+str(i)] = {"Bounding Boxes": bounding_box, "Facial Expression": facial_expression}
-                        i+=1
+                        face_dict = {"Identity": id_name, "Bounding Boxes": bounding_box, "Facial Expression": facial_expression, }
+                        all_face_arr.append(face_dict)
                 # try:
                 #     with open(os.path.join(MEDIA_ROOT, 'output/image',filename.split('.')[0]+'.json'), 'w') as fp:
-                #         json.dump(all_face_dict, fp)
+                #         json.dump(all_face_arr, fp)
                 # except Exception as e:
                 #     print(e)
                     # pass
                 file_form.isProcessed = True
                 file_form.save()
-                return {"Faces": all_face_dict}
+                return {"Faces": all_face_arr}
             else:
                 return 'error no faces'
         except Exception as e:
