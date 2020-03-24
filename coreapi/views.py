@@ -168,9 +168,19 @@ class FeedbackFeature(APIView):
             return Response(feedback_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+def ImageWebUI(request):
+    if request.method == 'POST':
+        if 'file' not in request.FILES:
+            return render(request, '404.html')
+        else:
+            filename = getNewUniqueFileName(request)
+            result = FaceRecogniseInImage(request, filename)
 
-
-
+            if 'error' or 'Error' not in result:
+                return render(request, 'predict_result.html', {'Faces': result, 'imagefile': filename})
+            else:
+                return render(request, 'predict_result.html', {'Faces': result, 'imagefile': filename})
+    else:
         return "POST HTTP method required!"
 
 
@@ -182,9 +192,9 @@ def VideoWebUI(request):
             filename = getNewUniqueFileName(request)
             result = FaceRecogniseInVideo(request, filename)
             if 'error' or 'Error' not in result:
-                return render(request, 'predict_result.html', {'Faces': result, 'imagefile': filename})
+                return render(request, 'facevid_result.html', {'dura': result, 'videofile': filename})
             else:
-                return render(request, 'predict_result.html', {'Faces': result, 'imagefile': filename})
+                return render(request, 'facevid_result.html', {'dura': result, 'videofile': filename})
     else:
         return "POST HTTP method required!"
 
