@@ -17,9 +17,7 @@ import numpy as np
 import requests
 from skimage.color import rgb2gray
 from skimage.transform import resize
-
 from coreapi.serializers import IMAGE_FR_NETWORK_CHOICES
-
 from corelib.RetinaFace.retina_net import FaceDetectionRetina
 
 
