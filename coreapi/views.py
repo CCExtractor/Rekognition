@@ -37,7 +37,6 @@ class IMAGE_FR(views.APIView):
 
         if image_serializer.is_valid():
             network = image_serializer.data["network"]
-
             result = FaceRecogniseInImage(request, filename, network)
             if 'error' or 'Error' not in result:
                 return Response(result, status=status.HTTP_200_OK)

@@ -201,6 +201,7 @@ def FaceRecogniseInImage(request, filename, network):
                 return 'error no faces'
         except Exception as e:
             raise e
+            return 'error occured'
     else:
         return {"Error": 'bad file format'}
 
