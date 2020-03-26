@@ -18,7 +18,9 @@ import requests
 from skimage.color import rgb2gray
 from skimage.transform import resize
 
-from coreapi.retina_net import FaceDetectionRetina
+from coreapi.serializers import IMAGE_FR_NETWORK_CHOICES
+
+from corelib.RetinaFace.retina_net import FaceDetectionRetina
 
 
 def FaceExp(cropped_face):
@@ -114,12 +116,13 @@ def nsfwClassifier(request, filename):
     return predict_result
 
 
-def FaceRecogniseInImage(request, filename):
+def FaceRecogniseInImage(request, filename, network):
     """     Face Recognition in image
 
     Args:
             *   request: Post https request containing a image file
             *   filename: filename of the video
+            *   network: The network architecture to be used for face detection
 
     Workflow:
             *   Image file is first saved into images which is subfolder of MEDIA_ROOT directory.
@@ -165,10 +168,14 @@ def FaceRecogniseInImage(request, filename):
             img = img[..., :3]
 
         try:
-            all_faces, all_bb = get_face(img=img, pnet=pnet, rnet=rnet, onet=onet, image_size=image_size)
-            all_face_arr = []
 
-            retinanet_response,_ = FaceDetectionRetina().predict(file_path)
+            if network == IMAGE_FR_NETWORK_CHOICES[0]:
+                all_faces, all_bb = FaceDetectionRetina().get_face(file_path)
+
+            else:
+                all_faces, all_bb = get_face(img=img, pnet=pnet, rnet=rnet, onet=onet, image_size=image_size)
+
+            all_face_arr = []
 
             if all_faces is not None:
                 for img, bb in zip(all_faces, all_bb):
@@ -190,12 +197,12 @@ def FaceRecogniseInImage(request, filename):
                     # pass
                 file_form.isProcessed = True
                 file_form.save()
-                return {"Faces": all_face_arr, "RetinaNet": retinanet_response}
+                return {"Faces": all_face_arr, }
 
             else:
                 return 'error no faces'
         except Exception as e:
-            return e
+            raise e
     else:
         return {"Error": 'bad file format'}
 

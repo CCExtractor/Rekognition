@@ -3,6 +3,7 @@ import cv2
 import os
 import numpy as np
 import json
+from scipy.misc import imresize, imsave
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -118,11 +119,43 @@ class FaceDetectionRetina(object):
             }
         }
 
-    def predict(self, file):
-        """   Returns the bounding box coordinates along with the resultant image    """
+    def get_face(self, file):
+        """ to get the face from the image
+
+        Args:
+            img: image file
+        Returns:
+            numpy arrays of faces and corresponding faces
+
+        """
+        size = (160, 160)
         img_raw = cv2.imread(file)
         img_height_raw, img_width_raw, _ = img_raw.shape
         img = np.float32(img_raw.copy())
+
+        prediction, _ = self.predict(img)
+        print("Number of Faces from Predict " + str(len(prediction)))
+        all_faces = []
+        all_bb = []
+
+        if not len(prediction) == 0:
+            for face in prediction:
+                face = face["Bounding Boxes"]
+
+                bb = np.zeros(4, dtype=np.int32)
+                bb[0] = int(face["x1"])
+                bb[1] = int(face["y1"])
+                bb[2] = int(face["x2"])
+                bb[3] = int(face["y2"])
+                cropped = img[bb[1]:bb[3], bb[0]: bb[2], :]
+                face_img = imresize(arr=cropped, size=size, mode='RGB')
+                all_faces.append(face_img)
+                all_bb.append(bb)
+        return all_faces, all_bb
+
+    def predict(self, img):
+        """   Returns the bounding box coordinates along with the resultant image    """
+        img_height_raw, img_width_raw, _ = img.shape
         if self.down_scale_factor < 1.0:
             img = cv2.resize(img, (0, 0), fx=self.down_scale_factor,
                              fy=self.down_scale_factor,
@@ -148,8 +181,8 @@ class FaceDetectionRetina(object):
         processed_outputs = []
         for prior_index in range(len(outputs)):
             self._draw_bbox_landm(
-                img_raw, outputs[prior_index], img_height_raw, img_width_raw)
+                img, outputs[prior_index], img_height_raw, img_width_raw)
             processed_outputs.append(
                 self._process_outputs(outputs[prior_index], img_height_raw, img_width_raw))
             # cv2.imwrite(save_img_path, img_raw)
-        return processed_outputs, img_raw
+        return processed_outputs, img
