@@ -175,6 +175,7 @@ def ImageWebUI(request):
         else:
             filename = getNewUniqueFileName(request)
             result = FaceRecogniseInImage(request, filename)
+
             if 'error' or 'Error' not in result:
                 return render(request, 'predict_result.html', {'Faces': result, 'imagefile': filename})
             else:

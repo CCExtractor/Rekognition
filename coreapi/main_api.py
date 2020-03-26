@@ -191,6 +191,7 @@ def FaceRecogniseInImage(request, filename):
                 file_form.isProcessed = True
                 file_form.save()
                 return {"Faces": all_face_arr, "RetinaNet": retinanet_response}
+
             else:
                 return 'error no faces'
         except Exception as e:
