@@ -17,6 +17,8 @@ import numpy as np
 import requests
 from skimage.color import rgb2gray
 from skimage.transform import resize
+from coreapi.serializers import IMAGE_FR_NETWORK_CHOICES
+from corelib.RetinaFace.retina_net import FaceDetectionRetina
 
 
 def FaceExp(cropped_face):
@@ -112,12 +114,13 @@ def nsfwClassifier(request, filename):
     return predict_result
 
 
-def FaceRecogniseInImage(request, filename):
+def FaceRecogniseInImage(request, filename, network):
     """     Face Recognition in image
 
     Args:
             *   request: Post https request containing a image file
             *   filename: filename of the video
+            *   network: The network architecture to be used for face detection
 
     Workflow:
             *   Image file is first saved into images which is subfolder of MEDIA_ROOT directory.
@@ -163,8 +166,15 @@ def FaceRecogniseInImage(request, filename):
             img = img[..., :3]
 
         try:
-            all_faces, all_bb = get_face(img=img, pnet=pnet, rnet=rnet, onet=onet, image_size=image_size)
+
+            if network == IMAGE_FR_NETWORK_CHOICES[0]:
+                all_faces, all_bb = FaceDetectionRetina().get_face(file_path)
+
+            else:
+                all_faces, all_bb = get_face(img=img, pnet=pnet, rnet=rnet, onet=onet, image_size=image_size)
+
             all_face_arr = []
+
             if all_faces is not None:
                 for img, bb in zip(all_faces, all_bb):
                     embedding = embed_image(img=img, session=facenet_persistent_session, images_placeholder=images_placeholder, embeddings=embeddings,
@@ -173,6 +183,7 @@ def FaceRecogniseInImage(request, filename):
                     if embedding_dict:
                         id_name = identify_face(embedding=embedding, embedding_dict=embedding_dict)
                         facial_expression = FaceExp(img)
+
                         bounding_box = {"top": bb[1], "bottom": bb[3], "left": bb[0], "right": bb[2]}
                         face_dict = {"Identity": id_name, "Bounding Boxes": bounding_box, "Facial Expression": facial_expression, }
                         all_face_arr.append(face_dict)
@@ -184,11 +195,13 @@ def FaceRecogniseInImage(request, filename):
                     # pass
                 file_form.isProcessed = True
                 file_form.save()
-                return {"Faces": all_face_arr}
+                return {"Faces": all_face_arr, }
+
             else:
                 return 'error no faces'
         except Exception as e:
-            return e
+            raise e
+            return 'error occured'
     else:
         return {"Error": 'bad file format'}
 

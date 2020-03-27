@@ -3,7 +3,7 @@ from rest_framework import views, status
 from rest_framework.response import Response
 from corelib.facenet.utils import (getNewUniqueFileName)
 from .main_api import FaceRecogniseInImage, FaceRecogniseInVideo, createEmbedding, process_streaming_video, nsfwClassifier, SimilarFace
-from .serializers import EmbedSerializer, NameSuggestedSerializer, SimilarFaceSerializer
+from .serializers import EmbedSerializer, NameSuggestedSerializer, SimilarFaceSerializer, IMAGE_FRSerializers
 from .models import InputEmbed, NameSuggested, SimilarFaceInImage
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -24,13 +24,24 @@ class IMAGE_FR(views.APIView):
             *   output by FaceRecogniseInImage
     """
 
+    serializer = IMAGE_FRSerializers
+
+    def get(self, request):
+
+        serializer = self.serializer()
+        return Response(serializer.data)
+
     def post(self, request):
+        image_serializer = self.serializer(data=request.data)
         filename = getNewUniqueFileName(request)
-        result = FaceRecogniseInImage(request, filename)
-        if 'error' or 'Error' not in result:
-            return Response(result, status=status.HTTP_200_OK)
-        else:
-            return Response(str('error'), status=status.HTTP_400_BAD_REQUEST)
+
+        if image_serializer.is_valid():
+            network = image_serializer.data["network"]
+            result = FaceRecogniseInImage(request, filename, network)
+            if 'error' or 'Error' not in result:
+                return Response(result, status=status.HTTP_200_OK)
+
+        return Response(str('error'), status=status.HTTP_400_BAD_REQUEST)
 
 
 class NSFW_Recognise(views.APIView):
@@ -150,7 +161,7 @@ class FeedbackFeature(APIView):
 
     def post(self, request, *args, **kwargs):
         request.data._mutable = True
-        # print(request.data)
+
         feedbackModel = InputEmbed.objects.get(id=request.data["feedback_id"])
         request.data["feedback"] = feedbackModel
         feedback_serializer = NameSuggestedSerializer(data=request.data)
