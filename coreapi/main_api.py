@@ -47,7 +47,7 @@ def FaceExp(cropped_face):
             *   Dictionary having all the faces and corresponding facial expression and it's values.
     """
     img = rgb2gray(cropped_face)
-    raw_img = resize(img, (48, 48, 1), anti_aliasing=True) / 255.0
+    raw_img = resize(img, (48, 48, 1), anti_aliasing=True, mode='constant') / 255.0
     img = np.expand_dims(raw_img, 0)
     data = json.dumps({"signature_name": "serving_default", "instances": img.tolist()})
     try:
@@ -93,7 +93,7 @@ def nsfwClassifier(request, filename):
     handle_uploaded_file(request.FILES['file'], file_path)
 
     img = imread(file_path)
-    img = resize(img, (64, 64), anti_aliasing=True)
+    img = resize(img, (64, 64), anti_aliasing=True, mode='constant')
     if (img.shape[2] == 4):
         img = img[..., :3]
 
@@ -435,6 +435,8 @@ def SimilarFace(request, filename):
         com_img = com_img[..., :3]
 
     ref_img_face, ref_img_bb = get_face(img=ref_img, pnet=pnet, rnet=rnet, onet=onet, image_size=image_size)
+    if not ref_img_face:
+        return([str(filename.split('.')[0]), "No Face in reference image"])
     save_face(ref_img_face[0], file_folder, filename.split('.')[0])
     ref_face_embedding = embed_image(img=ref_img_face[0], session=facenet_persistent_session, images_placeholder=images_placeholder, embeddings=embeddings,
                                      phase_train_placeholder=phase_train_placeholder, image_size=image_size)
