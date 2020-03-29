@@ -435,6 +435,8 @@ def SimilarFace(request, filename):
         com_img = com_img[..., :3]
 
     ref_img_face, ref_img_bb = get_face(img=ref_img, pnet=pnet, rnet=rnet, onet=onet, image_size=image_size)
+    if not ref_img_face:
+        return([str(filename.split('.')[0]), "No Face in reference image"])
     save_face(ref_img_face[0], file_folder, filename.split('.')[0])
     ref_face_embedding = embed_image(img=ref_img_face[0], session=facenet_persistent_session, images_placeholder=images_placeholder, embeddings=embeddings,
                                      phase_train_placeholder=phase_train_placeholder, image_size=image_size)
