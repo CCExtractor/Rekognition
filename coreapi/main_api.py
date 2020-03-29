@@ -5,6 +5,7 @@ import json
 import skvideo.io
 import subprocess
 import shlex
+import cv2
 from skimage.io import imread
 from werkzeug.utils import secure_filename
 from Rekognition.settings import MEDIA_ROOT
@@ -46,13 +47,14 @@ def FaceExp(cropped_face):
     Returns:
             *   Dictionary having all the faces and corresponding facial expression and it's values.
     """
-    img = rgb2gray(cropped_face)
-    raw_img = resize(img, (48, 48, 1), anti_aliasing=True, mode='constant') / 255.0
-    img = np.expand_dims(raw_img, 0)
+    img = cv2.resize(cropped_face, (100, 100), interpolation=cv2.INTER_AREA)
+    img = np.array(img).reshape((1, 100, 100, 3))
+    img = img / 255
     data = json.dumps({"signature_name": "serving_default", "instances": img.tolist()})
     try:
         headers = {"content-type": "application/json"}
         json_response = requests.post('http://localhost:8501/v1/models/fer2013:predict', data=data, headers=headers)
+        print(json.loads(json_response.text))
     except Exception as e:
         print(e, "\n TensorFlow Serving is not working properly")
         return " "
