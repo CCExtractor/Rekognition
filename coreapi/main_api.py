@@ -30,7 +30,7 @@ def FaceExp(cropped_face):
 
     Workflow:
             *   A numpy array of a cropped face is taken as input (RGB). inference input dimension requires
-                a dimension of (1,48,48,1) therefore the RGB input is first converted to grayscale image followed by
+                a dimension of (1,100,100,3) therefore the RGB input is first converted to grayscale image followed by
                 normalizing and resizing the required input dimension.
 
             *   Now the processed output is further processed to make it a json format which is compatible to TensorFlow
@@ -396,13 +396,11 @@ def stream_video_download(url, filename):
 
 def process_streaming_video(url, filename):
     output_dir = "{}/{}/".format(MEDIA_ROOT, 'videos')
-    command = "youtube-dl -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4'  \"{}\" -o {}.mp4".format(url, filename)
     try:
-        download = subprocess.Popen(shlex.split(command), cwd=output_dir)
-        download.wait()
-
+        stream_video_download(url, filename)
     except Exception as e:
         return e
+
     file_dir = os.path.join(output_dir, filename + '.mp4')
     files = {'file': open(file_dir, 'rb')}
     result = requests.post('http://localhost:8000/api/old_video/', files=files)
@@ -410,6 +408,42 @@ def process_streaming_video(url, filename):
 
 
 def SimilarFace(request, filename):
+   """     Face Recognition in image
+
+    Args:
+            *   request: Post https request containing a image file
+            *   filename: filename of the image
+
+    Workflow:
+            *   Image folder is created inside similarFace which is subfolder of MEDIA_ROOT directory.
+
+			*	Reference file and Compare file are saved similarFace folder
+
+            *   Bounding boxes of faces are found in reference image using get_face
+
+			*	If no faces are present in reference image return error
+
+            *   Else, save face with highest confidence in the current folder
+
+            *   Then, generate embedding of the face found above using embed_image
+
+            *   Bounding boxes of faces are found in compare image using get_face
+
+			*	If no faces are present in reference image return error
+
+			*	Else, save all faces in the current folder
+
+			*	Then, generate embedding of every image using embed_image and compare embedding of each image
+				with reference image using identify_face
+
+			*	If match is found return the request string along with the id of the image
+
+			*	else, return the request string along with "None"
+
+
+    Returns:
+            *   Dictionary having all the faces and corresponding bounding boxes with facial expression
+    """
     file_folder = MEDIA_ROOT + '/' + 'similarFace' + '/' + str(filename.split('.')[0])
 
     if not os.path.exists(file_folder):
