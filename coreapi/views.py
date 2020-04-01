@@ -252,6 +252,16 @@ class STREAM_VIDEO_FR(views.APIView):
 
 
 class SIMILAR_FACE(views.APIView):
+    """     To recognise similar faces in two images
+
+    Workflow
+            *   if  POST method request is made, then initially a random filename is generated
+                and then SimilarFace method is called which process the image and outputs
+                the result containing the dictionary of file name and image id of matched face
+
+    Returns:
+            *   output by SimilarFace
+    """
 
     def get(self, request, *args, **kwargs):
         SimilarFaceList = SimilarFaceInImage.objects.all()
