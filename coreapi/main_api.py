@@ -408,7 +408,7 @@ def process_streaming_video(url, filename):
 
 
 def SimilarFace(request, filename):
-   """     Face Recognition in image
+    """     Face Recognition in image
 
     Args:
             *   request: Post https request containing a image file
