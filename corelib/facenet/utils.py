@@ -93,8 +93,11 @@ def get_face(img, pnet, rnet, onet, image_size):
     margin = 44
     input_image_size = image_size
     img_size = np.asarray(img.shape)[0:2]
-    bounding_boxes, _ = detect_face.detect_face(
-        img=img, minsize=minsize, pnet=pnet, rnet=rnet, onet=onet, threshold=threshold, factor=factor)
+    bounding_boxes, _ = detect_face.detect_face(img=img, minsize=minsize,
+                                                pnet=pnet, rnet=rnet,
+                                                onet=onet,
+                                                threshold=threshold,
+                                                factor=factor)
     all_faces = []
     all_bb = []
 
@@ -117,7 +120,8 @@ def get_face(img, pnet, rnet, onet, image_size):
 def embed_image(img, session, images_placeholder, phase_train_placeholder, embeddings, image_size):
     if img is not None:
         image = load_img(img=img, do_random_crop=False,
-                         do_random_flip=False, do_prewhiten=True, image_size=image_size)
+                         do_random_flip=False, do_prewhiten=True,
+                         image_size=image_size)
         feed_dict = {images_placeholder: image, phase_train_placeholder: False}
         embedding = session.run(embeddings, feed_dict=feed_dict)
         return embedding
@@ -187,8 +191,8 @@ def time_dura(dict_data, gap):
                 pre_time_stamp = round(dict_data[name][x], 2)
                 post_time_stamp = round(dict_data[name][y], 2)
                 if(abs(post_time_stamp - pre_time_stamp) > gap):
-                    new_list.append(
-                        (round(dict_data[name][z] / 1000, 2), round(dict_data[name][x] / 1000, 2)))
+                    new_list.append((round(dict_data[name][z] / 1000, 2),
+                                     round(dict_data[name][x] / 1000, 2)))
                     z = x + 1
                     x = y
                     y += 1
@@ -200,8 +204,8 @@ def time_dura(dict_data, gap):
             except Exception:
                 pass
 
-        new_list.append(
-            (round(dict_data[name][z] / 1000, 2), round(dict_data[name][-1] / 1000, 2)))
+        new_list.append((round(dict_data[name][z] / 1000, 2),
+                         round(dict_data[name][-1] / 1000, 2)))
 
         for xx in new_list:
             result[name].append((xx[0], xx[1]))

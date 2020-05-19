@@ -2,8 +2,11 @@ from django.shortcuts import render
 from rest_framework import views, status
 from rest_framework.response import Response
 from corelib.facenet.utils import (getNewUniqueFileName)
-from .main_api import FaceRecogniseInImage, FaceRecogniseInVideo, createEmbedding, process_streaming_video, nsfwClassifier, SimilarFace
-from .serializers import EmbedSerializer, NameSuggestedSerializer, SimilarFaceSerializer, IMAGE_FRSerializers
+from .main_api import (FaceRecogniseInImage, FaceRecogniseInVideo,
+                       createEmbedding, process_streaming_video,
+                       nsfwClassifier, SimilarFace)
+from .serializers import (EmbedSerializer, NameSuggestedSerializer,
+                          SimilarFaceSerializer, IMAGE_FRSerializers)
 from .models import InputEmbed, NameSuggested, SimilarFaceInImage
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -16,9 +19,11 @@ class IMAGE_FR(views.APIView):
     """     To recognise faces in image
 
     Workflow\n
-            *   if  POST method request is made, then initially a random filename is generated
-                and then FaceRecogniseInImage method is called which process the image and outputs
-                the result containing all the information about the faces available in the image.
+            *   if  POST method request is made, then initially a random
+                filename is generated and then FaceRecogniseInImage method
+                is called which process the image and outputs the result
+                containing all the information about the faces available
+                in the image.
 
     Returns\n
             *   output by FaceRecogniseInImage
@@ -48,9 +53,11 @@ class NSFW_Recognise(views.APIView):
     """     To recognise whether a image is nsfw or not
 
     Workflow
-            *   if  POST method request is made, then initially a random filename is generated
-                and then nsfwClassifier method is called which process the image and outputs
-                the result containing the dictionary of probability of type of content in the image
+            *   if  POST method request is made, then initially a random
+                filename is generated and then nsfwClassifier method is
+                called which process the image and outputs the result
+                containing the dictionary of probability of type of content
+                in the image
 
     Returns:
             *   output dictionary of probability content in the image
@@ -70,9 +77,11 @@ class VIDEO_FR(views.APIView):
     """     To recognise faces in video
 
     Workflow
-            *   if  POST method request is made, then initially a random filename is generated
-                and then FaceRecogniseInVideo method is called which process the video and outputs
-                the result containing all the information about the faces available in the video.
+            *   if  POST method request is made, then initially a random
+                filename is generated and then FaceRecogniseInVideo method
+                is called which process the video and outputs the result
+                containing all the information about the faces available
+                in the video.
 
     Returns:
             *   output by FaceRecogniseInVideo
@@ -93,8 +102,8 @@ class EMBEDDING(views.APIView):
     Workflow
             *   if  GET method request is made, all the faceid are returned
 
-            *   if  POST method request is made, then the file is sent to createEmbedding
-                to create the embedding
+            *   if  POST method request is made, then the file is sent to
+                createEmbedding to create the embedding
 
     Returns:
             *   POST : output whether it was successful or not
@@ -120,24 +129,35 @@ class FeedbackFeature(APIView):
     """     Feedback feature
 
     Workflow
-            *   if  GET method request is made, then first all the embeddings objects are loaded
-                followed by randomly selecting anyone of them.
+            *   if GET method request is made, then first all the embeddings
+                objects are loaded followed by randomly selecting anyone
+                of them.
 
-            *   with the help of id of the randomly selected object , an attempt is made to get the object
-                available in NameSuggested model. If the object is available then it is selected else a new
-                object is created in NameSuggested model .
+            *   with the help of id of the randomly selected object,
+                an attempt is made to get object available in NameSuggested
+                model. If the object is available then it is selected else
+                a new object is created in NameSuggested model .
 
-            *   All the objects having the ids are fetched and serialized and then passed to reponse the request.
+            *   All the objects having the ids are fetched and serialized and
+                then passed to reponse the request.
 
-            *   if POST method request is made, then first the received data is made mutable so later the embedding object can be included in the data.
+            *   if POST method request is made, then first the received data
+                is made mutable so later the embedding object can be included
+                in the data.
 
-            *   With the help of id contained in the POST request embedding object is fetched and attached to the data followed by serializing it , Now here
-                is a catch, How the POST request know the id which is present in the database? This is actually answered by the GET request. When GET request is
-                made it sends a feedback_id which is used to make POST request when ever a new name is suggested to the faceid.
+            *   With the help of id contained in the POST request embedding
+                object is fetched and attached to the data followed by
+                serializing it , Now here is a catch, How the POST request
+                know the id which is present in the database? This is actually
+                answered by the GET request. When GET request is made it sends
+                a feedback_id which is used to make POST request when ever a
+                new name is suggested to the faceid.
 
-            *   So, if the there is any action on already available NameSuggested object i.e. upvote or downvote then the object is updated
-                in the database else a new object is made with the same id having upvote = downvote = 0.
-                Here don't mix id and primary key. Primary key in this case is different than this id.
+            *   So, if there is any action on already available NameSuggested
+                object i.e. upvote or downvote then the object is updated in
+                the database else a new object is made with the same id having
+                upvote = downvote = 0. Here don't mix id and primary key.
+                Primary key in this case is different than this id.
 
 
     """
@@ -151,12 +171,14 @@ class FeedbackFeature(APIView):
         except NameSuggested.MultipleObjectsReturned:
             pass
         except NameSuggested.DoesNotExist:
-            nameSuggestedObject = NameSuggested.objects.create(suggestedName=randomFaceObject.title, feedback=randomFaceObject)
+            nameSuggestedObject = NameSuggested.objects.create(suggestedName=randomFaceObject.title,
+                                                               feedback=randomFaceObject)
             nameSuggestedObject.save()
 
         nameSuggestedList = NameSuggested.objects.filter(feedback_id=randomFaceObject.id)
         serializer = NameSuggestedSerializer(nameSuggestedList, many=True)
-        result = {'data': serializer.data, 'fileurl': randomFaceObject.fileurl}
+        result = {'data': serializer.data,
+                  'fileurl': randomFaceObject.fileurl}
         return Response(result)
 
     def post(self, request, *args, **kwargs):
@@ -173,10 +195,12 @@ class FeedbackFeature(APIView):
                 obj.save()
             except NameSuggested.DoesNotExist:
                 feedback_serializer.save()
-            return Response(feedback_serializer.data, status=status.HTTP_201_CREATED)
+            return Response(feedback_serializer.data,
+                            status=status.HTTP_201_CREATED)
         else:
             print('error', feedback_serializer.errors)
-            return Response(feedback_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(feedback_serializer.errors,
+                            status=status.HTTP_400_BAD_REQUEST)
 
 
 def ImageWebUI(request):
@@ -188,9 +212,11 @@ def ImageWebUI(request):
             result = FaceRecogniseInImage(request, filename)
 
             if 'error' or 'Error' not in result:
-                return render(request, 'predict_result.html', {'Faces': result, 'imagefile': filename})
+                return render(request, 'predict_result.html',
+                              {'Faces': result, 'imagefile': filename})
             else:
-                return render(request, 'predict_result.html', {'Faces': result, 'imagefile': filename})
+                return render(request, 'predict_result.html',
+                              {'Faces': result, 'imagefile': filename})
     else:
         return "POST HTTP method required!"
 
@@ -203,9 +229,11 @@ def VideoWebUI(request):
             filename = getNewUniqueFileName(request)
             result = FaceRecogniseInVideo(request, filename)
             if 'error' or 'Error' not in result:
-                return render(request, 'facevid_result.html', {'dura': result, 'videofile': filename})
+                return render(request, 'facevid_result.html',
+                              {'dura': result, 'videofile': filename})
             else:
-                return render(request, 'facevid_result.html', {'dura': result, 'videofile': filename})
+                return render(request, 'facevid_result.html',
+                              {'dura': result, 'videofile': filename})
     else:
         return "POST HTTP method required!"
 
@@ -233,8 +261,9 @@ class STREAM_VIDEO_FR(views.APIView):
     """     To recognise faces in YouTube video
 
     Workflow
-            *   youtube embed link is received by reactjs post request then it is preprocessed to get the original
-                youtube link and then it is passed
+            *   youtube embed link is received by reactjs post request then it
+                is preprocessed to get the original youtube link and then
+                it is passed
 
     Returns:
             *   output by FaceRecogniseInVideo
@@ -255,9 +284,10 @@ class SIMILAR_FACE(views.APIView):
     """     To recognise similar faces in two images
 
     Workflow
-            *   if  POST method request is made, then initially a random filename is generated
-                and then SimilarFace method is called which process the image and outputs
-                the result containing the dictionary of file name and image id of matched face
+            *   if  POST method request is made, then initially a random
+                filename is generated and then SimilarFace method is called
+                which process the image and outputs the result containing the
+                dictionary of file name and image id of matched face
 
     Returns:
             *   output by SimilarFace
