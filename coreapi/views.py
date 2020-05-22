@@ -2,9 +2,9 @@ from django.shortcuts import render
 from rest_framework import views, status
 from rest_framework.response import Response
 from corelib.facenet.utils import (getNewUniqueFileName)
-from .main_api import (FaceRecogniseInImage, FaceRecogniseInVideo,
-                       createEmbedding, process_streaming_video,
-                       nsfwClassifier, SimilarFace)
+from .main_api import (facerecogniseinimage, facerecogniseinvideo,
+                       createembedding, process_streaming_video,
+                       nsfwclassifier, similarface)
 from .serializers import (EmbedSerializer, NameSuggestedSerializer,
                           SimilarFaceSerializer, ImageFrSerializers)
 from .models import InputEmbed, NameSuggested, SimilarFaceInImage
@@ -20,13 +20,13 @@ class ImageFr(views.APIView):
 
     Workflow\n
             *   if  POST method request is made, then initially a random
-                filename is generated and then FaceRecogniseInImage method
+                filename is generated and then facerecogniseinimage method
                 is called which process the image and outputs the result
                 containing all the information about the faces available
                 in the image.
 
     Returns\n
-            *   output by FaceRecogniseInImage
+            *   output by facerecogniseinimage
     """
 
     serializer = ImageFrSerializers
@@ -42,7 +42,7 @@ class ImageFr(views.APIView):
 
         if image_serializer.is_valid():
             network = image_serializer.data["network"]
-            result = FaceRecogniseInImage(request, filename, network)
+            result = facerecogniseinimage(request, filename, network)
             if 'error' or 'Error' not in result:
                 return Response(result, status=status.HTTP_200_OK)
 
@@ -54,7 +54,7 @@ class NsfwRecognise(views.APIView):
 
     Workflow
             *   if  POST method request is made, then initially a random
-                filename is generated and then nsfwClassifier method is
+                filename is generated and then nsfwclassifier method is
                 called which process the image and outputs the result
                 containing the dictionary of probability of type of content
                 in the image
@@ -66,7 +66,7 @@ class NsfwRecognise(views.APIView):
     def post(self, request):
 
         filename = getNewUniqueFileName(request)
-        result = nsfwClassifier(request, filename)
+        result = nsfwclassifier(request, filename)
         if 'error' or 'Error' not in result:
             return Response(result, status=status.HTTP_200_OK)
         else:
@@ -78,18 +78,18 @@ class VideoFr(views.APIView):
 
     Workflow
             *   if  POST method request is made, then initially a random
-                filename is generated and then FaceRecogniseInVideo method
+                filename is generated and then facerecogniseinvideo method
                 is called which process the video and outputs the result
                 containing all the information about the faces available
                 in the video.
 
     Returns:
-            *   output by FaceRecogniseInVideo
+            *   output by facerecogniseinvideo
     """
 
     def post(self, request):
         filename = getNewUniqueFileName(request)
-        result = FaceRecogniseInVideo(request, filename)
+        result = facerecogniseinvideo(request, filename)
         if 'error' or 'Error' not in result:
             return Response(result, status=status.HTTP_200_OK)
         else:
@@ -103,7 +103,7 @@ class EMBEDDING(views.APIView):
             *   if  GET method request is made, all the faceid are returned
 
             *   if  POST method request is made, then the file is sent to
-                createEmbedding to create the embedding
+                createembedding to create the embedding
 
     Returns:
             *   POST : output whether it was successful or not
@@ -118,7 +118,7 @@ class EMBEDDING(views.APIView):
 
     def post(self, request):
         filename = request.FILES['file'].name
-        result = createEmbedding(request, filename)
+        result = createembedding(request, filename)
         if 'success' in result:
             return Response(result, status=status.HTTP_200_OK)
         else:
@@ -209,7 +209,7 @@ def imagewebui(request):
             return render(request, '404.html')
         else:
             filename = getNewUniqueFileName(request)
-            result = FaceRecogniseInImage(request, filename)
+            result = facerecogniseinimage(request, filename)
 
             if 'error' or 'Error' not in result:
                 return render(request, 'predict_result.html',
@@ -227,7 +227,7 @@ def videowebui(request):
             return render(request, '404.html')
         else:
             filename = getNewUniqueFileName(request)
-            result = FaceRecogniseInVideo(request, filename)
+            result = facerecogniseinvideo(request, filename)
             if 'error' or 'Error' not in result:
                 return render(request, 'facevid_result.html',
                               {'dura': result, 'videofile': filename})
@@ -238,21 +238,21 @@ def videowebui(request):
         return "POST HTTP method required!"
 
 
-async def ASYNC_helper(request, filename):
-    return (FaceRecogniseInVideo(request, filename))
+async def async_helper(request, filename):
+    return (facerecogniseinvideo(request, filename))
 
 
-def AsyncThread(request, filename):
+def asyncthread(request, filename):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
-    loop.run_until_complete(ASYNC_helper(request, filename))
+    loop.run_until_complete(async_helper(request, filename))
     loop.close()
 
 
-class ASYNC_VIDEOFR(views.APIView):
+class AsyncVideoFr(views.APIView):
     def post(self, request):
         filename = getNewUniqueFileName(request)
-        thread = Thread(target=AsyncThread, args=(request, filename))
+        thread = Thread(target=asyncthread, args=(request, filename))
         thread.start()
         return Response(str(filename.split('.')[0]), status=status.HTTP_200_OK)
 
@@ -266,7 +266,7 @@ class StreamVideoFr(views.APIView):
                 it is passed
 
     Returns:
-            *   output by FaceRecogniseInVideo
+            *   output by facerecogniseinvideo
     """
 
     def post(self, request):
@@ -280,27 +280,27 @@ class StreamVideoFr(views.APIView):
             return Response(str('error'), status=status.HTTP_400_BAD_REQUEST)
 
 
-class SIMILAR_FACE(views.APIView):
+class SimilarFace(views.APIView):
     """     To recognise similar faces in two images
 
     Workflow
             *   if  POST method request is made, then initially a random
-                filename is generated and then SimilarFace method is called
+                filename is generated and then similarface method is called
                 which process the image and outputs the result containing the
                 dictionary of file name and image id of matched face
 
     Returns:
-            *   output by SimilarFace
+            *   output by similarface
     """
 
     def get(self, request, *args, **kwargs):
-        SimilarFaceList = SimilarFaceInImage.objects.all()
-        serializer = SimilarFaceSerializer(SimilarFaceList, many=True)
+        similarfacelist = SimilarFaceInImage.objects.all()
+        serializer = SimilarFaceSerializer(similarfacelist, many=True)
         return Response({'data': serializer.data})
 
     def post(self, request):
         filename = getNewUniqueFileName(request)
-        result = SimilarFace(request, filename)
+        result = similarface(request, filename)
         if 'error' or 'Error' not in result:
             return Response(result, status=status.HTTP_200_OK)
         else:

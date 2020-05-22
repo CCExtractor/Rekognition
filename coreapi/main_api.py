@@ -26,7 +26,7 @@ from coreapi.serializers import ImageFrNetworkChoices
 from corelib.RetinaFace.retina_net import FaceDetectionRetina
 
 
-def FaceExp(cropped_face):
+def faceexp(cropped_face):
     """     Facical Expression Recognition of faces in image
     Args:
             *   cropped_face: numpy array of cropped face
@@ -69,7 +69,7 @@ def FaceExp(cropped_face):
     return final_result
 
 
-def nsfwClassifier(request, filename):
+def nsfwclassifier(request, filename):
     """     NSFW classifier of images
     Args:
             *   request: Post https request containing a image file
@@ -105,10 +105,10 @@ def nsfwClassifier(request, filename):
     data = np.asarray(img, dtype="float32")
     data = img_standardize(data)
     image_data = data.astype(np.float16, copy=False)
-    SERVER_URL = 'http://localhost:8501/v1/models/nsfw:predict'
-    jsonData = json.dumps({"inputs": [image_data.tolist()]})
+    server_url = 'http://localhost:8501/v1/models/nsfw:predict'
+    jsondata = json.dumps({"inputs": [image_data.tolist()]})
     try:
-        response = requests.post(SERVER_URL, data=jsonData)
+        response = requests.post(server_url, data=jsondata)
     except Exception as e:
         print(e, "\n TensorFlow Serving is not working properly")
         return " "
@@ -120,7 +120,7 @@ def nsfwClassifier(request, filename):
     return predict_result
 
 
-def FaceRecogniseInImage(request, filename, network):
+def facerecogniseinimage(request, filename, network):
     """     Face Recognition in image
     Args:
             *   request: Post https request containing a image file
@@ -146,7 +146,7 @@ def FaceRecogniseInImage(request, filename, network):
                 lowest difference in them else if it crosses the limit then
                 'unknown' id returned.
             *   Next step is to get the facial expression of the face using
-                the method FaceExp.
+                the method faceexp.
             *   Then, all the information which currently includes face id,
                 bounding box and facial expression is saved into a dictionary.
             *   Information about the face is saved into database.
@@ -193,7 +193,7 @@ def FaceRecogniseInImage(request, filename, network):
                     if embedding_dict:
                         id_name = identify_face(embedding=embedding,
                                                 embedding_dict=embedding_dict)
-                        facial_expression = FaceExp(img)
+                        facial_expression = faceexp(img)
 
                         bounding_box = {"top": bb[1], "bottom": bb[3],
                                         "left": bb[0], "right": bb[2]}
@@ -214,7 +214,7 @@ def FaceRecogniseInImage(request, filename, network):
         return {"Error": 'bad file format'}
 
 
-def FaceRecogniseInVideo(request, filename):
+def facerecogniseinvideo(request, filename):
     """     Face Recognition in Video
     Args:
             *   request: Post https request containing a video file
@@ -344,7 +344,7 @@ def FaceRecogniseInVideo(request, filename):
     return output_dur
 
 
-def createEmbedding(request, filename):
+def createembedding(request, filename):
     """      To create face embedding
     Args:
             *   request: Post https request containing a image file
@@ -430,7 +430,7 @@ def process_streaming_video(url, filename):
     return result
 
 
-def SimilarFace(request, filename):
+def similarface(request, filename):
     """     Face Recognition in image
     Args:
             *   request: Post https request containing a image file
