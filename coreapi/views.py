@@ -6,7 +6,7 @@ from .main_api import (FaceRecogniseInImage, FaceRecogniseInVideo,
                        createEmbedding, process_streaming_video,
                        nsfwClassifier, SimilarFace)
 from .serializers import (EmbedSerializer, NameSuggestedSerializer,
-                          SimilarFaceSerializer, IMAGE_FRSerializers)
+                          SimilarFaceSerializer, ImageFrSerializers)
 from .models import InputEmbed, NameSuggested, SimilarFaceInImage
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -15,7 +15,7 @@ from threading import Thread
 import random
 
 
-class IMAGE_FR(views.APIView):
+class ImageFr(views.APIView):
     """     To recognise faces in image
 
     Workflow\n
@@ -29,7 +29,7 @@ class IMAGE_FR(views.APIView):
             *   output by FaceRecogniseInImage
     """
 
-    serializer = IMAGE_FRSerializers
+    serializer = ImageFrSerializers
 
     def get(self, request):
 
@@ -49,7 +49,7 @@ class IMAGE_FR(views.APIView):
         return Response(str('error'), status=status.HTTP_400_BAD_REQUEST)
 
 
-class NSFW_Recognise(views.APIView):
+class NsfwRecognise(views.APIView):
     """     To recognise whether a image is nsfw or not
 
     Workflow
@@ -73,7 +73,7 @@ class NSFW_Recognise(views.APIView):
             return Response(str('error'), status=status.HTTP_400_BAD_REQUEST)
 
 
-class VIDEO_FR(views.APIView):
+class VideoFr(views.APIView):
     """     To recognise faces in video
 
     Workflow
@@ -257,7 +257,7 @@ class ASYNC_VIDEOFR(views.APIView):
         return Response(str(filename.split('.')[0]), status=status.HTTP_200_OK)
 
 
-class STREAM_VIDEO_FR(views.APIView):
+class StreamVideoFr(views.APIView):
     """     To recognise faces in YouTube video
 
     Workflow

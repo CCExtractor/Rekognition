@@ -22,7 +22,7 @@ from .models import InputImage, InputVideo, InputEmbed, SimilarFaceInImage
 import numpy as np
 import requests
 from skimage.transform import resize
-from coreapi.serializers import IMAGE_FR_NETWORK_CHOICES
+from coreapi.serializers import ImageFrNetworkChoices
 from corelib.RetinaFace.retina_net import FaceDetectionRetina
 
 
@@ -171,7 +171,7 @@ def FaceRecogniseInImage(request, filename, network):
 
         try:
 
-            if network == IMAGE_FR_NETWORK_CHOICES[0]:
+            if network == ImageFrNetworkChoices[0]:
                 all_faces, all_bb = FaceDetectionRetina().get_face(file_path)
 
             else:
