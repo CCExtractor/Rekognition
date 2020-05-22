@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import views, status
 from rest_framework.response import Response
-from corelib.facenet.utils import (getNewUniqueFileName)
+from corelib.facenet.utils import (getnewuniquefilename)
 from .main_api import (facerecogniseinimage, facerecogniseinvideo,
                        createembedding, process_streaming_video,
                        nsfwclassifier, similarface)
@@ -38,7 +38,7 @@ class ImageFr(views.APIView):
 
     def post(self, request):
         image_serializer = self.serializer(data=request.data)
-        filename = getNewUniqueFileName(request)
+        filename = getnewuniquefilename(request)
 
         if image_serializer.is_valid():
             network = image_serializer.data["network"]
@@ -65,7 +65,7 @@ class NsfwRecognise(views.APIView):
 
     def post(self, request):
 
-        filename = getNewUniqueFileName(request)
+        filename = getnewuniquefilename(request)
         result = nsfwclassifier(request, filename)
         if 'error' or 'Error' not in result:
             return Response(result, status=status.HTTP_200_OK)
@@ -88,7 +88,7 @@ class VideoFr(views.APIView):
     """
 
     def post(self, request):
-        filename = getNewUniqueFileName(request)
+        filename = getnewuniquefilename(request)
         result = facerecogniseinvideo(request, filename)
         if 'error' or 'Error' not in result:
             return Response(result, status=status.HTTP_200_OK)
@@ -171,7 +171,7 @@ class FeedbackFeature(APIView):
         except NameSuggested.MultipleObjectsReturned:
             pass
         except NameSuggested.DoesNotExist:
-            namesuggestedobject = NameSuggested.objects.create(suggestedName=randomfaceobject.title,
+            namesuggestedobject = NameSuggested.objects.create(suggested_name=randomfaceobject.title,
                                                                feedback=randomfaceobject)
             namesuggestedobject.save()
 
@@ -208,7 +208,7 @@ def imagewebui(request):
         if 'file' not in request.FILES:
             return render(request, '404.html')
         else:
-            filename = getNewUniqueFileName(request)
+            filename = getnewuniquefilename(request)
             result = facerecogniseinimage(request, filename)
 
             if 'error' or 'Error' not in result:
@@ -226,7 +226,7 @@ def videowebui(request):
         if 'file' not in request.FILES:
             return render(request, '404.html')
         else:
-            filename = getNewUniqueFileName(request)
+            filename = getnewuniquefilename(request)
             result = facerecogniseinvideo(request, filename)
             if 'error' or 'Error' not in result:
                 return render(request, 'facevid_result.html',
@@ -251,7 +251,7 @@ def asyncthread(request, filename):
 
 class AsyncVideoFr(views.APIView):
     def post(self, request):
-        filename = getNewUniqueFileName(request)
+        filename = getnewuniquefilename(request)
         thread = Thread(target=asyncthread, args=(request, filename))
         thread.start()
         return Response(str(filename.split('.')[0]), status=status.HTTP_200_OK)
@@ -299,7 +299,7 @@ class SimilarFace(views.APIView):
         return Response({'data': serializer.data})
 
     def post(self, request):
-        filename = getNewUniqueFileName(request)
+        filename = getnewuniquefilename(request)
         result = similarface(request, filename)
         if 'error' or 'Error' not in result:
             return Response(result, status=status.HTTP_200_OK)

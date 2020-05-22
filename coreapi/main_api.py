@@ -201,7 +201,7 @@ def facerecogniseinimage(request, filename, network):
                                      "Bounding Boxes": bounding_box,
                                      "Facial Expression": facial_expression, }
                         all_face_arr.append(face_dict)
-                file_form.isProcessed = True
+                file_form.is_processed = True
                 file_form.save()
                 return {"Faces": all_face_arr, }
 
@@ -339,7 +339,7 @@ def facerecogniseinvideo(request, filename):
     except Exception as e:
         print(e)
         pass
-    file_form.isProcessed = True
+    file_form.is_processed = True
     file_form.save()
     return output_dur
 

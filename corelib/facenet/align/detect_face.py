@@ -348,7 +348,7 @@ def detect_face(img, minsize, pnet, rnet, onet, threshold, factor):
         out0 = np.transpose(out[0], (0, 2, 1, 3))
         out1 = np.transpose(out[1], (0, 2, 1, 3))
 
-        boxes, _ = generateBoundingBox(out1[0, :, :, 1].copy(),
+        boxes, _ = generateboundingbox(out1[0, :, :, 1].copy(),
                                        out0[0, :, :, :].copy(),
                                        scale, threshold[0])
 
@@ -506,7 +506,7 @@ def bulk_detect_face(images, detection_window_size_ratio, pnet, rnet, onet, thre
             out0 = np.transpose(outs[0][index], (1, 0, 2))
             out1 = np.transpose(outs[1][index], (1, 0, 2))
 
-            boxes, _ = generateBoundingBox(out1[:, :, 1].copy(), out0[:, :, :].copy(), scale, threshold[0])
+            boxes, _ = generateboundingbox(out1[:, :, 1].copy(), out0[:, :, :].copy(), scale, threshold[0])
 
             # inter-scale nms
             pick = nms(boxes.copy(), 0.5, 'Union')
@@ -680,7 +680,7 @@ def bbreg(boundingbox, reg):
     return boundingbox
 
 
-def generateBoundingBox(imap, reg, scale, t):
+def generateboundingbox(imap, reg, scale, t):
     """Use heatmap to generate bounding boxes"""
     stride = 2
     cellsize = 12
@@ -718,14 +718,14 @@ def nms(boxes, threshold, method):
     y2 = boxes[:, 3]
     s = boxes[:, 4]
     area = (x2 - x1 + 1) * (y2 - y1 + 1)
-    Il = np.argsort(s)
+    il = np.argsort(s)
     pick = np.zeros_like(s, dtype=np.int16)
     counter = 0
-    while Il.size > 0:
-        i = Il[-1]
+    while il.size > 0:
+        i = il[-1]
         pick[counter] = i
         counter += 1
-        idx = Il[0:-1]
+        idx = il[0:-1]
         xx1 = np.maximum(x1[i], x1[idx])
         yy1 = np.maximum(y1[i], y1[idx])
         xx2 = np.minimum(x2[i], x2[idx])
@@ -737,7 +737,7 @@ def nms(boxes, threshold, method):
             o = inter / np.minimum(area[i], area[idx])
         else:
             o = inter / (area[i] + area[idx] - inter)
-        Il = Il[np.where(o <= threshold)]
+        il = il[np.where(o <= threshold)]
     pick = pick[0:counter]
     return pick
 
@@ -778,18 +778,18 @@ def pad(total_boxes, w, h):
 
     return dy, edy, dx, edx, y, ey, x, ex, tmpw, tmph
 
-# function [bboxA] = rerec(bboxA)
+# function [bboxa] = rerec(bboxa)
 
 
-def rerec(bboxA):
+def rerec(bboxa):
     """Convert bboxA to square."""
-    h = bboxA[:, 3] - bboxA[:, 1]
-    w = bboxA[:, 2] - bboxA[:, 0]
+    h = bboxa[:, 3] - bboxa[:, 1]
+    w = bboxa[:, 2] - bboxa[:, 0]
     ll = np.maximum(w, h)
-    bboxA[:, 0] = bboxA[:, 0] + w * 0.5 - ll * 0.5
-    bboxA[:, 1] = bboxA[:, 1] + h * 0.5 - ll * 0.5
-    bboxA[:, 2:4] = bboxA[:, 0:2] + np.transpose(np.tile(ll, (2, 1)))
-    return bboxA
+    bboxa[:, 0] = bboxa[:, 0] + w * 0.5 - ll * 0.5
+    bboxa[:, 1] = bboxa[:, 1] + h * 0.5 - ll * 0.5
+    bboxa[:, 2:4] = bboxa[:, 0:2] + np.transpose(np.tile(ll, (2, 1)))
+    return bboxa
 
 
 def imresample(img, sz):

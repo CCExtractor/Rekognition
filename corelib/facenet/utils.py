@@ -219,13 +219,13 @@ def handle_uploaded_file(file, fname):
             destination.write(chunk)
 
 
-def getNewUniqueFileName(request):
+def getnewuniquefilename(request):
     file_ext = str((request.FILES['file'].name)).split('.')[-1]
     filename = id_generator() + '.' + file_ext
     return filename
 
 
-def saveImageInfoToDB(request, filename):
+def saveimageinfotodb(request, filename):
     pass
 
 
