@@ -112,8 +112,8 @@ class EMBEDDING(views.APIView):
     parser_classes = (MultiPartParser, FormParser)
 
     def get(self, request, *args, **kwargs):
-        EmbedList = InputEmbed.objects.all()
-        serializer = EmbedSerializer(EmbedList, many=True)
+        embedlist = InputEmbed.objects.all()
+        serializer = EmbedSerializer(embedlist, many=True)
         return Response({'data': serializer.data})
 
     def post(self, request):
@@ -164,28 +164,28 @@ class FeedbackFeature(APIView):
     parser_classes = (MultiPartParser, FormParser)
 
     def get(self, request, *args, **kwargs):
-        embedList = InputEmbed.objects.all()
-        randomFaceObject = embedList[random.randrange(len(embedList))]
+        embedlist = InputEmbed.objects.all()
+        randomfaceobject = embedlist[random.randrange(len(embedlist))]
         try:
-            nameSuggestedObject = NameSuggested.objects.get(feedback_id=randomFaceObject.id)
+            namesuggestedobject = NameSuggested.objects.get(feedback_id=randomfaceobject.id)
         except NameSuggested.MultipleObjectsReturned:
             pass
         except NameSuggested.DoesNotExist:
-            nameSuggestedObject = NameSuggested.objects.create(suggestedName=randomFaceObject.title,
-                                                               feedback=randomFaceObject)
-            nameSuggestedObject.save()
+            namesuggestedobject = NameSuggested.objects.create(suggestedName=randomfaceobject.title,
+                                                               feedback=randomfaceobject)
+            namesuggestedobject.save()
 
-        nameSuggestedList = NameSuggested.objects.filter(feedback_id=randomFaceObject.id)
-        serializer = NameSuggestedSerializer(nameSuggestedList, many=True)
+        namesuggestedlist = NameSuggested.objects.filter(feedback_id=randomfaceobject.id)
+        serializer = NameSuggestedSerializer(namesuggestedlist, many=True)
         result = {'data': serializer.data,
-                  'fileurl': randomFaceObject.fileurl}
+                  'fileurl': randomfaceobject.fileurl}
         return Response(result)
 
     def post(self, request, *args, **kwargs):
         request.data._mutable = True
 
-        feedbackModel = InputEmbed.objects.get(id=request.data["feedback_id"])
-        request.data["feedback"] = feedbackModel
+        feedbackmodel = InputEmbed.objects.get(id=request.data["feedback_id"])
+        request.data["feedback"] = feedbackmodel
         feedback_serializer = NameSuggestedSerializer(data=request.data)
         if feedback_serializer.is_valid():
             try:
@@ -203,7 +203,7 @@ class FeedbackFeature(APIView):
                             status=status.HTTP_400_BAD_REQUEST)
 
 
-def ImageWebUI(request):
+def imagewebui(request):
     if request.method == 'POST':
         if 'file' not in request.FILES:
             return render(request, '404.html')
@@ -221,7 +221,7 @@ def ImageWebUI(request):
         return "POST HTTP method required!"
 
 
-def VideoWebUI(request):
+def videowebui(request):
     if request.method == 'POST':
         if 'file' not in request.FILES:
             return render(request, '404.html')
