@@ -26,3 +26,6 @@ Facial_expression_class_names = ["Surprise", "Fear", "Disgust", "Happy",
 
 nsfw_class_names = {0: 'Drawings', 1: 'Hentai', 2: 'Neutral',
                     3: 'Porn', 4: 'Sexy'}
+base_url = 'http://localhost:8501/v1/'
+face_exp_url = 'models/fer2013:predict'
+nsfw_url = 'models/nsfw:predict'

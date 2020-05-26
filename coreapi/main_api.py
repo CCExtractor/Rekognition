@@ -7,6 +7,7 @@ import subprocess
 import shlex
 import cv2
 from skimage.io import imread
+import urllib.parse
 from werkzeug.utils import secure_filename
 from Rekognition.settings import MEDIA_ROOT
 from corelib.facenet.utils import (get_face, embed_image, save_embedding,
@@ -17,7 +18,8 @@ from corelib.constant import (pnet, rnet, onet, facenet_persistent_session,
                               phase_train_placeholder, embeddings,
                               images_placeholder, image_size, allowed_set,
                               embeddings_path, embedding_dict,
-                              Facial_expression_class_names, nsfw_class_names)
+                              Facial_expression_class_names, nsfw_class_names,
+                              base_url, face_exp_url, nsfw_url)
 from .models import InputImage, InputVideo, InputEmbed, SimilarFaceInImage
 import numpy as np
 import requests
@@ -56,7 +58,7 @@ def faceexp(cropped_face):
                        "instances": img.tolist()})
     try:
         headers = {"content-type": "application/json"}
-        url = 'http://localhost:8501/v1/models/fer2013:predict'
+        url = urllib.parse.urljoin(base_url, face_exp_url)
         json_response = requests.post(url, data=data, headers=headers)
         print(json.loads(json_response.text))
     except Exception as e:
@@ -105,10 +107,10 @@ def nsfwclassifier(request, filename):
     data = np.asarray(img, dtype="float32")
     data = img_standardize(data)
     image_data = data.astype(np.float16, copy=False)
-    server_url = 'http://localhost:8501/v1/models/nsfw:predict'
+    url = urllib.parse.urljoin(base_url, nsfw_url)
     jsondata = json.dumps({"inputs": [image_data.tolist()]})
     try:
-        response = requests.post(server_url, data=jsondata)
+        response = requests.post(url, data=jsondata)
     except Exception as e:
         print(e, "\n TensorFlow Serving is not working properly")
         return " "
