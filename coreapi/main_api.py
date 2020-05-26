@@ -63,7 +63,7 @@ def faceexp(cropped_face):
         print(json.loads(json_response.text))
     except Exception as e:
         print(e, "\n TensorFlow Serving is not working properly")
-        return " "
+        return {"Error":"Facial Expressions Recognition Not Working"}
     predictions = json.loads(json_response.text)["predictions"]
     final_result = {}
     for key, value in zip(Facial_expression_class_names, predictions[0]):
@@ -113,7 +113,7 @@ def nsfwclassifier(request, filename):
         response = requests.post(url, data=jsondata)
     except Exception as e:
         print(e, "\n TensorFlow Serving is not working properly")
-        return " "
+        return {"Error":"NSFW Classification Not Working"}
     data = response.json()
     outputs = data['outputs']
     predict_result = {"classes": nsfw_class_names.get(outputs['classes'][0])}
@@ -165,7 +165,7 @@ def facerecogniseinimage(request, filename, network):
             file_form = InputImage(title=filename)
             file_form.save()
         except Exception as e:
-            return (e)
+            return {"Error":e}
 
         img = imread(fname=file, mode='RGB')
         if (img.shape[2] == 4):
@@ -208,10 +208,10 @@ def facerecogniseinimage(request, filename, network):
                 return {"Faces": all_face_arr, }
 
             else:
-                return 'error no faces'
+                return {"Error":"No Faces"}
         except Exception as e:
             raise e
-            return 'error occured'
+            return {"Error":e}
     else:
         return {"Error": 'bad file format'}
 
@@ -271,7 +271,7 @@ def facerecogniseinvideo(request, filename):
         file_form = InputVideo(title=filename)
         file_form.save()
     except Exception as e:
-        return e
+        return {"Error":e}
 
     videofile = file_path
     metadata = skvideo.io.ffprobe(videofile)
@@ -330,9 +330,9 @@ def facerecogniseinvideo(request, filename):
                             cele_id.append(id_name)
                             cele[str(id_name)].append(timestamps)
                 else:
-                    return 'error no faces '
+                    return {"Error": 'No Faces'}
             except Exception as e:
-                return e
+                return {"Error":e}
 
     output_dur = time_dura(cele, gap_in_sec)
     try:
@@ -340,7 +340,7 @@ def facerecogniseinvideo(request, filename):
             json.dump(output_dur, fp)
     except Exception as e:
         print(e)
-        pass
+        return {"Error":e}
     file_form.is_processed = True
     file_form.save()
     return output_dur
@@ -369,7 +369,7 @@ def createembedding(request, filename):
             file_form = InputEmbed(id=unid, title=filename, fileurl=filepath)
             file_form.save()
         except Exception as e:
-            return (e)
+            return {"Error":e}
 
         img = imread(fname=file, mode='RGB')
         if (img.shape[2] == 4):
@@ -390,11 +390,11 @@ def createembedding(request, filename):
                 save_embedding(embedding=embedding, filename=filename,
                                embeddings_path=embeddings_path)
 
-                return 'success'
+                return {"Status":"Embedding Created Succesfully"}
             else:
-                return {"Error": 'No face found'}
+                return {"Error": 'No Faces'}
         except Exception as e:
-            return e
+            return {"Error":e}
     else:
         return {"Error": 'bad file format'}
 
@@ -423,7 +423,7 @@ def process_streaming_video(url, filename):
     try:
         stream_video_download(url, filename)
     except Exception as e:
-        return e
+        return {"Error":e}
 
     file_dir = os.path.join(output_dir, filename + '.mp4')
     files = {'file': open(file_dir, 'rb')}
@@ -474,7 +474,7 @@ def similarface(request, filename):
         file_form = SimilarFaceInImage(title=filename.split('.')[0])
         file_form.save()
     except Exception as e:
-        return (e)
+        return {"Error":e}
 
     ref_img = request.FILES['file']
     com_img = request.FILES['compareImage']
@@ -491,7 +491,7 @@ def similarface(request, filename):
                                         rnet=rnet, onet=onet,
                                         image_size=image_size)
     if not ref_img_face:
-        return([str(filename.split('.')[0]), "No Face in reference image"])
+        return {"result" : [str(filename.split('.')[0]), "No Face in reference image"]}
     save_face(ref_img_face[0], file_folder, filename.split('.')[0])
     ref_face_embedding = embed_image(img=ref_img_face[0],
                                      session=facenet_persistent_session,
@@ -524,11 +524,11 @@ def similarface(request, filename):
         if id_name != "Unknown":
             file_form.similarwith = id_name
             file_form.save()
-            return([str(filename.split('.')[0]), id_name])
+            return {"result" : [str(filename.split('.')[0]), id_name]}
         else:
             file_form.similarwith = "None"
             file_form.save()
-            return([str(filename.split('.')[0]), "None"])
+            return {"result" : [str(filename.split('.')[0]), "None"]}
 
     except Exception as e:
-        return (e)
+        return {"Error":e}
