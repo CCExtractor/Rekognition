@@ -61,9 +61,24 @@ def faceexp(cropped_face):
         url = urllib.parse.urljoin(base_url, face_exp_url)
         json_response = requests.post(url, data=data, headers=headers)
         print(json.loads(json_response.text))
+    except requests.exceptions.HTTPError as errh:
+        print(errh)
+        return {"Error":"An HTTP error occurred."}
+    except requests.exceptions.ConnectionError as errc:
+        print(errc)
+        return {"Error":"A Connection error occurred."}
+    except requests.exceptions.Timeout as errt:
+        print(errt)
+        return {"Error":"The request timed out."}
+    except requests.exceptions.TooManyRedirects as errm:
+        print(errm)
+        return {"Error":"Bad URL"}
+    except requests.exceptions.RequestException as err:
+        print(err)
+        return {"Error":"Facial Expression Recognition Not Working"}
     except Exception as e:
-        print(e, "\n TensorFlow Serving is not working properly")
-        return {"Error":"Facial Expressions Recognition Not Working"}
+        print(e)
+        return {"Error":"Facial Expression Recognition Not Working"}
     predictions = json.loads(json_response.text)["predictions"]
     final_result = {}
     for key, value in zip(Facial_expression_class_names, predictions[0]):
@@ -111,8 +126,23 @@ def nsfwclassifier(request, filename):
     jsondata = json.dumps({"inputs": [image_data.tolist()]})
     try:
         response = requests.post(url, data=jsondata)
+    except requests.exceptions.HTTPError as errh:
+        print(errh)
+        return {"Error":"An HTTP error occurred."}
+    except requests.exceptions.ConnectionError as errc:
+        print(errc)
+        return {"Error":"A Connection error occurred."}
+    except requests.exceptions.Timeout as errt:
+        print(errt)
+        return {"Error":"The request timed out."}
+    except requests.exceptions.TooManyRedirects as errm:
+        print(errm)
+        return {"Error":"Bad URL"}
+    except requests.exceptions.RequestException as err:
+        print(err)
+        return {"Error":"NSFW Classification Not Working"}
     except Exception as e:
-        print(e, "\n TensorFlow Serving is not working properly")
+        print(e)
         return {"Error":"NSFW Classification Not Working"}
     data = response.json()
     outputs = data['outputs']
@@ -164,6 +194,10 @@ def facerecogniseinimage(request, filename, network):
         try:
             file_form = InputImage(title=filename)
             file_form.save()
+        except IntegrityError as eri:
+            return {"Error":"Integrity Error"}
+        except DatabaseError as erd:
+            return {"Error":"Database Error"}
         except Exception as e:
             return {"Error":e}
 
@@ -270,6 +304,10 @@ def facerecogniseinvideo(request, filename):
     try:
         file_form = InputVideo(title=filename)
         file_form.save()
+    except IntegrityError as eri:
+        return {"Error":"Integrity Error"}
+    except DatabaseError as erd:
+        return {"Error":"Database Error"}
     except Exception as e:
         return {"Error":e}
 
@@ -368,6 +406,10 @@ def createembedding(request, filename):
             filepath = "/media/face/" + str(unid) + '.jpg'
             file_form = InputEmbed(id=unid, title=filename, fileurl=filepath)
             file_form.save()
+        except IntegrityError as eri:
+            return {"Error":"Integrity Error"}
+        except DatabaseError as erd:
+            return {"Error":"Database Error"}
         except Exception as e:
             return {"Error":e}
 
@@ -427,8 +469,27 @@ def process_streaming_video(url, filename):
 
     file_dir = os.path.join(output_dir, filename + '.mp4')
     files = {'file': open(file_dir, 'rb')}
-    result = requests.post('http://localhost:8000/api/old_video/',
+    try:
+        result = requests.post('http://localhost:8000/api/old_video/',
                            files=files)
+    except requests.exceptions.HTTPError as errh:
+        print(errh)
+        return {"Error":"An HTTP error occurred."}
+    except requests.exceptions.ConnectionError as errc:
+        print(errc)
+        return {"Error":"A Connection error occurred."}
+    except requests.exceptions.Timeout as errt:
+        print(errt)
+        return {"Error":"The request timed out."}
+    except requests.exceptions.TooManyRedirects as errm:
+        print(errm)
+        return {"Error":"Bad URL"}
+    except requests.exceptions.RequestException as err:
+        print(err)
+        return {"Error":"Video Processing Not Working"}
+    except Exception as e:
+        print(e)
+        return {"Error":"Video Processing Not Working"}
     return result
 
 
@@ -473,6 +534,10 @@ def similarface(request, filename):
         # filepath = "/media/similarFace/" + str(filename.split('.')[0]) +'/'+'referenceImage.jpg'
         file_form = SimilarFaceInImage(title=filename.split('.')[0])
         file_form.save()
+    except IntegrityError as eri:
+        return {"Error":"Integrity Error"}
+    except DatabaseError as erd:
+        return {"Error":"Database Error"}
     except Exception as e:
         return {"Error":e}
 
