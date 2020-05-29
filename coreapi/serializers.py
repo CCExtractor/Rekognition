@@ -1,14 +1,12 @@
 from rest_framework import serializers
 from .models import (InputImage, InputVideo, InputEmbed,
                      NameSuggested, SimilarFaceInImage)
-
-ImageFrNetworkChoices = ["RetinaFace", "MTCNN"]
+from corelib.utils import ImageFrNetworkChoices
 
 
 class ImageFrSerializers(serializers.Serializer):
     file = serializers.ImageField()
-    network = serializers.ChoiceField(choices=ImageFrNetworkChoices,
-                                      default=ImageFrNetworkChoices[1])
+    network = serializers.ChoiceField(choices=ImageFrNetworkChoices.choices(), default=ImageFrNetworkChoices.MTCNN)
 
 
 class ImageSerializer(serializers.ModelSerializer):

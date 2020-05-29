@@ -20,11 +20,11 @@ from corelib.constant import (pnet, rnet, onet, facenet_persistent_session,
                               embeddings_path, embedding_dict,
                               Facial_expression_class_names, nsfw_class_names,
                               base_url, face_exp_url, nsfw_url)
+from corelib.utils import ImageFrNetworkChoices
 from .models import InputImage, InputVideo, InputEmbed, SimilarFaceInImage
 import numpy as np
 import requests
 from skimage.transform import resize
-from coreapi.serializers import ImageFrNetworkChoices
 from corelib.RetinaFace.retina_net import FaceDetectionRetina
 
 
@@ -207,7 +207,7 @@ def facerecogniseinimage(request, filename, network):
 
         try:
 
-            if network == ImageFrNetworkChoices[0]:
+            if network == ImageFrNetworkChoices.RetinaFace:
                 all_faces, all_bb = FaceDetectionRetina().get_face(file_path)
 
             else:
