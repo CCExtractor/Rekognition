@@ -7,7 +7,7 @@ import uuid
 class InputVideo(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=80)
-    isProcessed = models.BooleanField(default=False)
+    is_processed = models.BooleanField(default=False)
     created_on = models.DateTimeField(default=timezone.now, blank=True)
 
     def __str__(self):
@@ -17,7 +17,7 @@ class InputVideo(models.Model):
 class InputImage(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=80,)
-    isProcessed = models.BooleanField(default=False)
+    is_processed = models.BooleanField(default=False)
     created_on = models.DateTimeField(default=timezone.now, blank=True)
 
     def __str__(self):
@@ -40,13 +40,13 @@ class InputEmbed(models.Model):
 
 
 class NameSuggested(models.Model):
-    suggestedName = models.CharField(max_length=80)
+    suggested_name = models.CharField(max_length=80)
     upvote = models.IntegerField(default=0)
     downvote = models.IntegerField(default=0)
     feedback = models.ForeignKey(InputEmbed, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.suggestedName
+        return self.suggested_name
 
 
 class SimilarFaceInImage(models.Model):

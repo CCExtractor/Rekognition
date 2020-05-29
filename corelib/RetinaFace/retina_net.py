@@ -1,8 +1,7 @@
 import cv2
-import os
 import numpy as np
 import json
-from scipy.misc import imresize, imsave
+from scipy.misc import imresize
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
@@ -25,7 +24,8 @@ def retry_request(retries=3, backoff_factor=0.3, status_forcelist=(500, 502, 504
 
 class FaceDetectionRetina(object):
     """
-    Used for FaceDetectionRetina, also this class acts as a sub mobule for embeddings and Video Recognition Modules
+    Used for FaceDetectionRetina, also this class acts as a sub mobule for
+    embeddings and Video Recognition Modules
     """
 
     def __init__(self, down_scale_factor=1.0):
@@ -64,14 +64,15 @@ class FaceDetectionRetina(object):
     @staticmethod
     def _draw_bbox_landm(img, ann, img_height, img_width):
         """draw bboxes and landmarks"""
-     # bbox
+        # bbox
         x1, y1, x2, y2 = int(ann[0] * img_width), int(ann[1] * img_height), \
             int(ann[2] * img_width), int(ann[3] * img_height)
         cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
-       # confidence
+        # confidence
         text = "{:.4f}".format(ann[15])
-        cv2.putText(img, text, (int(ann[0] * img_width), int(ann[1] * img_height)),
+        cv2.putText(img, text,
+                    (int(ann[0] * img_width), int(ann[1] * img_height)),
                     cv2.FONT_HERSHEY_DUPLEX, 0.5, (255, 255, 255))
 
         # landmark
@@ -152,7 +153,7 @@ class FaceDetectionRetina(object):
         return all_faces, all_bb
 
     def predict(self, img):
-        """   Returns the bounding box coordinates along with the resultant image    """
+        """  Returns bounding box coordinates along with resultant image  """
         img_height_raw, img_width_raw, _ = img.shape
         if self.down_scale_factor < 1.0:
             img = cv2.resize(img, (0, 0), fx=self.down_scale_factor,
@@ -169,18 +170,18 @@ class FaceDetectionRetina(object):
                            "inputs": img[np.newaxis, ...].tolist()})
 
         json_response = retry_request().post(
-            'http://localhost:8501/v1/models/retinanet:predict', data=data, headers=headers)
+            'http://localhost:8501/v1/models/retinanet:predict',
+            data=data, headers=headers)
 
         outputs = json.loads(json_response.text)["outputs"]
         outputs = np.array(outputs)
 
         outputs = self._recover_pad_output(outputs, pad_params)
-        # save_img_path = os.path.join('out_' + os.path.basename(self.file))
         processed_outputs = []
         for prior_index in range(len(outputs)):
             self._draw_bbox_landm(
                 img, outputs[prior_index], img_height_raw, img_width_raw)
             processed_outputs.append(
-                self._process_outputs(outputs[prior_index], img_height_raw, img_width_raw))
-            # cv2.imwrite(save_img_path, img_raw)
+                self._process_outputs(outputs[prior_index],
+                                      img_height_raw, img_width_raw))
         return processed_outputs, img
