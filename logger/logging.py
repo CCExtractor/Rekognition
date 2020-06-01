@@ -3,11 +3,19 @@ import logging
 from logging import DEBUG, INFO, ERROR
 
 class RekogntionLogger(logging.getLoggerClass()):
-    '''
-        
-    '''
     def __init__(self, name, format="%(asctime)s | %(levelname)s | %(message)s", level=INFO):
+    """     Custom logger class
 
+    Workflow\n
+            *   accepts name of the logger, format and level
+            *   sets up a file handler and stream handler for the logger
+            *   overloads info, error, debug and warn og logging class
+
+    Returns\n
+            *   logs on terminal with the default format "%(asctime)s | %(levelname)s | %(message)s"
+            *   logs to a file nanmed RekognitionLogs.log with the default format "%(asctime)s | %(levelname)s | %(message)s"
+
+    """
         self.format = format
         self.level = level
         self.name = name
