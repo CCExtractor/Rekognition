@@ -1,1 +1,1 @@
-from logger import MyLogger
+from logger import RekogntionLogger
