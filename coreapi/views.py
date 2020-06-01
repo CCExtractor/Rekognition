@@ -43,7 +43,7 @@ class ImageFr(views.APIView):
         if image_serializer.is_valid():
             network = image_serializer.data["network"]
             result = facerecogniseinimage(request, filename, network)
-            if not "Error" in result:
+            if "Error" not in result:
                 return Response(result, status=status.HTTP_200_OK)
             else:
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
@@ -67,7 +67,7 @@ class NsfwRecognise(views.APIView):
 
         filename = getnewuniquefilename(request)
         result = nsfwclassifier(request, filename)
-        if not "Error" in result:
+        if "Error" not in result:
             return Response(result, status=status.HTTP_200_OK)
         else:
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
@@ -90,7 +90,7 @@ class VideoFr(views.APIView):
     def post(self, request):
         filename = getnewuniquefilename(request)
         result = facerecogniseinvideo(request, filename)
-        if not "Error" in result:
+        if "Error" not in result:
             return Response(result, status=status.HTTP_200_OK)
         else:
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
@@ -119,7 +119,7 @@ class EMBEDDING(views.APIView):
     def post(self, request):
         filename = request.FILES['file'].name
         result = createembedding(request, filename)
-        if not "Error" in result:
+        if "Error" not in result:
             return Response(result, status=status.HTTP_200_OK)
         else:
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
@@ -211,7 +211,7 @@ def imagewebui(request):
             filename = getnewuniquefilename(request)
             result = facerecogniseinimage(request, filename)
 
-            if not "Error" in result:
+            if "Error" not in result:
                 return render(request, 'predict_result.html',
                               {'Faces': result, 'imagefile': filename})
             else:
@@ -228,7 +228,7 @@ def videowebui(request):
         else:
             filename = getnewuniquefilename(request)
             result = facerecogniseinvideo(request, filename)
-            if not "Error" in result:
+            if "Error" not in result:
                 return render(request, 'facevid_result.html',
                               {'dura': result, 'videofile': filename})
             else:
@@ -274,7 +274,7 @@ class StreamVideoFr(views.APIView):
         videoid = (str(streamlink).split('/')[-1]).split('\"')[0]
         ytlink = str("https://www.youtube.com/watch?v=" + str(videoid))
         result = process_streaming_video(ytlink, (videoid))
-        if not "Error" in result:
+        if "Error" not in result:
             return Response(result, status=status.HTTP_200_OK)
         else:
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
@@ -301,7 +301,7 @@ class SimilarFace(views.APIView):
     def post(self, request):
         filename = getnewuniquefilename(request)
         result = similarface(request, filename)
-        if not "Error" in result:
+        if "Error" not in result:
             return Response(result, status=status.HTTP_200_OK)
         else:
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
