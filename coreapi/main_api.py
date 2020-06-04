@@ -22,11 +22,15 @@ from corelib.constant import (pnet, rnet, onet, facenet_persistent_session,
                               base_url, face_exp_url, nsfw_url)
 from corelib.utils import ImageFrNetworkChoices
 from .models import InputImage, InputVideo, InputEmbed, SimilarFaceInImage
+from logger.logging import RekogntionLogger
 import numpy as np
 import requests
 from skimage.transform import resize
 from corelib.RetinaFace.retina_net import FaceDetectionRetina
 from django.db import IntegrityError, DatabaseError
+
+
+logger = RekogntionLogger(name="main_api")
 
 
 def faceexp(cropped_face):
@@ -52,6 +56,8 @@ def faceexp(cropped_face):
             *   Dictionary having all the faces and corresponding facial
                 expression and it's values.
     """
+
+    logger.info(msg="faceexp called")
     img = cv2.resize(cropped_face, (100, 100), interpolation=cv2.INTER_AREA)
     img = np.array(img).reshape((1, 100, 100, 3))
     img = img / 255
@@ -63,22 +69,22 @@ def faceexp(cropped_face):
         json_response = requests.post(url, data=data, headers=headers)
         print(json.loads(json_response.text))
     except requests.exceptions.HTTPError as errh:
-        print(errh)
+        logger.error(msg=errh)
         return {"Error": "An HTTP error occurred."}
     except requests.exceptions.ConnectionError as errc:
-        print(errc)
+        logger.error(msg=errc)
         return {"Error": "A Connection error occurred."}
     except requests.exceptions.Timeout as errt:
-        print(errt)
+        logger.error(msg=errt)
         return {"Error": "The request timed out."}
     except requests.exceptions.TooManyRedirects as errm:
-        print(errm)
+        logger.error(msg=errm)
         return {"Error": "Bad URL"}
     except requests.exceptions.RequestException as err:
-        print(err)
+        logger.error(msg=err)
         return {"Error": "Facial Expression Recognition Not Working"}
     except Exception as e:
-        print(e)
+        logger.error(msg=e)
         return {"Error": "Facial Expression Recognition Not Working"}
     predictions = json.loads(json_response.text)["predictions"]
     final_result = {}
@@ -112,6 +118,7 @@ def nsfwclassifier(request, filename):
                 probabilities of all classes.
     """
 
+    logger.info(msg="nsfwclassifier called")
     file_path = os.path.join(MEDIA_ROOT, 'images/' + filename)
     handle_uploaded_file(request.FILES['file'], file_path)
 
@@ -128,22 +135,22 @@ def nsfwclassifier(request, filename):
     try:
         response = requests.post(url, data=jsondata)
     except requests.exceptions.HTTPError as errh:
-        print(errh)
+        logger.error(msg=errh)
         return {"Error": "An HTTP error occurred."}
     except requests.exceptions.ConnectionError as errc:
-        print(errc)
+        logger.error(msg=errc)
         return {"Error": "A Connection error occurred."}
     except requests.exceptions.Timeout as errt:
-        print(errt)
+        logger.error(msg=errt)
         return {"Error": "The request timed out."}
     except requests.exceptions.TooManyRedirects as errm:
-        print(errm)
+        logger.error(msg=errm)
         return {"Error": "Bad URL"}
     except requests.exceptions.RequestException as err:
-        print(err)
+        logger.error(msg=err)
         return {"Error": "NSFW Classification Not Working"}
     except Exception as e:
-        print(e)
+        logger.error(msg=e)
         return {"Error": "NSFW Classification Not Working"}
     data = response.json()
     outputs = data['outputs']
@@ -187,6 +194,8 @@ def facerecogniseinimage(request, filename, network):
             *   Dictionary having all the faces and corresponding bounding
                 boxes with facial expression
     """
+
+    logger.info(msg="facerecogniseinimage called")
     file_path = os.path.join(MEDIA_ROOT, 'images/' + filename)
     handle_uploaded_file(request.FILES['file'], file_path)
     file = request.FILES['file']
@@ -196,10 +205,13 @@ def facerecogniseinimage(request, filename, network):
             file_form = InputImage(title=filename)
             file_form.save()
         except IntegrityError as eri:
+            logger.error(msg=eri)
             return {"Error": "Integrity Error"}
         except DatabaseError as erd:
+            logger.error(msg=erd)
             return {"Error": "Database Error"}
         except Exception as e:
+            logger.error(msg=e)
             return {"Error": e}
 
         img = imread(fname=file, mode='RGB')
@@ -243,11 +255,13 @@ def facerecogniseinimage(request, filename, network):
                 return {"Faces": all_face_arr, }
 
             else:
+                logger.error(msg="No Faces")
                 return {"Error": "No Faces"}
         except Exception as e:
-            raise e
+            logger.error(msg=e)
             return {"Error": e}
     else:
+        logger.error(msg="bad file format")
         return {"Error": 'bad file format'}
 
 
@@ -300,16 +314,21 @@ def facerecogniseinvideo(request, filename):
     Returns:
             *   Dictionary having all the faces & corresponding time durations
     """
+
+    logger.info(msg="facerecogniseinvideo called")
     file_path = os.path.join(MEDIA_ROOT, 'videos/' + filename)
     handle_uploaded_file(request.FILES['file'], file_path)
     try:
         file_form = InputVideo(title=filename)
         file_form.save()
     except IntegrityError as eri:
+        logger.error(msg=eri)
         return {"Error": "Integrity Error"}
     except DatabaseError as erd:
+        logger.error(msg=erd)
         return {"Error": "Database Error"}
     except Exception as e:
+        logger.error(msg=e)
         return {"Error": e}
 
     videofile = file_path
@@ -369,8 +388,10 @@ def facerecogniseinvideo(request, filename):
                             cele_id.append(id_name)
                             cele[str(id_name)].append(timestamps)
                 else:
+                    logger.error(msg="No Faces")
                     return {"Error": 'No Faces'}
             except Exception as e:
+                logger.error(msg=e)
                 return {"Error": e}
 
     output_dur = time_dura(cele, gap_in_sec)
@@ -378,7 +399,7 @@ def facerecogniseinvideo(request, filename):
         with open(os.path.join(MEDIA_ROOT, 'output/video', filename.split('.')[0] + '.json'), 'w') as fp:
             json.dump(output_dur, fp)
     except Exception as e:
-        print(e)
+        logger.error(msg=e)
         return {"Error": e}
     file_form.is_processed = True
     file_form.save()
@@ -399,6 +420,8 @@ def createembedding(request, filename):
     Returns:
             *   success flag
     """
+
+    logger.info(msg="createembedding called")
     file = request.FILES['file']
     if file and allowed_file(filename=filename, allowed_set=allowed_set):
         filename = secure_filename(filename=filename).replace('_', ' ').split('.')[0].title()
@@ -408,10 +431,13 @@ def createembedding(request, filename):
             file_form = InputEmbed(id=unid, title=filename, fileurl=filepath)
             file_form.save()
         except IntegrityError as eri:
+            logger.error(msg=eri)
             return {"Error": "Integrity Error"}
         except DatabaseError as erd:
+            logger.error(msg=erd)
             return {"Error": "Database Error"}
         except Exception as e:
+            logger.error(msg=e)
             return {"Error": e}
 
         img = imread(fname=file, mode='RGB')
@@ -437,8 +463,10 @@ def createembedding(request, filename):
             else:
                 return {"Error": 'No Faces'}
         except Exception as e:
+            logger.error(msg=e)
             return {"Error": e}
     else:
+        logger.error(msg="bad file format")
         return {"Error": 'bad file format'}
 
 
@@ -452,20 +480,26 @@ def stream_video_download(url, filename):
     Returns:
             *   Nothing
     """
+
+    logger.info(msg="stream_video_download called")
     output_dir = "{}/{}/".format(MEDIA_ROOT, 'videos')
     command = "youtube-dl -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4'  \"{}\" -o {}.mp4".format(url, filename)
     try:
         download = subprocess.Popen(shlex.split(command), cwd=output_dir)
         download.wait()
     except Exception as e:
+        logger.error(msg=e)
         return e
 
 
 def process_streaming_video(url, filename):
+
+    logger.info(msg="process_streaming_video called")
     output_dir = "{}/{}/".format(MEDIA_ROOT, 'videos')
     try:
         stream_video_download(url, filename)
     except Exception as e:
+        logger.error(msg=e)
         return {"Error": e}
 
     file_dir = os.path.join(output_dir, filename + '.mp4')
@@ -474,22 +508,22 @@ def process_streaming_video(url, filename):
         result = requests.post('http://localhost:8000/api/old_video/',
                                files=files)
     except requests.exceptions.HTTPError as errh:
-        print(errh)
+        logger.error(msg=errh)
         return {"Error": "An HTTP error occurred."}
     except requests.exceptions.ConnectionError as errc:
-        print(errc)
+        logger.error(msg=errc)
         return {"Error": "A Connection error occurred."}
     except requests.exceptions.Timeout as errt:
-        print(errt)
+        logger.error(msg=errt)
         return {"Error": "The request timed out."}
     except requests.exceptions.TooManyRedirects as errm:
-        print(errm)
+        logger.error(msg=errm)
         return {"Error": "Bad URL"}
     except requests.exceptions.RequestException as err:
-        print(err)
+        logger.error(msg=err)
         return {"Error": "Video Processing Not Working"}
     except Exception as e:
-        print(e)
+        logger.error(msg=e)
         return {"Error": "Video Processing Not Working"}
     return result
 
@@ -523,6 +557,8 @@ def similarface(request, filename):
             *   Dictionary having all the faces and corresponding bounding
                 boxes with facial expression
     """
+
+    logger.info(msg="similarface called")
     file_folder = MEDIA_ROOT + '/' + 'similarFace' + '/' + str(filename.split('.')[0])
 
     if not os.path.exists(file_folder):
@@ -536,10 +572,13 @@ def similarface(request, filename):
         file_form = SimilarFaceInImage(title=filename.split('.')[0])
         file_form.save()
     except IntegrityError as eri:
+        logger.error(msg=eri)
         return {"Error": "Integrity Error"}
     except DatabaseError as erd:
+        logger.error(msg=erd)
         return {"Error": "Database Error"}
     except Exception as e:
+        logger.error(msg=e)
         return {"Error": e}
 
     ref_img = request.FILES['file']
@@ -597,4 +636,5 @@ def similarface(request, filename):
             return {"result": [str(filename.split('.')[0]), "None"]}
 
     except Exception as e:
+        logger.error(msg=e)
         return {"Error": e}
