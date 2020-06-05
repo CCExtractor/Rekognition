@@ -163,6 +163,7 @@ def save_embedding(embedding, filename, embeddings_path):
     except Exception as e:
         logger.error(msg=e)
 
+
 def load_embeddings(embeddings_path):
 
     logger.info(msg="load_embeddings called")
