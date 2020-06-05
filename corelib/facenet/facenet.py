@@ -19,6 +19,10 @@ import re
 from tensorflow.python.platform import gfile
 import math
 from six import iteritems
+from logger.logging import RekogntionLogger
+
+
+logger = RekogntionLogger(name="facenet")
 
 
 def triplet_loss(anchor, positive, negative, alpha):
