@@ -30,6 +30,8 @@ def triplet_loss(anchor, positive, negative, alpha):
     Returns:
       the triplet loss according to the FaceNet paper as a float tensor.
     """
+
+    logger.info(msg="triplet_loss called")
     with tf.variable_scope('triplet_loss'):
         pos_dist = tf.reduce_sum(tf.square(tf.subtract(anchor, positive)), 1)
         neg_dist = tf.reduce_sum(tf.square(tf.subtract(anchor, negative)), 1)
@@ -45,6 +47,8 @@ def center_loss(features, label, alfa, nrof_classes):
        "A Discriminative Feature Learning Approach for Deep Face Recognition"
        (http://ydwen.github.io/papers/WenECCV16.pdf)
     """
+
+    logger.info(msg="center_loss called")
     nrof_features = features.get_shape()[1]
     centers = tf.get_variable('centers', [nrof_classes, nrof_features],
                               dtype=tf.float32,
@@ -60,6 +64,8 @@ def center_loss(features, label, alfa, nrof_classes):
 
 
 def get_image_paths_and_labels(dataset):
+
+    logger.info(msg="get_image_paths_and_labels called")
     image_paths_flat = []
     labels_flat = []
     for i in range(len(dataset)):
@@ -69,6 +75,8 @@ def get_image_paths_and_labels(dataset):
 
 
 def shuffle_examples(image_paths, labels):
+
+    logger.info(msg="shuffle_examples called")
     shuffle_list = list(zip(image_paths, labels))
     random.shuffle(shuffle_list)
     image_paths_shuff, labels_shuff = zip(*shuffle_list)
@@ -76,6 +84,8 @@ def shuffle_examples(image_paths, labels):
 
 
 def random_rotate_image(image):
+
+    logger.info(msg="random_rotate_image called")
     angle = np.random.uniform(low=-10.0, high=10.0)
     return misc.imrotate(image, angle, 'bicubic')
 
@@ -94,6 +104,8 @@ FLIP = 16
 
 
 def create_input_pipeline(input_queue, image_size, nrof_preprocess_threads, batch_size_placeholder):
+
+    logger.info(msg="create_input_pipeline called")
     images_and_labels_list = []
     for _ in range(nrof_preprocess_threads):
         filenames, label, control = input_queue.dequeue()
@@ -135,6 +147,8 @@ def create_input_pipeline(input_queue, image_size, nrof_preprocess_threads, batc
 
 
 def get_control_flag(control, field):
+
+    logger.info(msg="get_control_flag called")
     return tf.equal(tf.mod(tf.floor_div(control, field), 2), 1)
 
 
@@ -147,6 +161,8 @@ def _add_loss_summaries(total_loss):
     Returns:
       loss_averages_op: op for generating moving averages of losses.
     """
+
+    logger.info(msg="_add_loss_summaries called")
     # Compute the moving average of all individual losses and the total loss.
     loss_averages = tf.train.ExponentialMovingAverage(0.9, name='avg')
     losses = tf.get_collection('losses')
@@ -164,6 +180,8 @@ def _add_loss_summaries(total_loss):
 
 
 def train(total_loss, global_step, optimizer, learning_rate, moving_average_decay, update_gradient_vars, log_histograms=True):
+
+    logger.info(msg="train called")
     # Generate moving averages of all losses and associated summaries.
     loss_averages_op = _add_loss_summaries(total_loss)
 
@@ -184,6 +202,7 @@ def train(total_loss, global_step, optimizer, learning_rate, moving_average_deca
             opt = tf.train.MomentumOptimizer(learning_rate,
                                              0.9, use_nesterov=True)
         else:
+            logger.error(msg='Invalid optimization algorithm')
             raise ValueError('Invalid optimization algorithm')
 
         grads = opt.compute_gradients(total_loss, update_gradient_vars)
@@ -214,6 +233,8 @@ def train(total_loss, global_step, optimizer, learning_rate, moving_average_deca
 
 
 def prewhiten(x):
+
+    logger.info(msg="prewhiten called")
     mean = np.mean(x)
     std = np.std(x)
     std_adj = np.maximum(std, 1.0 / np.sqrt(x.size))
@@ -222,6 +243,8 @@ def prewhiten(x):
 
 
 def crop(image, random_crop, image_size):
+
+    logger.info(msg="crop called")
     if image.shape[1] > image_size:
         sz1 = int(image.shape[1] // 2)
         sz2 = int(image_size // 2)
@@ -236,12 +259,16 @@ def crop(image, random_crop, image_size):
 
 
 def flip(image, random_flip):
+
+    logger.info(msg="flip called")
     if random_flip and np.random.choice([True, False]):
         image = np.fliplr(image)
     return image
 
 
 def to_rgb(img):
+
+    logger.info(msg="to_rgb called")
     w, h = img.shape
     ret = np.empty((w, h, 3), dtype=np.uint8)
     ret[:, :, 0] = ret[:, :, 1] = ret[:, :, 2] = img
@@ -249,6 +276,8 @@ def to_rgb(img):
 
 
 def load_img(img, do_random_crop, do_random_flip, image_size, do_prewhiten=True):
+
+    logger.info(msg="load_img called")
     # nrof_samples = len(image_paths)
     images = np.zeros((1, image_size, image_size, 3))
     # for i in range(nrof_samples):
@@ -265,6 +294,8 @@ def load_img(img, do_random_crop, do_random_flip, image_size, do_prewhiten=True)
 
 
 def load_data(image_paths, do_random_crop, do_random_flip, image_size, do_prewhiten=True):
+
+    logger.info(msg="load_data called")
     nrof_samples = len(image_paths)
     images = np.zeros((nrof_samples, image_size, image_size, 3))
     for i in range(nrof_samples):
@@ -282,6 +313,8 @@ def load_data(image_paths, do_random_crop, do_random_flip, image_size, do_prewhi
 
 
 def get_label_batch(label_data, batch_size, batch_index):
+
+    logger.info(msg="get_label_batch called")
     nrof_examples = np.size(label_data, 0)
     j = batch_index * batch_size % nrof_examples
     if j + batch_size <= nrof_examples:
@@ -295,6 +328,8 @@ def get_label_batch(label_data, batch_size, batch_index):
 
 
 def get_batch(image_data, batch_size, batch_index):
+
+    logger.info(msg="get_batch called")
     nrof_examples = np.size(image_data, 0)
     j = batch_index * batch_size % nrof_examples
     if j + batch_size <= nrof_examples:
@@ -308,6 +343,8 @@ def get_batch(image_data, batch_size, batch_index):
 
 
 def get_triplet_batch(triplets, batch_index, batch_size):
+
+    logger.info(msg="get_triplet_batch called")
     ax, px, nx = triplets
     a = get_batch(ax, int(batch_size / 3), batch_index)
     p = get_batch(px, int(batch_size / 3), batch_index)
@@ -317,6 +354,8 @@ def get_triplet_batch(triplets, batch_index, batch_size):
 
 
 def get_learning_rate_from_file(filename, epoch):
+
+    logger.info(msg="get_learning_rate_from_file called")
     with open(filename, 'r') as f:
         for line in f.readlines():
             line = line.split('#', 1)[0]
@@ -348,6 +387,8 @@ class ImageClass():
 
 
 def get_dataset(path, has_class_directories=True):
+
+    logger.info(msg="get_dataset called")
     dataset = []
     path_exp = os.path.expanduser(path)
     classes = [path for path in os.listdir(path_exp)
@@ -364,6 +405,8 @@ def get_dataset(path, has_class_directories=True):
 
 
 def get_image_paths(facedir):
+
+    logger.info(msg="get_image_paths called")
     image_paths = []
     if os.path.isdir(facedir):
         images = os.listdir(facedir)
@@ -372,6 +415,8 @@ def get_image_paths(facedir):
 
 
 def split_dataset(dataset, split_ratio, min_nrof_images_per_class, mode):
+
+    logger.info(msg="split_dataset called")
     if mode == 'SPLIT_CLASSES':
         nrof_classes = len(dataset)
         class_indices = np.arange(nrof_classes)
@@ -393,11 +438,14 @@ def split_dataset(dataset, split_ratio, min_nrof_images_per_class, mode):
                 train_set.append(ImageClass(cls.name, paths[:split]))
                 test_set.append(ImageClass(cls.name, paths[split:]))
     else:
+        logger.error(msg='Invalid train/test split mode ' + mode)
         raise ValueError('Invalid train/test split mode "%s"' % mode)
     return train_set, test_set
 
 
 def load_model(model, input_map=None):
+
+    logger.info(msg="load_model called")
     # Check if the model is a model directory (containing a metagraph and
     # a checkpoint file) or if it is a protobuf file with a frozen graph
     model_exp = os.path.expanduser(model)
@@ -421,11 +469,15 @@ def load_model(model, input_map=None):
 
 
 def get_model_filenames(model_dir):
+
+    logger.info(msg="get_model_filenames called")
     files = os.listdir(model_dir)
     meta_files = [s for s in files if s.endswith('.meta')]
     if len(meta_files) == 0:
+        logger.error(msg='No meta file found in the model directory: ' + model_dir)
         raise ValueError('No meta file found in the model directory (%s)' % model_dir)
     elif len(meta_files) > 1:
+        logger.error(msg='There should not be more than one meta file in the model directory : ' + model_dir)
         raise ValueError('There should not be more than one meta file in the model directory (%s)' % model_dir)
     meta_file = meta_files[0]
     ckpt = tf.train.get_checkpoint_state(model_dir)
@@ -446,6 +498,8 @@ def get_model_filenames(model_dir):
 
 
 def distance(embeddings1, embeddings2, distance_metric=0):
+
+    logger.info(msg="distance called")
     if distance_metric == 0:
         # Euclidian distance
         diff = np.subtract(embeddings1, embeddings2)
@@ -458,12 +512,15 @@ def distance(embeddings1, embeddings2, distance_metric=0):
         similarity = dot / norm
         dist = np.arccos(similarity) / math.pi
     else:
+        logger.error(msg='Undefined distance metric : ' + distance_metric)
         raise 'Undefined distance metric %d' % distance_metric
 
     return dist
 
 
 def calculate_roc(thresholds, embeddings1, embeddings2, actual_issame, nrof_folds=10, distance_metric=0, subtract_mean=False):
+
+    logger.info(msg="calculate_roc called")
     assert(embeddings1.shape[0] == embeddings2.shape[0])
     assert(embeddings1.shape[1] == embeddings2.shape[1])
     nrof_pairs = min(len(actual_issame), embeddings1.shape[0])
@@ -506,6 +563,8 @@ def calculate_roc(thresholds, embeddings1, embeddings2, actual_issame, nrof_fold
 
 
 def calculate_accuracy(threshold, dist, actual_issame):
+
+    logger.info(msg="calculate_accuracy called")
     predict_issame = np.less(dist, threshold)
     tp = np.sum(np.logical_and(predict_issame, actual_issame))
     fp = np.sum(np.logical_and(predict_issame, np.logical_not(actual_issame)))
@@ -520,6 +579,8 @@ def calculate_accuracy(threshold, dist, actual_issame):
 
 
 def calculate_val(thresholds, embeddings1, embeddings2, actual_issame, far_target, nrof_folds=10, distance_metric=0, subtract_mean=False):
+
+    logger.info(msg="calculate_val called")
     assert(embeddings1.shape[0] == embeddings2.shape[0])
     assert(embeddings1.shape[1] == embeddings2.shape[1])
     nrof_pairs = min(len(actual_issame), embeddings1.shape[0])
@@ -563,6 +624,8 @@ def calculate_val(thresholds, embeddings1, embeddings2, actual_issame, far_targe
 
 
 def calculate_val_far(threshold, dist, actual_issame):
+
+    logger.info(msg="calculate_val_far called")
     predict_issame = np.less(dist, threshold)
     true_accept = np.sum(np.logical_and(predict_issame, actual_issame))
     false_accept = np.sum(np.logical_and(predict_issame,
@@ -575,6 +638,8 @@ def calculate_val_far(threshold, dist, actual_issame):
 
 
 def store_revision_info(src_path, output_dir, arg_string):
+
+    logger.info(msg="store_revision_info called")
     try:
         # Get git hash
         cmd = ['git', 'rev-parse', 'HEAD']
@@ -582,6 +647,7 @@ def store_revision_info(src_path, output_dir, arg_string):
         (stdout, _) = gitproc.communicate()
         git_hash = stdout.strip()
     except OSError as e:
+        logger.warn(msg=e)
         git_hash = ' '.join(cmd) + ': ' + e.strerror
 
     try:
@@ -591,6 +657,7 @@ def store_revision_info(src_path, output_dir, arg_string):
         (stdout, _) = gitproc.communicate()
         git_diff = stdout.strip()
     except OSError as e:
+        logger.warn(msg=e)
         git_diff = ' '.join(cmd) + ': ' + e.strerror
 
     # Store a text file in the log directory
@@ -603,6 +670,8 @@ def store_revision_info(src_path, output_dir, arg_string):
 
 
 def list_variables(filename):
+
+    logger.info(msg="list_variables called")
     reader = training.NewCheckpointReader(filename)
     variable_map = reader.get_variable_to_shape_map()
     names = sorted(variable_map.keys())
@@ -610,6 +679,8 @@ def list_variables(filename):
 
 
 def put_images_on_grid(images, shape=(16, 8)):
+
+    logger.info(msg="put_images_on_grid called")
     nrof_images = images.shape[0]
     img_size = images.shape[1]
     bw = 3
@@ -630,6 +701,8 @@ def put_images_on_grid(images, shape=(16, 8)):
 
 
 def write_arguments_to_file(args, filename):
+
+    logger.info(msg="write_arguments_to_file called")
     with open(filename, 'w') as f:
         for key, value in iteritems(vars(args)):
             f.write('%s: %s\n' % (key, str(value)))
