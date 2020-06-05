@@ -8,11 +8,15 @@ from .main_api import (facerecogniseinimage, facerecogniseinvideo,
 from .serializers import (EmbedSerializer, NameSuggestedSerializer,
                           SimilarFaceSerializer, ImageFrSerializers)
 from .models import InputEmbed, NameSuggested, SimilarFaceInImage
+from logger.logging import RekogntionLogger
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
 import asyncio
 from threading import Thread
 import random
+
+
+logger = RekogntionLogger(name="view")
 
 
 class ImageFr(views.APIView):
@@ -33,10 +37,13 @@ class ImageFr(views.APIView):
 
     def get(self, request):
 
+        logger.info(msg="GET Request for Face Reocgnition made")
         serializer = self.serializer()
         return Response(serializer.data)
 
     def post(self, request):
+
+        logger.info(msg="POST Request for Face Reocgnition made")
         image_serializer = self.serializer(data=request.data)
         filename = getnewuniquefilename(request)
 
@@ -47,6 +54,10 @@ class ImageFr(views.APIView):
                 return Response(result, status=status.HTTP_200_OK)
             else:
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            logger.error(msg=image_serializer.errors)
+            return Response(image_serializer.errors,
+                            status=status.HTTP_400_BAD_REQUEST)
 
 
 class NsfwRecognise(views.APIView):
@@ -65,6 +76,7 @@ class NsfwRecognise(views.APIView):
 
     def post(self, request):
 
+        logger.info(msg="POST Request for NSFW Classification made")
         filename = getnewuniquefilename(request)
         result = nsfwclassifier(request, filename)
         if "Error" not in result:
@@ -88,6 +100,8 @@ class VideoFr(views.APIView):
     """
 
     def post(self, request):
+
+        logger.info(msg="POST Request for Face Reocgnition in Video made")
         filename = getnewuniquefilename(request)
         result = facerecogniseinvideo(request, filename)
         if "Error" not in result:
@@ -109,14 +123,19 @@ class EMBEDDING(views.APIView):
             *   POST : output whether it was successful or not
             *   GET  : List the data stored in database
     """
+
     parser_classes = (MultiPartParser, FormParser)
 
     def get(self, request, *args, **kwargs):
+
+        logger.info(msg="GET Request for generating embeddings made")
         embedlist = InputEmbed.objects.all()
         serializer = EmbedSerializer(embedlist, many=True)
         return Response({'data': serializer.data})
 
     def post(self, request):
+
+        logger.info(msg="POST Request for generating embeddings made")
         filename = request.FILES['file'].name
         result = createembedding(request, filename)
         if "Error" not in result:
@@ -169,11 +188,12 @@ class FeedbackFeature(APIView):
         try:
             namesuggestedobject = NameSuggested.objects.get(feedback_id=randomfaceobject.id)
         except NameSuggested.MultipleObjectsReturned:
-            pass
+            logger.warn(msg="One Name was expected, multiple names were returned.")
         except NameSuggested.DoesNotExist:
             namesuggestedobject = NameSuggested.objects.create(suggested_name=randomfaceobject.title,
                                                                feedback=randomfaceobject)
             namesuggestedobject.save()
+            logger.warn(msg="No names were returned, random name has been set.")
 
         namesuggestedlist = NameSuggested.objects.filter(feedback_id=randomfaceobject.id)
         serializer = NameSuggestedSerializer(namesuggestedlist, many=True)
@@ -195,10 +215,11 @@ class FeedbackFeature(APIView):
                 obj.save()
             except NameSuggested.DoesNotExist:
                 feedback_serializer.save()
+                logger.warn(msg="No names were returned, random name has been set.")
             return Response(feedback_serializer.data,
                             status=status.HTTP_201_CREATED)
         else:
-            print('error', feedback_serializer.errors)
+            logger.error(msg=feedback_serializer.errors)
             return Response(feedback_serializer.errors,
                             status=status.HTTP_400_BAD_REQUEST)
 
@@ -206,6 +227,7 @@ class FeedbackFeature(APIView):
 def imagewebui(request):
     if request.method == 'POST':
         if 'file' not in request.FILES:
+            logger.error(msg="file not found")
             return render(request, '404.html')
         else:
             filename = getnewuniquefilename(request)
@@ -218,12 +240,14 @@ def imagewebui(request):
                 return render(request, 'predict_result.html',
                               {'Faces': result, 'imagefile': filename})
     else:
+        logger.error(msg="GET request made instead of POST")
         return "POST HTTP method required!"
 
 
 def videowebui(request):
     if request.method == 'POST':
         if 'file' not in request.FILES:
+            logger.error(msg="file not found")
             return render(request, '404.html')
         else:
             filename = getnewuniquefilename(request)
@@ -235,6 +259,7 @@ def videowebui(request):
                 return render(request, 'facevid_result.html',
                               {'dura': result, 'videofile': filename})
     else:
+        logger.error(msg="GET request made instead of POST")
         return "POST HTTP method required!"
 
 
@@ -270,6 +295,8 @@ class StreamVideoFr(views.APIView):
     """
 
     def post(self, request):
+
+        logger.info(msg="POST Request for Procesing Youtube Videos made")
         streamlink = request.data["StreamLink"]
         videoid = (str(streamlink).split('/')[-1]).split('\"')[0]
         ytlink = str("https://www.youtube.com/watch?v=" + str(videoid))
@@ -294,11 +321,15 @@ class SimilarFace(views.APIView):
     """
 
     def get(self, request, *args, **kwargs):
+
+        logger.info(msg="GET Request for Similar Face Recognition made")
         similarfacelist = SimilarFaceInImage.objects.all()
         serializer = SimilarFaceSerializer(similarfacelist, many=True)
         return Response({'data': serializer.data})
 
     def post(self, request):
+
+        logger.info(msg="POST Request for Similar Face Recognition made")
         filename = getnewuniquefilename(request)
         result = similarface(request, filename)
         if "Error" not in result:
