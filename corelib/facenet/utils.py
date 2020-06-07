@@ -10,8 +10,11 @@ from scipy.misc import imresize, imsave
 from collections import defaultdict
 import string
 import random
-import logging
 from Rekognition.settings import MEDIA_ROOT
+from logger.logging import RekogntionLogger
+
+
+logger = RekogntionLogger(name="utils")
 
 
 def allowed_file(filename, allowed_set):
@@ -22,6 +25,8 @@ def allowed_file(filename, allowed_set):
     Returns:
             boolean value
     """
+
+    logger.info(msg="allowed_file called")
     return "." in filename and filename.rsplit('.', 1)[1].lower() in allowed_set
 
 
@@ -34,6 +39,8 @@ def remove_file_extension(filename):
         Returns:
             string (filename without extension)
     """
+
+    logger.info(msg="remove_file_extension called")
     return os.path.splitext(filename)[0]
 
 
@@ -48,10 +55,11 @@ def save_image(img, filename, upload_path):
         Returns:
     """
 
+    logger.info(msg="save_image called")
     try:
         imsave(os.path.join(upload_path, filename), arr=np.squeeze(img))
     except Exception as e:
-        logging.warning(e)
+        logger.error(msg=e)
 
 
 def load_model(model):
@@ -63,6 +71,8 @@ def load_model(model):
         tensorflow graph
 
     """
+
+    logger.info(msg="load_model called")
     model_exp = os.path.expanduser(model)
     if os.path.isfile(model_exp):
         with gfile.FastGFile(model_exp, 'rb') as f:
@@ -87,6 +97,8 @@ def get_face(img, pnet, rnet, onet, image_size):
         numpy arrays of faces and corresponding faces
 
     """
+
+    logger.info(msg="get_face called")
     minsize = 20
     threshold = [0.6, 0.7, 0.7]
     factor = 0.709
@@ -118,6 +130,8 @@ def get_face(img, pnet, rnet, onet, image_size):
 
 
 def embed_image(img, session, images_placeholder, phase_train_placeholder, embeddings, image_size):
+
+    logger.info(msg="embed_image called")
     if img is not None:
         image = load_img(img=img, do_random_crop=False,
                          do_random_flip=False, do_prewhiten=True,
@@ -126,26 +140,33 @@ def embed_image(img, session, images_placeholder, phase_train_placeholder, embed
         embedding = session.run(embeddings, feed_dict=feed_dict)
         return embedding
     else:
+        logger.error(msg="Embedding not generated as image is corrupt")
         return None
 
 
 def save_face(img, where, filename):
+
+    logger.info(msg="save_face called")
     path = os.path.join(MEDIA_ROOT, where, str(filename) + '.jpg')
     try:
         imsave(path, arr=np.squeeze(img))
     except Exception as e:
-        logging.warning(e)
+        logger.error(msg=e)
 
 
 def save_embedding(embedding, filename, embeddings_path):
+
+    logger.info(msg="save_embedding called")
     path = os.path.join(embeddings_path, str(filename))
     try:
         np.save(path, embedding)
     except Exception as e:
-        logging.warning(e)
+        logger.error(msg=e)
 
 
 def load_embeddings(embeddings_path):
+
+    logger.info(msg="load_embeddings called")
     embedding_dict = defaultdict()
     pathname = embeddings_path
 
@@ -158,6 +179,8 @@ def load_embeddings(embeddings_path):
 
 
 def identify_face(embedding, embedding_dict):
+
+    logger.info(msg="identify_face called")
     min_dis = 100
     identity = ''
     try:
@@ -172,14 +195,18 @@ def identify_face(embedding, embedding_dict):
             result = "Unknown"
             return result
     except Exception as e:
-        return str(e)
+        logger.error(msg=e)
 
 
 def id_generator(size=30, chars=string.ascii_lowercase + string.digits):
+
+    logger.info(msg="id_generator called")
     return ''.join(random.choice(chars) for _ in range(size))
 
 
 def time_dura(dict_data, gap):
+
+    logger.info(msg="time_dura called")
     result = {}
     new_list = []
     for name in dict_data:
@@ -201,8 +228,8 @@ def time_dura(dict_data, gap):
                     y += 1
                 if(x >= len(dict_data[name]) or y >= len(dict_data[name])):
                     break
-            except Exception:
-                pass
+            except Exception as e:
+                logger.error(msg=e)
 
         new_list.append((round(dict_data[name][z] / 1000, 2),
                          round(dict_data[name][-1] / 1000, 2)))
@@ -214,22 +241,30 @@ def time_dura(dict_data, gap):
 
 
 def handle_uploaded_file(file, fname):
+
+    logger.info(msg="handle_uploaded_file called")
     with open(fname, 'wb+') as destination:
         for chunk in file.chunks():
             destination.write(chunk)
 
 
 def getnewuniquefilename(request):
+
+    logger.info(msg="getnewuniquefilename called")
     file_ext = str((request.FILES['file'].name)).split('.')[-1]
     filename = id_generator() + '.' + file_ext
     return filename
 
 
 def saveimageinfotodb(request, filename):
-    pass
+
+    logger.info(msg="saveimageinfotodb called")
+    logger.warn(msg="image not saved to db")
 
 
 def img_standardize(img):
+
+    logger.info(msg="img_standardize called")
     mean = np.mean(img)
     std = np.std(img)
     img = (img - mean) / std

@@ -5,9 +5,15 @@ from scipy.misc import imresize
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
+from logger.logging import RekogntionLogger
+
+
+logger = RekogntionLogger(name="retina_net")
 
 
 def retry_request(retries=3, backoff_factor=0.3, status_forcelist=(500, 502, 504), session=None):
+
+    logger.info(msg="retry_request called")
     session = session or requests.Session()
     retry = Retry(
         total=retries,
@@ -35,6 +41,8 @@ class FaceDetectionRetina(object):
     @staticmethod
     def _pad_input_image(img, max_steps):
         """pad image to suitable shape"""
+
+        logger.info(msg="_pad_input_image called")
         img_h, img_w, _ = img.shape
 
         img_pad_h = 0
@@ -55,6 +63,8 @@ class FaceDetectionRetina(object):
     @staticmethod
     def _recover_pad_output(outputs, pad_params):
         """recover the padded output effect"""
+
+        logger.info(msg="_recover_pad_output called")
         img_h, img_w, img_pad_h, img_pad_w = pad_params
         recover_xy = np.reshape(outputs[:, :14], [-1, 7, 2]) * \
             [(img_pad_w + img_w) / img_w, (img_pad_h + img_h) / img_h]
@@ -64,6 +74,8 @@ class FaceDetectionRetina(object):
     @staticmethod
     def _draw_bbox_landm(img, ann, img_height, img_width):
         """draw bboxes and landmarks"""
+
+        logger.info(msg="_draw_bbox_landm called")
         # bbox
         x1, y1, x2, y2 = int(ann[0] * img_width), int(ann[1] * img_height), \
             int(ann[2] * img_width), int(ann[3] * img_height)
@@ -91,6 +103,8 @@ class FaceDetectionRetina(object):
     @staticmethod
     def _draw_anchor(img, prior, img_height, img_width):
         """draw anchors"""
+
+        logger.info(msg="_draw_anchor called")
         x1 = int(prior[0] * img_width - prior[2] * img_width / 2)
         y1 = int(prior[1] * img_height - prior[3] * img_height / 2)
         x2 = int(prior[0] * img_width + prior[2] * img_width / 2)
@@ -99,6 +113,8 @@ class FaceDetectionRetina(object):
 
     @staticmethod
     def _process_outputs(output, img_height_raw, img_width_raw):
+
+        logger.info(msg="_process_outputs called")
         return {
             "Bounding Boxes": {
                 "confidance": output[15],
@@ -127,6 +143,8 @@ class FaceDetectionRetina(object):
             numpy arrays of faces and corresponding faces
 
         """
+
+        logger.info(msg="get_face called")
         size = (160, 160)
         img_raw = cv2.imread(file)
         img_height_raw, img_width_raw, _ = img_raw.shape
@@ -154,6 +172,8 @@ class FaceDetectionRetina(object):
 
     def predict(self, img):
         """  Returns bounding box coordinates along with resultant image  """
+
+        logger.info(msg="predict called")
         img_height_raw, img_width_raw, _ = img.shape
         if self.down_scale_factor < 1.0:
             img = cv2.resize(img, (0, 0), fx=self.down_scale_factor,
