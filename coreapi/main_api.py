@@ -265,7 +265,7 @@ def facerecogniseinimage(request, filename, network):
         return {"Error": 'bad file format'}
 
 
-def facerecogniseinvideo(request, filename):
+def facerecogniseinvideo(input_file, filename):
     """     Face Recognition in Video
     Args:
             *   request: Post https request containing a video file
@@ -317,7 +317,7 @@ def facerecogniseinvideo(request, filename):
 
     logger.info(msg="facerecogniseinvideo called")
     file_path = os.path.join(MEDIA_ROOT, 'videos/' + filename)
-    handle_uploaded_file(request.FILES['file'], file_path)
+    handle_uploaded_file(input_file, file_path)
     try:
         file_form = InputVideo(title=filename)
         file_form.save()

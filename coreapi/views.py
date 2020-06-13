@@ -103,7 +103,8 @@ class VideoFr(views.APIView):
 
         logger.info(msg="POST Request for Face Reocgnition in Video made")
         filename = getnewuniquefilename(request)
-        result = facerecogniseinvideo(request, filename)
+        input_file = request.FILES['file']
+        result = facerecogniseinvideo(input_file, filename)
         if "Error" not in result:
             return Response(result, status=status.HTTP_200_OK)
         else:
