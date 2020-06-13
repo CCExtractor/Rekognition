@@ -406,7 +406,7 @@ def facerecogniseinvideo(request, filename):
     return output_dur
 
 
-def createembedding(request, filename):
+def createembedding(input_file, filename):
     """      To create face embedding
     Args:
             *   request: Post https request containing a image file
@@ -422,7 +422,7 @@ def createembedding(request, filename):
     """
 
     logger.info(msg="createembedding called")
-    file = request.FILES['file']
+    file = input_file
     if file and allowed_file(filename=filename, allowed_set=allowed_set):
         filename = secure_filename(filename=filename).replace('_', ' ').split('.')[0].title()
         unid = uuid.uuid4().hex

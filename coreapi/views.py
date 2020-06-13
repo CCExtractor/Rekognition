@@ -137,7 +137,8 @@ class EMBEDDING(views.APIView):
 
         logger.info(msg="POST Request for generating embeddings made")
         filename = request.FILES['file'].name
-        result = createembedding(request, filename)
+        input_file = request.FILES['file']
+        result = createembedding(input_file, filename)
         if "Error" not in result:
             return Response(result, status=status.HTTP_200_OK)
         else:
