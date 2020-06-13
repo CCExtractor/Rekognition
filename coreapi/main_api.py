@@ -93,7 +93,7 @@ def faceexp(cropped_face):
     return final_result
 
 
-def nsfwclassifier(request, filename):
+def nsfwclassifier(input_file, filename):
     """     NSFW classifier of images
     Args:
             *   request: Post https request containing a image file
@@ -120,7 +120,7 @@ def nsfwclassifier(request, filename):
 
     logger.info(msg="nsfwclassifier called")
     file_path = os.path.join(MEDIA_ROOT, 'images/' + filename)
-    handle_uploaded_file(request.FILES['file'], file_path)
+    handle_uploaded_file(input_file, file_path)
 
     img = imread(file_path)
     img = resize(img, (64, 64), anti_aliasing=True, mode='constant')
