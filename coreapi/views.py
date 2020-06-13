@@ -331,7 +331,9 @@ class SimilarFace(views.APIView):
 
         logger.info(msg="POST Request for Similar Face Recognition made")
         filename = getnewuniquefilename(request)
-        result = similarface(request, filename)
+        reference_img = request.FILES['file']
+        compare_img = request.FILES['compareImage']
+        result = similarface(reference_img, compare_img, filename)
         if "Error" not in result:
             return Response(result, status=status.HTTP_200_OK)
         else:

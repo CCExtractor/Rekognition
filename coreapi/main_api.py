@@ -528,7 +528,7 @@ def process_streaming_video(url, filename):
     return result
 
 
-def similarface(request, filename):
+def similarface(reference_img, compare_img, filename):
     """     Face Recognition in image
     Args:
             *   request: Post https request containing a image file
@@ -564,8 +564,8 @@ def similarface(request, filename):
     if not os.path.exists(file_folder):
         os.makedirs(file_folder)
 
-    handle_uploaded_file(request.FILES['file'], file_folder + '/referenceImage.jpg')
-    handle_uploaded_file(request.FILES['compareImage'], file_folder + '/compareImage.jpg')
+    handle_uploaded_file(reference_img, file_folder + '/referenceImage.jpg')
+    handle_uploaded_file(compare_img, file_folder + '/compareImage.jpg')
 
     try:
         # filepath = "/media/similarFace/" + str(filename.split('.')[0]) +'/'+'referenceImage.jpg'
@@ -581,8 +581,8 @@ def similarface(request, filename):
         logger.error(msg=e)
         return {"Error": e}
 
-    ref_img = request.FILES['file']
-    com_img = request.FILES['compareImage']
+    ref_img = reference_img
+    com_img = compare_img
 
     ref_img = imread(fname=ref_img, mode='RGB')
     if (ref_img.shape[2] == 4):
