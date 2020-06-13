@@ -46,10 +46,10 @@ class ImageFr(views.APIView):
         logger.info(msg="POST Request for Face Reocgnition made")
         image_serializer = self.serializer(data=request.data)
         filename = getnewuniquefilename(request)
-
+        input_file = request.FILES['file']
         if image_serializer.is_valid():
             network = image_serializer.data["network"]
-            result = facerecogniseinimage(request, filename, network)
+            result = facerecogniseinimage(input_file, filename, network)
             if "Error" not in result:
                 return Response(result, status=status.HTTP_200_OK)
             else:
@@ -78,7 +78,8 @@ class NsfwRecognise(views.APIView):
 
         logger.info(msg="POST Request for NSFW Classification made")
         filename = getnewuniquefilename(request)
-        result = nsfwclassifier(request, filename)
+        input_file = request.FILES['file']
+        result = nsfwclassifier(input_file, filename)
         if "Error" not in result:
             return Response(result, status=status.HTTP_200_OK)
         else:

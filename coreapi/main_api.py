@@ -160,7 +160,7 @@ def nsfwclassifier(request, filename):
     return predict_result
 
 
-def facerecogniseinimage(request, filename, network):
+def facerecogniseinimage(input_file, filename, network):
     """     Face Recognition in image
     Args:
             *   request: Post https request containing a image file
@@ -197,8 +197,8 @@ def facerecogniseinimage(request, filename, network):
 
     logger.info(msg="facerecogniseinimage called")
     file_path = os.path.join(MEDIA_ROOT, 'images/' + filename)
-    handle_uploaded_file(request.FILES['file'], file_path)
-    file = request.FILES['file']
+    handle_uploaded_file(input_file, file_path)
+    file = input_file
 
     if file and allowed_file(filename=filename, allowed_set=allowed_set):
         try:
