@@ -119,7 +119,8 @@ def nsfwclassifier(input_file, filename):
     """
 
     logger.info(msg="nsfwclassifier called")
-    file_path = os.path.join(MEDIA_ROOT, 'images/' + filename)
+    file_path = os.path.join(MEDIA_ROOT, 'images', filename)
+
     handle_uploaded_file(input_file, file_path)
 
     img = imread(file_path)
@@ -196,7 +197,7 @@ def facerecogniseinimage(input_file, filename, network):
     """
 
     logger.info(msg="facerecogniseinimage called")
-    file_path = os.path.join(MEDIA_ROOT, 'images/' + filename)
+    file_path = os.path.join(MEDIA_ROOT, 'images', filename)
     handle_uploaded_file(input_file, file_path)
     file = input_file
 
@@ -316,7 +317,7 @@ def facerecogniseinvideo(input_file, filename):
     """
 
     logger.info(msg="facerecogniseinvideo called")
-    file_path = os.path.join(MEDIA_ROOT, 'videos/' + filename)
+    file_path = os.path.join(MEDIA_ROOT, 'videos', filename)
     handle_uploaded_file(input_file, file_path)
     try:
         file_form = InputVideo(title=filename)
