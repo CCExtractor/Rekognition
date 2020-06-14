@@ -563,9 +563,8 @@ def similarface(reference_img, compare_img, filename):
 
     if not os.path.exists(file_folder):
         os.makedirs(file_folder)
-
-    handle_uploaded_file(reference_img, file_folder + '/referenceImage.jpg')
-    handle_uploaded_file(compare_img, file_folder + '/compareImage.jpg')
+    handle_uploaded_file(reference_img, os.path.join(file_folder, 'referenceImage.jpg'))
+    handle_uploaded_file(compare_img, os.path.join(file_folder, 'compareImage.jpg'))
 
     try:
         # filepath = "/media/similarFace/" + str(filename.split('.')[0]) +'/'+'referenceImage.jpg'
