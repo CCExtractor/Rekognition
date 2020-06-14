@@ -96,7 +96,7 @@ def faceexp(cropped_face):
 def nsfwclassifier(input_file, filename):
     """     NSFW classifier of images
     Args:
-            *   request: Post https request containing a image file
+            *   input_file: Contents of the input image file
             *   filename: filename of the video
     Workflow:
             *   A numpy array of an image is taken as input (RGB).
@@ -163,7 +163,7 @@ def nsfwclassifier(input_file, filename):
 def facerecogniseinimage(input_file, filename, network):
     """     Face Recognition in image
     Args:
-            *   request: Post https request containing a image file
+            *   input_file: Contents of the input image file
             *   filename: filename of the video
             *   network: Network architecture to be used for face detection
     Workflow:
@@ -268,7 +268,7 @@ def facerecogniseinimage(input_file, filename, network):
 def facerecogniseinvideo(input_file, filename):
     """     Face Recognition in Video
     Args:
-            *   request: Post https request containing a video file
+            *   input_file: Contents of the input video file
             *   filename: filename of the video
     Workflow
             *   Video file is first saved into videos which is subfolder of
@@ -409,7 +409,7 @@ def facerecogniseinvideo(input_file, filename):
 def createembedding(input_file, filename):
     """      To create face embedding
     Args:
-            *   request: Post https request containing a image file
+            *   input_file: Contents of the input image file
             *   filename: filename of the video
     Workflow
             *   First it checks whether is there any image file in the post
@@ -531,7 +531,8 @@ def process_streaming_video(url, filename):
 def similarface(reference_img, compare_img, filename):
     """     Face Recognition in image
     Args:
-            *   request: Post https request containing a image file
+            *   reference_img: Contents of the input reference image file
+            *   compare_img: Contents of the input compare image file
             *   filename: filename of the image
     Workflow:
             *   Image folder is created inside similarFace which is subfolder
