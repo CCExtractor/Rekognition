@@ -199,9 +199,8 @@ def facerecogniseinimage(input_file, filename, network):
     logger.info(msg="facerecogniseinimage called")
     file_path = os.path.join(MEDIA_ROOT, 'images', filename)
     handle_uploaded_file(input_file, file_path)
-    file = input_file
 
-    if file and allowed_file(filename=filename, allowed_set=allowed_set):
+    if input_file and allowed_file(filename=filename, allowed_set=allowed_set):
         try:
             file_form = InputImage(title=filename)
             file_form.save()
@@ -215,7 +214,7 @@ def facerecogniseinimage(input_file, filename, network):
             logger.error(msg=e)
             return {"Error": e}
 
-        img = imread(fname=file, mode='RGB')
+        img = imread(fname=input_file, mode='RGB')
         if (img.shape[2] == 4):
             img = img[..., :3]
 
@@ -423,8 +422,7 @@ def createembedding(input_file, filename):
     """
 
     logger.info(msg="createembedding called")
-    file = input_file
-    if file and allowed_file(filename=filename, allowed_set=allowed_set):
+    if input_file and allowed_file(filename=filename, allowed_set=allowed_set):
         filename = secure_filename(filename=filename).replace('_', ' ').split('.')[0].title()
         unid = uuid.uuid4().hex
         try:
@@ -441,7 +439,7 @@ def createembedding(input_file, filename):
             logger.error(msg=e)
             return {"Error": e}
 
-        img = imread(fname=file, mode='RGB')
+        img = imread(fname=input_file, mode='RGB')
         if (img.shape[2] == 4):
             img = img[..., :3]
 
