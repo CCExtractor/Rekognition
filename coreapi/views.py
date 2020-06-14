@@ -43,7 +43,7 @@ class ImageFr(views.APIView):
 
     def post(self, request):
 
-        logger.info(msg="POST Request for Face Reocgnition made")
+        logger.info(msg="POST Request for Face Recognition made")
         image_serializer = self.serializer(data=request.data)
         filename = getnewuniquefilename(request)
         input_file = request.FILES['file']
@@ -102,7 +102,7 @@ class VideoFr(views.APIView):
 
     def post(self, request):
 
-        logger.info(msg="POST Request for Face Reocgnition in Video made")
+        logger.info(msg="POST Request for Face Recognition in Video made")
         filename = getnewuniquefilename(request)
         input_file = request.FILES['file']
         result = facerecogniseinvideo(input_file, filename)
