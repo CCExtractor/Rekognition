@@ -36,7 +36,7 @@ from django.db import IntegrityError, DatabaseError
 logger = RekogntionLogger(name="main_api")
 
 
-def text_reco(image_path):
+def text_reco(image):
     """     Scene Text Recognition
     Args:
             *   image: numpy array of cropped text
@@ -59,7 +59,6 @@ def text_reco(image_path):
                 expression and it's values.
     """
 
-    image = cv2.imread(image_path, cv2.IMREAD_COLOR)
     image = cv2.resize(image, tuple((100, 32)), interpolation=cv2.INTER_LINEAR)
     image = np.array(image, np.float32) / 127.5 - 1.0
     url = urllib.parse.urljoin(base_url, text_reco_url)
