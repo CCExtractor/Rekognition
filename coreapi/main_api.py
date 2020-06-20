@@ -93,10 +93,10 @@ def faceexp(cropped_face):
     return final_result
 
 
-def nsfwclassifier(request, filename):
+def nsfwclassifier(input_file, filename):
     """     NSFW classifier of images
     Args:
-            *   request: Post https request containing a image file
+            *   input_file: Contents of the input image file
             *   filename: filename of the video
     Workflow:
             *   A numpy array of an image is taken as input (RGB).
@@ -119,8 +119,9 @@ def nsfwclassifier(request, filename):
     """
 
     logger.info(msg="nsfwclassifier called")
-    file_path = os.path.join(MEDIA_ROOT, 'images/' + filename)
-    handle_uploaded_file(request.FILES['file'], file_path)
+    file_path = os.path.join(MEDIA_ROOT, 'images', filename)
+
+    handle_uploaded_file(input_file, file_path)
 
     img = imread(file_path)
     img = resize(img, (64, 64), anti_aliasing=True, mode='constant')
@@ -160,10 +161,10 @@ def nsfwclassifier(request, filename):
     return predict_result
 
 
-def facerecogniseinimage(request, filename, network):
+def facerecogniseinimage(input_file, filename, network):
     """     Face Recognition in image
     Args:
-            *   request: Post https request containing a image file
+            *   input_file: Contents of the input image file
             *   filename: filename of the video
             *   network: Network architecture to be used for face detection
     Workflow:
@@ -196,11 +197,10 @@ def facerecogniseinimage(request, filename, network):
     """
 
     logger.info(msg="facerecogniseinimage called")
-    file_path = os.path.join(MEDIA_ROOT, 'images/' + filename)
-    handle_uploaded_file(request.FILES['file'], file_path)
-    file = request.FILES['file']
+    file_path = os.path.join(MEDIA_ROOT, 'images', filename)
+    handle_uploaded_file(input_file, file_path)
 
-    if file and allowed_file(filename=filename, allowed_set=allowed_set):
+    if input_file and allowed_file(filename=filename, allowed_set=allowed_set):
         try:
             file_form = InputImage(title=filename)
             file_form.save()
@@ -214,7 +214,7 @@ def facerecogniseinimage(request, filename, network):
             logger.error(msg=e)
             return {"Error": e}
 
-        img = imread(fname=file, mode='RGB')
+        img = imread(fname=input_file, mode='RGB')
         if (img.shape[2] == 4):
             img = img[..., :3]
 
@@ -265,10 +265,10 @@ def facerecogniseinimage(request, filename, network):
         return {"Error": 'bad file format'}
 
 
-def facerecogniseinvideo(request, filename):
+def facerecogniseinvideo(input_file, filename):
     """     Face Recognition in Video
     Args:
-            *   request: Post https request containing a video file
+            *   input_file: Contents of the input video file
             *   filename: filename of the video
     Workflow
             *   Video file is first saved into videos which is subfolder of
@@ -316,8 +316,8 @@ def facerecogniseinvideo(request, filename):
     """
 
     logger.info(msg="facerecogniseinvideo called")
-    file_path = os.path.join(MEDIA_ROOT, 'videos/' + filename)
-    handle_uploaded_file(request.FILES['file'], file_path)
+    file_path = os.path.join(MEDIA_ROOT, 'videos', filename)
+    handle_uploaded_file(input_file, file_path)
     try:
         file_form = InputVideo(title=filename)
         file_form.save()
@@ -406,10 +406,10 @@ def facerecogniseinvideo(request, filename):
     return output_dur
 
 
-def createembedding(request, filename):
+def createembedding(input_file, filename):
     """      To create face embedding
     Args:
-            *   request: Post https request containing a image file
+            *   input_file: Contents of the input image file
             *   filename: filename of the video
     Workflow
             *   First it checks whether is there any image file in the post
@@ -422,8 +422,7 @@ def createembedding(request, filename):
     """
 
     logger.info(msg="createembedding called")
-    file = request.FILES['file']
-    if file and allowed_file(filename=filename, allowed_set=allowed_set):
+    if input_file and allowed_file(filename=filename, allowed_set=allowed_set):
         filename = secure_filename(filename=filename).replace('_', ' ').split('.')[0].title()
         unid = uuid.uuid4().hex
         try:
@@ -440,7 +439,7 @@ def createembedding(request, filename):
             logger.error(msg=e)
             return {"Error": e}
 
-        img = imread(fname=file, mode='RGB')
+        img = imread(fname=input_file, mode='RGB')
         if (img.shape[2] == 4):
             img = img[..., :3]
 
@@ -528,10 +527,11 @@ def process_streaming_video(url, filename):
     return result
 
 
-def similarface(request, filename):
+def similarface(reference_img, compare_img, filename):
     """     Face Recognition in image
     Args:
-            *   request: Post https request containing a image file
+            *   reference_img: Contents of the input reference image file
+            *   compare_img: Contents of the input compare image file
             *   filename: filename of the image
     Workflow:
             *   Image folder is created inside similarFace which is subfolder
@@ -563,9 +563,8 @@ def similarface(request, filename):
 
     if not os.path.exists(file_folder):
         os.makedirs(file_folder)
-
-    handle_uploaded_file(request.FILES['file'], file_folder + '/referenceImage.jpg')
-    handle_uploaded_file(request.FILES['compareImage'], file_folder + '/compareImage.jpg')
+    handle_uploaded_file(reference_img, os.path.join(file_folder, 'referenceImage.jpg'))
+    handle_uploaded_file(compare_img, os.path.join(file_folder, 'compareImage.jpg'))
 
     try:
         # filepath = "/media/similarFace/" + str(filename.split('.')[0]) +'/'+'referenceImage.jpg'
@@ -581,8 +580,8 @@ def similarface(request, filename):
         logger.error(msg=e)
         return {"Error": e}
 
-    ref_img = request.FILES['file']
-    com_img = request.FILES['compareImage']
+    ref_img = reference_img
+    com_img = compare_img
 
     ref_img = imread(fname=ref_img, mode='RGB')
     if (ref_img.shape[2] == 4):
