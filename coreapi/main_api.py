@@ -41,22 +41,20 @@ def text_reco(image):
     Args:
             *   image: numpy array of cropped text
     Workflow:
-            *   A numpy array of a cropped text is taken as input (RGB).
-            *   Inference input dimension requires dimension of (100,32)
-            *   Input is thus resized and normalized to required dimension.
+            *   A numpy array of a cropped text is taken as input
+                inference input dimension requires dimension of (100,32)
+                therefore the input is first resizing to required
+                input dimension and then normalized.
             *   Now the processed output is further processed to make it a
                 json format which is compatible to TensorFlow Serving input.
             *   Then a http post request is made at localhost:8501.
                 The post request contain data and headers.
-            *   Incase of any exception, it return empty string.
-            *   output from TensorFlow Serving is then parsed and a
-                dictionary is defined which keeps the facial expression name
-                as key and prediction's output as value. The prediction values
-                are floating point values which tells the probability of the
-                particular facial expression.
+            *   Incase of any exception, it return relevant error message.
+            *   output from TensorFlow Serving is further processed using
+                wordninja and then returned as a dictionary which keeps Text
+                as key and processed output as value.
     Returns:
-            *   Dictionary having all the faces and corresponding facial
-                expression and it's values.
+            *   Dictionary having text as Key and processed output as value.
     """
 
     logger.info(msg="text_reco called")
