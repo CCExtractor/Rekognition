@@ -6,10 +6,12 @@ import skvideo.io
 import subprocess
 import shlex
 import cv2
+import wordninja
 from skimage.io import imread
 import urllib.parse
 from werkzeug.utils import secure_filename
 from Rekognition.settings import MEDIA_ROOT
+from corelib.CRNN import CRNN_utils
 from corelib.facenet.utils import (get_face, embed_image, save_embedding,
                                    identify_face, allowed_file, time_dura,
                                    handle_uploaded_file, save_face,
@@ -19,9 +21,9 @@ from corelib.constant import (pnet, rnet, onet, facenet_persistent_session,
                               images_placeholder, image_size, allowed_set,
                               embeddings_path, embedding_dict,
                               Facial_expression_class_names, nsfw_class_names,
-                              base_url, face_exp_url, nsfw_url)
+                              base_url, face_exp_url, nsfw_url, text_reco_url,
+                              char_dict_path, ord_map_dict_path)
 from corelib.utils import ImageFrNetworkChoices
-from .models import InputImage, InputVideo, InputEmbed, SimilarFaceInImage
 from logger.logging import RekogntionLogger
 import numpy as np
 import requests
@@ -31,6 +33,56 @@ from django.db import IntegrityError, DatabaseError
 
 
 logger = RekogntionLogger(name="main_api")
+
+
+def text_reco(image_path):
+    """     Scene Text Recognition
+    Args:
+            *   image: numpy array of cropped text
+    Workflow:
+            *   A numpy array of a cropped text is taken as input (RGB).
+            *   Inference input dimension requires dimension of (100,32)
+            *   Input is thus normalized & resized to required input dimension.
+            *   Now the processed output is further processed to make it a
+                json format which is compatible to TensorFlow Serving input.
+            *   Then a http post request is made at localhost:8501.
+                The post request contain data and headers.
+            *   Incase of any exception, it return empty string.
+            *   output from TensorFlow Serving is then parsed and a
+                dictionary is defined which keeps the facial expression name
+                as key and prediction's output as value. The prediction values
+                are floating point values which tells the probability of the
+                particular facial expression.
+    Returns:
+            *   Dictionary having all the faces and corresponding facial
+                expression and it's values.
+    """
+
+    image = cv2.imread(image_path, cv2.IMREAD_COLOR)
+    image = cv2.resize(image, tuple((100, 32)), interpolation=cv2.INTER_LINEAR)
+    image = np.array(image, np.float32) / 127.5 - 1.0
+    url = urllib.parse.urljoin(base_url, text_reco_url)
+    response = requests.post(
+        url,
+        data=json.dumps({
+            'inputs': [image.tolist()],
+        }),
+    )
+    response.raise_for_status()
+    outputs = response.json()['outputs']
+
+    codec = CRNN_utils._FeatureIO(
+        char_dict_path=char_dict_path,
+        ord_map_dict_path=ord_map_dict_path,
+    )
+
+    preds = codec.sparse_tensor_to_str_for_tf_serving(
+        decode_indices=outputs['decodes_indices'],
+        decode_values=outputs['decodes_values'],
+        decode_dense_shape=outputs['decodes_dense_shape'],
+    )[0]
+    preds = ' '.join(wordninja.split(preds))
+    return preds, response, type(preds), type(response)
 
 
 def faceexp(cropped_face):
