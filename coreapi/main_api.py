@@ -24,6 +24,7 @@ from corelib.constant import (pnet, rnet, onet, facenet_persistent_session,
                               base_url, face_exp_url, nsfw_url, text_reco_url,
                               char_dict_path, ord_map_dict_path)
 from corelib.utils import ImageFrNetworkChoices
+from .models import InputImage, InputVideo, InputEmbed, SimilarFaceInImage
 from logger.logging import RekogntionLogger
 import numpy as np
 import requests
