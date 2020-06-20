@@ -188,7 +188,8 @@ class FeedbackFeature(APIView):
         try:
             namesuggestedobject = NameSuggested.objects.get(feedback_id=randomfaceobject.id)
         except NameSuggested.MultipleObjectsReturned:
-            logger.warn(msg="One Name was expected, multiple names were returned.")
+            namesuggestedobject = NameSuggested.objects.filter(feedback_id=randomfaceobject.id).first()
+            logger.warn(msg="Multiple names were returned, first anme has been set.")
         except NameSuggested.DoesNotExist:
             namesuggestedobject = NameSuggested.objects.create(suggested_name=randomfaceobject.title,
                                                                feedback=randomfaceobject)
