@@ -30,7 +30,7 @@ class _FeatureIO(object):
                 *   number: string representing the integer value to look up
         Workflow:
                 *   if the number is 1, '\x00' is returned as we need to
-                    skip 1 because its the default value in 
+                    skip 1 because its the default value in
                     parse_tensor_to_str_for_tf_serving
                 *   else the corresponding character is returned
         Returns:

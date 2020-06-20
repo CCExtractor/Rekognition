@@ -60,7 +60,7 @@ def text_reco(image):
     logger.info(msg="text_reco called")
     image = cv2.resize(image, tuple((100, 32)), interpolation=cv2.INTER_LINEAR)
     image = np.array(image, np.float32) / 127.5 - 1.0
-    data=json.dumps({"inputs": [image.tolist()]})
+    data = json.dumps({"inputs": [image.tolist()]})
     try:
         headers = {"content-type": "application/json"}
         url = urllib.parse.urljoin(base_url, text_reco_url)
@@ -95,7 +95,7 @@ def text_reco(image):
         decode_dense_shape=predictions['decodes_dense_shape'],
     )[0]
     preds = ' '.join(wordninja.split(preds))
-    return {"Text":preds}
+    return {"Text": preds}
 
 
 def faceexp(cropped_face):
