@@ -43,7 +43,7 @@ def text_reco(image):
     Workflow:
             *   A numpy array of a cropped text is taken as input (RGB).
             *   Inference input dimension requires dimension of (100,32)
-            *   Input is thus normalized & resized to required input dimension.
+            *   Input is thus resized and normalized to required dimension.
             *   Now the processed output is further processed to make it a
                 json format which is compatible to TensorFlow Serving input.
             *   Then a http post request is made at localhost:8501.
@@ -59,30 +59,46 @@ def text_reco(image):
                 expression and it's values.
     """
 
+    logger.info(msg="text_reco called")
     image = cv2.resize(image, tuple((100, 32)), interpolation=cv2.INTER_LINEAR)
     image = np.array(image, np.float32) / 127.5 - 1.0
-    url = urllib.parse.urljoin(base_url, text_reco_url)
-    response = requests.post(
-        url,
-        data=json.dumps({
-            'inputs': [image.tolist()],
-        }),
-    )
-    response.raise_for_status()
-    outputs = response.json()['outputs']
-
+    data=json.dumps({"inputs": [image.tolist()]})
+    try:
+        headers = {"content-type": "application/json"}
+        url = urllib.parse.urljoin(base_url, text_reco_url)
+        json_response = requests.post(url, data=data, headers=headers)
+        print(json.loads(json_response.text))
+    except requests.exceptions.HTTPError as errh:
+        logger.error(msg=errh)
+        return {"Error": "An HTTP error occurred."}
+    except requests.exceptions.ConnectionError as errc:
+        logger.error(msg=errc)
+        return {"Error": "A Connection error occurred."}
+    except requests.exceptions.Timeout as errt:
+        logger.error(msg=errt)
+        return {"Error": "The request timed out."}
+    except requests.exceptions.TooManyRedirects as errm:
+        logger.error(msg=errm)
+        return {"Error": "Bad URL"}
+    except requests.exceptions.RequestException as err:
+        logger.error(msg=err)
+        return {"Error": "Facial Expression Recognition Not Working"}
+    except Exception as e:
+        logger.error(msg=e)
+        return {"Error": "Facial Expression Recognition Not Working"}
+    predictions = json.loads(json_response.text)["outputs"]
     codec = CRNN_utils._FeatureIO(
         char_dict_path=char_dict_path,
         ord_map_dict_path=ord_map_dict_path,
     )
 
     preds = codec.sparse_tensor_to_str_for_tf_serving(
-        decode_indices=outputs['decodes_indices'],
-        decode_values=outputs['decodes_values'],
-        decode_dense_shape=outputs['decodes_dense_shape'],
+        decode_indices=predictions['decodes_indices'],
+        decode_values=predictions['decodes_values'],
+        decode_dense_shape=predictions['decodes_dense_shape'],
     )[0]
     preds = ' '.join(wordninja.split(preds))
-    return preds, response, type(preds), type(response)
+    return {"Text":preds}
 
 
 def faceexp(cropped_face):
