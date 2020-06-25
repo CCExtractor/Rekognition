@@ -29,3 +29,4 @@ nsfw_class_names = {0: 'Drawings', 1: 'Hentai', 2: 'Neutral',
 base_url = 'http://localhost:8501/v1/'
 face_exp_url = 'models/fer2013:predict'
 nsfw_url = 'models/nsfw:predict'
+text_detect_url = 'models/east:predict'

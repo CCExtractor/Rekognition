@@ -14,14 +14,16 @@ from corelib.facenet.utils import (get_face, embed_image, save_embedding,
                                    identify_face, allowed_file, time_dura,
                                    handle_uploaded_file, save_face,
                                    img_standardize)
+from corelib.EAST.EAST_utils import (preprocess, sort_poly,
+                                     postprocess)
 from corelib.constant import (pnet, rnet, onet, facenet_persistent_session,
                               phase_train_placeholder, embeddings,
                               images_placeholder, image_size, allowed_set,
                               embeddings_path, embedding_dict,
                               Facial_expression_class_names, nsfw_class_names,
-                              base_url, face_exp_url, nsfw_url)
+                              base_url, face_exp_url, nsfw_url, text_detect_url)
 from corelib.utils import ImageFrNetworkChoices
-from .models import InputImage, InputVideo, InputEmbed, SimilarFaceInImage
+#from .models import InputImage, InputVideo, InputEmbed, SimilarFaceInImage
 from logger.logging import RekogntionLogger
 import numpy as np
 import requests
@@ -31,6 +33,76 @@ from django.db import IntegrityError, DatabaseError
 
 
 logger = RekogntionLogger(name="main_api")
+
+
+def text_detect(image):
+    """     Scene Text Detection
+    Args:
+            *   image: path of image
+    Workflow:
+            *   A numpy array of an image with text is taken as input
+                inference input dimension requires dimension to be in a
+                multiple of 32 therefore the input is first resized to
+                 required input dimension and then normalized.
+            *   Now the processed output is further processed to make it a
+                json format which is compatible to TensorFlow Serving input.
+            *   Then a http post request is made at localhost:8501.
+                The post request contain data and headers.
+            *   Incase of any exception, it return relevant error message.
+            *   output from TensorFlow Serving is further processed using
+                Locality-Aware Non-Maximum Suppression (LANMS)
+            *   A dictionary is created with boxes as the key an coordinates
+                of bounding boxes of text as value
+    Returns:
+            *   Dictionary having boxes as the key and coordinates of bounding
+                boxes of text as value.
+    """
+
+    img = cv2.imread(image)[:, :, ::-1]
+    img_resized, (ratio_h, ratio_w) = preprocess(img)
+    img_resized = (img_resized / 127.5) - 1
+    data = json.dumps({"signature_name": "serving_default",
+                       "inputs": [img_resized.tolist()]})
+    try:
+        headers = {"content-type": "application/json"}
+        url = urllib.parse.urljoin(base_url, text_detect_url)
+
+        json_response = requests.post(url, data=data, headers=headers)
+    except requests.exceptions.HTTPError as errh:
+        logger.error(msg=errh)
+        return {"Error": "An HTTP error occurred."}
+    except requests.exceptions.ConnectionError as errc:
+        logger.error(msg=errc)
+        return {"Error": "A Connection error occurred."}
+    except requests.exceptions.Timeout as errt:
+        logger.error(msg=errt)
+        return {"Error": "The request timed out."}
+    except requests.exceptions.TooManyRedirects as errm:
+        logger.error(msg=errm)
+        return {"Error": "Bad URL"}
+    except requests.exceptions.RequestException as err:
+        logger.error(msg=err)
+        return {"Error": "Facial Expression Recognition Not Working"}
+    except Exception as e:
+        logger.error(msg=e)
+        return {"Error": e}
+    predictions = json.loads(json_response.text)["outputs"]
+    print(type(predictions), len(predictions))
+    score_map = np.array(predictions["pred_score_map/Sigmoid:0"],dtype="float64")
+    geo_map = np.array(predictions["pred_geo_map/concat:0"],dtype="float64")
+
+    boxes = postprocess(score_map=score_map, geo_map=geo_map)
+    result_boxes = []
+    if boxes is not None:
+        boxes = boxes[:, :8].reshape((-1, 4, 2))
+        boxes[:, :, 0] /= ratio_w
+        boxes[:, :, 1] /= ratio_h
+        for box in boxes:
+            box = sort_poly(box.astype(np.int32))
+            if np.linalg.norm(box[0] - box[1]) < 5 or np.linalg.norm(box[3]-box[0]) < 5:
+                continue
+            result_boxes.append(box)
+    return {"Boxes": result_boxes}
 
 
 def faceexp(cropped_face):
