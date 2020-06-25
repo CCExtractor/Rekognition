@@ -83,7 +83,7 @@ def text_reco(image):
     except Exception as e:
         logger.error(msg=e)
         return {"Error": "Facial Expression Recognition Not Working"}
-    predictions = json.loads(json_response.text)["outputs"]
+    predictions = json.loads(json_response.text).get("outputs","error")
     codec = CRNN_utils._FeatureIO(
         char_dict_path=char_dict_path,
         ord_map_dict_path=ord_map_dict_path,
@@ -151,7 +151,7 @@ def faceexp(cropped_face):
     except Exception as e:
         logger.error(msg=e)
         return {"Error": "Facial Expression Recognition Not Working"}
-    predictions = json.loads(json_response.text)["predictions"]
+    predictions = json.loads(json_response.text).get("predictions","error")
     final_result = {}
     for key, value in zip(Facial_expression_class_names, predictions[0]):
         final_result[key] = value

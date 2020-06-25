@@ -3,6 +3,7 @@ import json
 
 from logger.logging import RekogntionLogger
 
+
 logger = RekogntionLogger(name="CRNN_utils")
 
 
@@ -22,7 +23,6 @@ class _FeatureIO(object):
         logger.info(msg="_FeatureIO called")
         self._char_dict = CharDictBuilder.read_char_dict(char_dict_path)
         self._ord_map = CharDictBuilder.read_ord_map_dict(ord_map_dict_path)
-        return
 
     def int_to_char(self, number):
         """     Convert the int index into char
