@@ -1,6 +1,8 @@
 import numpy as np
 import cv2
 import lanms
+
+
 def preprocess(im, max_side_len=2400):
     """     Resize image to make it a multiple of 32
     Args:
@@ -40,6 +42,7 @@ def preprocess(im, max_side_len=2400):
     ratio_w = resize_w / float(w)
 
     return im, (ratio_h, ratio_w)
+
 
 def restore_rectangle(origin, geometry):
     d = geometry[:, :4]
@@ -112,6 +115,7 @@ def restore_rectangle(origin, geometry):
         new_p_1 = np.zeros((0, 4, 2))
     return np.concatenate([new_p_0, new_p_1])
 
+
 def postprocess(score_map, geo_map, score_map_thresh=0.01, box_thresh=0.01, nms_thres=0.2):
     """     Removal of boxes according to various thresholds
     Args:
@@ -136,7 +140,7 @@ def postprocess(score_map, geo_map, score_map_thresh=0.01, box_thresh=0.01, nms_
         geo_map = geo_map[0, :, :, ]
     xy_text = np.argwhere(score_map > score_map_thresh)
     xy_text = xy_text[np.argsort(xy_text[:, 0])]
-    text_box_restored = restore_rectangle(xy_text[:, ::-1]*4, geo_map[xy_text[:, 0], xy_text[:, 1], :])
+    text_box_restored = restore_rectangle(xy_text[:, ::-1] * 4, geo_map[xy_text[:, 0], xy_text[:, 1], :])
     boxes = np.zeros((text_box_restored.shape[0], 9), dtype=np.float32)
     boxes[:, :8] = text_box_restored.reshape((-1, 8))
     boxes[:, 8] = score_map[xy_text[:, 0], xy_text[:, 1]]
@@ -154,9 +158,10 @@ def postprocess(score_map, geo_map, score_map_thresh=0.01, box_thresh=0.01, nms_
 
     return boxes
 
+
 def sort_poly(p):
     min_axis = np.argmin(np.sum(p, axis=1))
-    p = p[[min_axis, (min_axis+1)%4, (min_axis+2)%4, (min_axis+3)%4]]
+    p = p[[min_axis, (min_axis + 1) % 4, (min_axis + 2) % 4, (min_axis + 3) % 4]]
     if abs(p[0, 0] - p[1, 0]) > abs(p[0, 1] - p[1, 1]):
         return p
     else:

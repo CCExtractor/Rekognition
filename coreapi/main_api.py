@@ -23,7 +23,7 @@ from corelib.constant import (pnet, rnet, onet, facenet_persistent_session,
                               Facial_expression_class_names, nsfw_class_names,
                               base_url, face_exp_url, nsfw_url, text_detect_url)
 from corelib.utils import ImageFrNetworkChoices
-#from .models import InputImage, InputVideo, InputEmbed, SimilarFaceInImage
+from .models import InputImage, InputVideo, InputEmbed, SimilarFaceInImage
 from logger.logging import RekogntionLogger
 import numpy as np
 import requests
@@ -88,8 +88,8 @@ def text_detect(image):
         return {"Error": e}
     predictions = json.loads(json_response.text)["outputs"]
     print(type(predictions), len(predictions))
-    score_map = np.array(predictions["pred_score_map/Sigmoid:0"],dtype="float64")
-    geo_map = np.array(predictions["pred_geo_map/concat:0"],dtype="float64")
+    score_map = np.array(predictions["pred_score_map/Sigmoid:0"], dtype="float64")
+    geo_map = np.array(predictions["pred_geo_map/concat:0"], dtype="float64")
 
     boxes = postprocess(score_map=score_map, geo_map=geo_map)
     result_boxes = []
@@ -99,7 +99,7 @@ def text_detect(image):
         boxes[:, :, 1] /= ratio_h
         for box in boxes:
             box = sort_poly(box.astype(np.int32))
-            if np.linalg.norm(box[0] - box[1]) < 5 or np.linalg.norm(box[3]-box[0]) < 5:
+            if np.linalg.norm(box[0] - box[1]) < 5 or np.linalg.norm(box[3] - box[0]) < 5:
                 continue
             result_boxes.append(box)
     return {"Boxes": result_boxes}
