@@ -2,6 +2,11 @@ import numpy as np
 import cv2
 import lanms
 
+from logger.logging import RekogntionLogger
+
+
+logger = RekogntionLogger(name="EAST_utils")
+
 
 def preprocess(im, max_side_len=2400):
     """     Resize image to make it a multiple of 32
@@ -22,6 +27,7 @@ def preprocess(im, max_side_len=2400):
             *   Rezised Image along  with resizing factor
     """
 
+    logger.info(msg="preprocess called")
     h, w, _ = im.shape
 
     resize_w = w
@@ -45,6 +51,8 @@ def preprocess(im, max_side_len=2400):
 
 
 def restore_rectangle(origin, geometry):
+
+    logger.info(msg="restore_rectangle called")
     d = geometry[:, :4]
     angle = geometry[:, 4]
     # for angle > 0
@@ -135,6 +143,7 @@ def postprocess(score_map, geo_map, score_map_thresh=0.01, box_thresh=0.01, nms_
             *   Rezised Image along  with resizing factor
     """
 
+    logger.info(msg="postprocess called")
     if len(score_map.shape) == 4:
         score_map = score_map[0, :, :, 0]
         geo_map = geo_map[0, :, :, ]
@@ -160,6 +169,8 @@ def postprocess(score_map, geo_map, score_map_thresh=0.01, box_thresh=0.01, nms_
 
 
 def sort_poly(p):
+
+    logger.info(msg="sort_poly called")
     min_axis = np.argmin(np.sum(p, axis=1))
     p = p[[min_axis, (min_axis + 1) % 4, (min_axis + 2) % 4, (min_axis + 3) % 4]]
     if abs(p[0, 0] - p[1, 0]) > abs(p[0, 1] - p[1, 1]):

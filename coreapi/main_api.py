@@ -58,6 +58,7 @@ def text_detect(image):
                 boxes of text as value.
     """
 
+    logger.info(msg="text_detect called")
     img = cv2.imread(image)[:, :, ::-1]
     img_resized, (ratio_h, ratio_w) = preprocess(img)
     img_resized = (img_resized / 127.5) - 1
