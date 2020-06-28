@@ -53,18 +53,18 @@ def preprocess(im, max_side_len=2400):
 def restore_rectangle(origin, geometry):
 
     logger.info(msg="restore_rectangle called")
-    d = geometry[:, :4]
+    distance = geometry[:, :4]
     angle = geometry[:, 4]
     # for angle > 0
     origin_0 = origin[angle >= 0]
-    d_0 = d[angle >= 0]
+    distance_0 = distance[angle >= 0]
     angle_0 = angle[angle >= 0]
     if origin_0.shape[0] > 0:
-        p = np.array([np.zeros(d_0.shape[0]), -d_0[:, 0] - d_0[:, 2],
-                      d_0[:, 1] + d_0[:, 3], -d_0[:, 0] - d_0[:, 2],
-                      d_0[:, 1] + d_0[:, 3], np.zeros(d_0.shape[0]),
-                      np.zeros(d_0.shape[0]), np.zeros(d_0.shape[0]),
-                      d_0[:, 3], -d_0[:, 2]])
+        p = np.array([np.zeros(distance_0.shape[0]), -distance_0[:, 0] - distance_0[:, 2],
+                      distance_0[:, 1] + distance_0[:, 3], -distance_0[:, 0] - distance_0[:, 2],
+                      distance_0[:, 1] + distance_0[:, 3], np.zeros(distance_0.shape[0]),
+                      np.zeros(distance_0.shape[0]), np.zeros(distance_0.shape[0]),
+                      distance_0[:, 3], -distance_0[:, 2]])
         p = p.transpose((1, 0)).reshape((-1, 5, 2))  # N*5*2
 
         rotate_matrix_x = np.array([np.cos(angle_0), np.sin(angle_0)]).transpose((1, 0))
@@ -90,14 +90,14 @@ def restore_rectangle(origin, geometry):
         new_p_0 = np.zeros((0, 4, 2))
     # for angle < 0
     origin_1 = origin[angle < 0]
-    d_1 = d[angle < 0]
+    distance_1 = distance[angle < 0]
     angle_1 = angle[angle < 0]
     if origin_1.shape[0] > 0:
-        p = np.array([-d_1[:, 1] - d_1[:, 3], -d_1[:, 0] - d_1[:, 2],
-                      np.zeros(d_1.shape[0]), -d_1[:, 0] - d_1[:, 2],
-                      np.zeros(d_1.shape[0]), np.zeros(d_1.shape[0]),
-                      -d_1[:, 1] - d_1[:, 3], np.zeros(d_1.shape[0]),
-                      -d_1[:, 1], -d_1[:, 2]])
+        p = np.array([-distance_1[:, 1] - distance_1[:, 3], -distance_1[:, 0] - distance_1[:, 2],
+                      np.zeros(distance_1.shape[0]), -distance_1[:, 0] - distance_1[:, 2],
+                      np.zeros(distance_1.shape[0]), np.zeros(distance_1.shape[0]),
+                      -distance_1[:, 1] - distance_1[:, 3], np.zeros(distance_1.shape[0]),
+                      -distance_1[:, 1], -distance_1[:, 2]])
         p = p.transpose((1, 0)).reshape((-1, 5, 2))  # N*5*2
 
         rotate_matrix_x = np.array([np.cos(-angle_1), -np.sin(-angle_1)]).transpose((1, 0))
@@ -168,12 +168,12 @@ def postprocess(score_map, geo_map, score_map_thresh=0.01, box_thresh=0.01, nms_
     return boxes
 
 
-def sort_poly(p):
+def sort_poly(poly):
 
     logger.info(msg="sort_poly called")
-    min_axis = np.argmin(np.sum(p, axis=1))
-    p = p[[min_axis, (min_axis + 1) % 4, (min_axis + 2) % 4, (min_axis + 3) % 4]]
-    if abs(p[0, 0] - p[1, 0]) > abs(p[0, 1] - p[1, 1]):
-        return p
+    min_axis = np.argmin(np.sum(poly, axis=1))
+    poly = poly[[min_axis, (min_axis + 1) % 4, (min_axis + 2) % 4, (min_axis + 3) % 4]]
+    if abs(poly[0, 0] - poly[1, 0]) > abs(poly[0, 1] - poly[1, 1]):
+        return poly
     else:
-        return p[[0, 3, 2, 1]]
+        return poly[[0, 3, 2, 1]]
