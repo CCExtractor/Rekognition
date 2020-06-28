@@ -96,3 +96,4 @@ youtube-dl==2019.6.8
 dj_database_url
 gunicorn
 lanms==1.0.2
+wordninja==0.1.5
