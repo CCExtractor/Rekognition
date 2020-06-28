@@ -88,7 +88,6 @@ def text_detect(image):
         logger.error(msg=e)
         return {"Error": e}
     predictions = json.loads(json_response.text)["outputs"]
-    print(type(predictions), len(predictions))
     score_map = np.array(predictions["pred_score_map/Sigmoid:0"], dtype="float64")
     geo_map = np.array(predictions["pred_geo_map/concat:0"], dtype="float64")
 
@@ -140,7 +139,6 @@ def faceexp(cropped_face):
         headers = {"content-type": "application/json"}
         url = urllib.parse.urljoin(base_url, face_exp_url)
         json_response = requests.post(url, data=data, headers=headers)
-        print(json.loads(json_response.text))
     except requests.exceptions.HTTPError as errh:
         logger.error(msg=errh)
         return {"Error": "An HTTP error occurred."}
