@@ -43,13 +43,13 @@ class ImageFr(views.APIView):
 
     def post(self, request):
 
-        logger.info(msg="POST Request for Face Reocgnition made")
+        logger.info(msg="POST Request for Face Recognition made")
         image_serializer = self.serializer(data=request.data)
         filename = getnewuniquefilename(request)
-
+        input_file = request.FILES['file']
         if image_serializer.is_valid():
             network = image_serializer.data["network"]
-            result = facerecogniseinimage(request, filename, network)
+            result = facerecogniseinimage(input_file, filename, network)
             if "Error" not in result:
                 return Response(result, status=status.HTTP_200_OK)
             else:
@@ -78,7 +78,8 @@ class NsfwRecognise(views.APIView):
 
         logger.info(msg="POST Request for NSFW Classification made")
         filename = getnewuniquefilename(request)
-        result = nsfwclassifier(request, filename)
+        input_file = request.FILES['file']
+        result = nsfwclassifier(input_file, filename)
         if "Error" not in result:
             return Response(result, status=status.HTTP_200_OK)
         else:
@@ -101,9 +102,10 @@ class VideoFr(views.APIView):
 
     def post(self, request):
 
-        logger.info(msg="POST Request for Face Reocgnition in Video made")
+        logger.info(msg="POST Request for Face Recognition in Video made")
         filename = getnewuniquefilename(request)
-        result = facerecogniseinvideo(request, filename)
+        input_file = request.FILES['file']
+        result = facerecogniseinvideo(input_file, filename)
         if "Error" not in result:
             return Response(result, status=status.HTTP_200_OK)
         else:
@@ -137,7 +139,8 @@ class EMBEDDING(views.APIView):
 
         logger.info(msg="POST Request for generating embeddings made")
         filename = request.FILES['file'].name
-        result = createembedding(request, filename)
+        input_file = request.FILES['file']
+        result = createembedding(input_file, filename)
         if "Error" not in result:
             return Response(result, status=status.HTTP_200_OK)
         else:
@@ -188,7 +191,8 @@ class FeedbackFeature(APIView):
         try:
             namesuggestedobject = NameSuggested.objects.get(feedback_id=randomfaceobject.id)
         except NameSuggested.MultipleObjectsReturned:
-            logger.warn(msg="One Name was expected, multiple names were returned.")
+            namesuggestedobject = NameSuggested.objects.filter(feedback_id=randomfaceobject.id).first()
+            logger.warn(msg="Multiple names were returned, first anme has been set.")
         except NameSuggested.DoesNotExist:
             namesuggestedobject = NameSuggested.objects.create(suggested_name=randomfaceobject.title,
                                                                feedback=randomfaceobject)
@@ -331,7 +335,9 @@ class SimilarFace(views.APIView):
 
         logger.info(msg="POST Request for Similar Face Recognition made")
         filename = getnewuniquefilename(request)
-        result = similarface(request, filename)
+        reference_img = request.FILES['file']
+        compare_img = request.FILES['compareImage']
+        result = similarface(reference_img, compare_img, filename)
         if "Error" not in result:
             return Response(result, status=status.HTTP_200_OK)
         else:
