@@ -98,7 +98,7 @@ def text_reco(image):
     )[0]
     preds = ' '.join(wordninja.split(preds))
     return {"Text": preds}
-  
+
 
 def text_detect(image):
     """     Scene Text Detection
