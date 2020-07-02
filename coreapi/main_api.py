@@ -103,7 +103,8 @@ def text_reco(image):
 def text_detect(input_file, filename):
     """     Scene Text Detection
     Args:
-            *   image: path of image
+            *   input_file: Contents of the input image file
+            *   filename: filename of the image
     Workflow:
             *   A numpy array of an image with text is taken as input
                 inference input dimension requires dimension to be in a
@@ -116,11 +117,19 @@ def text_detect(input_file, filename):
             *   Incase of any exception, it return relevant error message.
             *   output from TensorFlow Serving is further processed using
                 Locality-Aware Non-Maximum Suppression (LANMS)
-            *   A dictionary is created with boxes as the key an coordinates
-                of bounding boxes of text as value
+            *   Calls to text_reco are made for each of these detected
+                boxes whic returns the recognized text in these boxes
+            *   A list is maintained with each element being a dictionary
+                with Boxes as one of the keys and coordinates of the
+                detected bounding box as the value and Text as another key
+                with the text recognized by text_reco as value   
+            *   A dictionay is returned with Texts as key and the list
+                generated above as value
     Returns:
-            *   Dictionary having boxes as the key and coordinates of bounding
-                boxes of text as value.
+            *   Dictionary having Texts as the key and list of dictionaries
+                as the value where the dictinary elemet has Boxes and Text
+                as keys and coordinates of bounding boxes and recognized
+                text of that box as the respective value
     """
 
     logger.info(msg="text_detect called")

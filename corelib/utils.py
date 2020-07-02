@@ -2,6 +2,19 @@ from enum import IntEnum
 
 
 def bb_to_cv(box):
+    """     Bounding Box to OpenCV style coordinates
+    Args:
+            *   box: coordinates of the bounding box
+    Workflow:
+            *   Bounding Box style coordinates are taken as input
+                 [[x1, y1], [x2, y2], [x3, y3], [x4, y4]]
+            *   List items are unpacked to obtain coordinates
+            *   Minimum and Maximum coordinates are calculated to
+                obtain the top left and bottom right coordinates.
+    Returns:
+            *   OpenCV style coordinates
+    """
+
     x1, y1 = box[0][0], box[0][1]
     x2, y2 = box[1][0], box[1][1]
     x3, y3 = box[2][0], box[2][1]

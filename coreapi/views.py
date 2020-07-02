@@ -24,13 +24,13 @@ class SceneText(views.APIView):
 
     Workflow
             *   if  POST method request is made, then initially a random
-                filename is generated and then nsfwclassifier method is
+                filename is generated and then text_detect method is
                 called which process the image and outputs the result
-                containing the dictionary of probability of type of content
-                in the image
-
+                containing the dictionary of detected text and bounding
+                boxes of the text
     Returns:
-            *   output dictionary of probability content in the image
+            *   output dictionary of detected text and bounding
+                boxes of the text
     """
 
     def post(self, request):
