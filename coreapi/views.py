@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from corelib.facenet.utils import (getnewuniquefilename)
 from .main_api import (facerecogniseinimage, facerecogniseinvideo,
                        createembedding, process_streaming_video,
-                       nsfwclassifier, similarface)
+                       nsfwclassifier, similarface, object_detect)
 from .serializers import (EmbedSerializer, NameSuggestedSerializer,
                           SimilarFaceSerializer, ImageFrSerializers)
 from .models import InputEmbed, NameSuggested, SimilarFaceInImage
@@ -338,6 +338,32 @@ class SimilarFace(views.APIView):
         reference_img = request.FILES['file']
         compare_img = request.FILES['compareImage']
         result = similarface(reference_img, compare_img, filename)
+        if "Error" not in result:
+            return Response(result, status=status.HTTP_200_OK)
+        else:
+            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ObjectDetect(views.APIView):
+    """     To recognise whether a image is nsfw or not
+
+    Workflow
+            *   if  POST method request is made, then initially a random
+                filename is generated and then nsfwclassifier method is
+                called which process the image and outputs the result
+                containing the dictionary of probability of type of content
+                in the image
+
+    Returns:
+            *   output dictionary of probability content in the image
+    """
+
+    def post(self, request):
+
+        logger.info(msg="POST Request for NSFW Classification made")
+        filename = getnewuniquefilename(request)
+        input_file = request.FILES['file']
+        result = object_detect(input_file, filename)
         if "Error" not in result:
             return Response(result, status=status.HTTP_200_OK)
         else:
