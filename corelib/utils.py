@@ -1,4 +1,8 @@
 from enum import IntEnum
+from logger.logging import RekogntionLogger
+
+
+logger = RekogntionLogger(name="main_api")
 
 
 class ImageFrNetworkChoices(IntEnum):
@@ -22,4 +26,5 @@ def get_class_names(file_name):
             *   list of lines in the file
     """
 
+    logger.info(msg="get_class_names called")
     return [c.strip() for c in open(file_name).readlines()]

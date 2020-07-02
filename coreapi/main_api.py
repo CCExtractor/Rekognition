@@ -805,7 +805,7 @@ def object_detect(input_file, filename):
                 respective values of these keys.
     """
 
-    logger.info(msg="text_reco called")
+    logger.info(msg="object_detect called")
     file_path = os.path.join(MEDIA_ROOT, 'object', filename)
     handle_uploaded_file(input_file, file_path)
     image = cv2.imread(file_path)

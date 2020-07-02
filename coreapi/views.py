@@ -361,7 +361,7 @@ class ObjectDetect(views.APIView):
 
     def post(self, request):
 
-        logger.info(msg="POST Request for NSFW Classification made")
+        logger.info(msg="POST Request for Object Detection made")
         filename = getnewuniquefilename(request)
         input_file = request.FILES['file']
         result = object_detect(input_file, filename)
