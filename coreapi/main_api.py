@@ -25,7 +25,7 @@ from corelib.constant import (pnet, rnet, onet, facenet_persistent_session,
                               Facial_expression_class_names, nsfw_class_names,
                               base_url, face_exp_url, nsfw_url, text_reco_url,
                               char_dict_path, ord_map_dict_path, text_detect_url,
-                              coco_names_path)
+                              coco_names_path, object_detect_url)
 from corelib.utils import ImageFrNetworkChoices, get_class_names
 from .models import InputImage, InputVideo, InputEmbed, SimilarFaceInImage
 from logger.logging import RekogntionLogger
@@ -810,13 +810,12 @@ def object_detect(input_file, filename):
     handle_uploaded_file(input_file, file_path)
     image = cv2.imread(file_path)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    image1 = image.copy()
     image = cv2.resize(image, tuple((416, 416)), interpolation=cv2.INTER_LINEAR)
     image = np.array(image, np.float32) / 255
     data = json.dumps({"inputs": [image.tolist()]})
     try:
         headers = {"content-type": "application/json"}
-        url = urllib.parse.urljoin('http://localhost:8501/v1/', 'models/yolov3:predict')
+        url = urllib.parse.urljoin(base_url, object_detect_url)
         json_response = requests.post(url, data=data, headers=headers)
     except requests.exceptions.HTTPError as errh:
         logger.error(msg=errh)
@@ -842,5 +841,5 @@ def object_detect(input_file, filename):
     result = []
     class_names = get_class_names(coco_names_path)
     for num in range(nums):
-        result.append([{"Box":boxes[num]},{"Score":scores[num]},{"Label":class_names[int(classes[num])]}])
+        result.append([{"Box": boxes[num]}, {"Score": scores[num]}, {"Label": class_names[int(classes[num])]}])
     return {"Objects": result}
