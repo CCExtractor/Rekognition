@@ -777,12 +777,13 @@ def similarface(reference_img, compare_img, filename):
 
 
 def object_detect(input_file, filename):
-    """     Scene Text Recognition
+    """     Detecting Objects in image
     Args:
-            *   image: numpy array of cropped text
+            *   input_file: Contents of the input image file
+            *   filename: filename of the image
     Workflow:
-            *   A numpy array of a cropped text is taken as input
-                inference input dimension requires dimension of (100,32)
+            *   A numpy array of an image is taken as input (RGB).
+            *   inference input dimension requires dimension of (416,416)
                 therefore the input is first resizing to required
                 input dimension and then normalized.
             *   Now the processed output is further processed to make it a
@@ -790,11 +791,18 @@ def object_detect(input_file, filename):
             *   Then a http post request is made at localhost:8501.
                 The post request contain data and headers.
             *   Incase of any exception, it return relevant error message.
-            *   output from TensorFlow Serving is further processed using
-                wordninja and then returned as a dictionary which keeps Text
-                as key and processed output as value.
+            *   A list is maintained with each element being a dictionary
+                with Label, Score, and Box being the keys and the name of the
+                object, it's confidence score and it's bounding box
+                coordinates as the respective values of these keys.
+            *   A dictionary is returned with Objects as key and the list
+                generated above as the value
     Returns:
-            *   Dictionary having text as Key and processed output as value.
+            *   Dictionary having Objects as Key and list of dictionaries
+                as the value where the dictionary element has Label, Score
+                and Box as the keys and the name of the object, it's
+                confidence score and it's bounding box coordinates as the
+                respective values of these keys.
     """
 
     logger.info(msg="text_reco called")
@@ -835,4 +843,4 @@ def object_detect(input_file, filename):
     class_names = get_class_names(coco_names_path)
     for num in range(nums):
         result.append([{"Box":boxes[num]},{"Score":scores[num]},{"Label":class_names[int(classes[num])]}])
-    return {"Text": result}
+    return {"Objects": result}

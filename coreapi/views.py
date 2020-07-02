@@ -345,17 +345,18 @@ class SimilarFace(views.APIView):
 
 
 class ObjectDetect(views.APIView):
-    """     To recognise whether a image is nsfw or not
+    """     To detect objects in an image
 
     Workflow
             *   if  POST method request is made, then initially a random
-                filename is generated and then nsfwclassifier method is
+                filename is generated and then object_detect method is
                 called which process the image and outputs the result
-                containing the dictionary of probability of type of content
-                in the image
+                containing the dictionary of detected objects, confidence
+                scores and bounding box coordinates
 
     Returns:
-            *   output dictionary of probability content in the image
+            *   output dictionary of detected objects, confidence scores
+                and bounding box coordinates
     """
 
     def post(self, request):
