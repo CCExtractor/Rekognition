@@ -25,7 +25,7 @@ from corelib.constant import (pnet, rnet, onet, facenet_persistent_session,
                               Facial_expression_class_names, nsfw_class_names,
                               base_url, face_exp_url, nsfw_url, text_reco_url,
                               char_dict_path, ord_map_dict_path, text_detect_url)
-from corelib.utils import ImageFrNetworkChoices
+from corelib.utils import ImageFrNetworkChoices, bb_to_cv
 from .models import InputImage, InputVideo, InputEmbed, SimilarFaceInImage
 from logger.logging import RekogntionLogger
 import numpy as np
@@ -100,7 +100,7 @@ def text_reco(image):
     return {"Text": preds}
 
 
-def text_detect(image):
+def text_detect(input_file, filename):
     """     Scene Text Detection
     Args:
             *   image: path of image
@@ -124,7 +124,9 @@ def text_detect(image):
     """
 
     logger.info(msg="text_detect called")
-    img = cv2.imread(image)[:, :, ::-1]
+    file_path = os.path.join(MEDIA_ROOT, 'text', filename)
+    handle_uploaded_file(input_file, file_path)
+    img = cv2.imread(file_path)[:, :, ::-1]
     img_resized, (ratio_h, ratio_w) = preprocess(img)
     img_resized = (img_resized / 127.5) - 1
     data = json.dumps({"signature_name": "serving_default",
@@ -167,7 +169,12 @@ def text_detect(image):
             if np.linalg.norm(box[0] - box[1]) < 5 or np.linalg.norm(box[3] - box[0]) < 5:
                 continue
             result_boxes.append(box)
-    return {"Boxes": result_boxes}
+    result = []
+    for box in result_boxes:
+        top_left_x, top_left_y, bot_right_x, bot_right_y = bb_to_cv(box)
+        text = text_reco(img[top_left_y-2:bot_right_y+2,top_left_x-2:bot_right_x+2]).get("Text")
+        result.append({"Boxes":box, "Text":text})
+    return {"Texts": result}
 
 
 def faceexp(cropped_face):

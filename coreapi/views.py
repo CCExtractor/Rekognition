@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from corelib.facenet.utils import (getnewuniquefilename)
 from .main_api import (facerecogniseinimage, facerecogniseinvideo,
                        createembedding, process_streaming_video,
-                       nsfwclassifier, similarface)
+                       nsfwclassifier, similarface, text_detect)
 from .serializers import (EmbedSerializer, NameSuggestedSerializer,
                           SimilarFaceSerializer, ImageFrSerializers)
 from .models import InputEmbed, NameSuggested, SimilarFaceInImage
@@ -17,6 +17,32 @@ import random
 
 
 logger = RekogntionLogger(name="view")
+
+
+class SceneText(views.APIView):
+    """     To localize and recognise text in an image
+
+    Workflow
+            *   if  POST method request is made, then initially a random
+                filename is generated and then nsfwclassifier method is
+                called which process the image and outputs the result
+                containing the dictionary of probability of type of content
+                in the image
+
+    Returns:
+            *   output dictionary of probability content in the image
+    """
+
+    def post(self, request):
+
+        logger.info(msg="POST Request for NSFW Classification made")
+        filename = getnewuniquefilename(request)
+        input_file = request.FILES['file']
+        result = text_detect(input_file, filename)
+        if "Error" not in result:
+            return Response(result, status=status.HTTP_200_OK)
+        else:
+            return Response(result, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ImageFr(views.APIView):
