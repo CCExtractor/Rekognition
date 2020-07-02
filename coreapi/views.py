@@ -35,7 +35,7 @@ class SceneText(views.APIView):
 
     def post(self, request):
 
-        logger.info(msg="POST Request for NSFW Classification made")
+        logger.info(msg="POST Request for Scene Text Extraction made")
         filename = getnewuniquefilename(request)
         input_file = request.FILES['file']
         result = text_detect(input_file, filename)

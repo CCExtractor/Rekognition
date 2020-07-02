@@ -1,6 +1,9 @@
 from enum import IntEnum
 
 
+logger = RekogntionLogger(name="utils")
+
+
 def bb_to_cv(box):
     """     Bounding Box to OpenCV style coordinates
     Args:
@@ -15,6 +18,7 @@ def bb_to_cv(box):
             *   OpenCV style coordinates
     """
 
+    logger.info(msg="bb_to_cv called")
     x1, y1 = box[0][0], box[0][1]
     x2, y2 = box[1][0], box[1][1]
     x3, y3 = box[2][0], box[2][1]
