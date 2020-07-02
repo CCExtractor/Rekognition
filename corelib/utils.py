@@ -1,4 +1,5 @@
 from enum import IntEnum
+from logger.logging import RekogntionLogger
 
 
 logger = RekogntionLogger(name="utils")
@@ -23,10 +24,10 @@ def bb_to_cv(box):
     x2, y2 = box[1][0], box[1][1]
     x3, y3 = box[2][0], box[2][1]
     x4, y4 = box[3][0], box[3][1]
-    top_left_x = min([x1,x2,x3,x4])
-    top_left_y = min([y1,y2,y3,y4])
-    bot_right_x = max([x1,x2,x3,x4])
-    bot_right_y = max([y1,y2,y3,y4])
+    top_left_x = min([x1, x2, x3, x4])
+    top_left_y = min([y1, y2, y3, y4])
+    bot_right_x = max([x1, x2, x3, x4])
+    bot_right_y = max([y1, y2, y3, y4])
     return top_left_x, top_left_y, bot_right_x, bot_right_y
 
 

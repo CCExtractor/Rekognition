@@ -122,7 +122,7 @@ def text_detect(input_file, filename):
             *   A list is maintained with each element being a dictionary
                 with Boxes as one of the keys and coordinates of the
                 detected bounding box as the value and Text as another key
-                with the text recognized by text_reco as value   
+                with the text recognized by text_reco as value
             *   A dictionay is returned with Texts as key and the list
                 generated above as value
     Returns:
@@ -181,8 +181,8 @@ def text_detect(input_file, filename):
     result = []
     for box in result_boxes:
         top_left_x, top_left_y, bot_right_x, bot_right_y = bb_to_cv(box)
-        text = text_reco(img[top_left_y-2:bot_right_y+2,top_left_x-2:bot_right_x+2]).get("Text")
-        result.append({"Boxes":box, "Text":text})
+        text = text_reco(img[top_left_y - 2:bot_right_y + 2, top_left_x - 2:bot_right_x + 2]).get("Text")
+        result.append({"Boxes": box, "Text": text})
     return {"Texts": result}
 
 
