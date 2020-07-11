@@ -24,8 +24,9 @@ from corelib.constant import (pnet, rnet, onet, facenet_persistent_session,
                               embeddings_path, embedding_dict,
                               Facial_expression_class_names, nsfw_class_names,
                               base_url, face_exp_url, nsfw_url, text_reco_url,
-                              char_dict_path, ord_map_dict_path, text_detect_url)
-from corelib.utils import ImageFrNetworkChoices, bb_to_cv
+                              char_dict_path, ord_map_dict_path, text_detect_url,
+                              coco_names_path, object_detect_url)
+from corelib.utils import ImageFrNetworkChoices, get_class_names, bb_to_cv
 from .models import InputImage, InputVideo, InputEmbed, SimilarFaceInImage
 from logger.logging import RekogntionLogger
 import numpy as np
@@ -789,3 +790,72 @@ def similarface(reference_img, compare_img, filename):
     except Exception as e:
         logger.error(msg=e)
         return {"Error": e}
+
+
+def object_detect(input_file, filename):
+    """     Detecting Objects in image
+    Args:
+            *   input_file: Contents of the input image file
+            *   filename: filename of the image
+    Workflow:
+            *   A numpy array of an image is taken as input (RGB).
+            *   inference input dimension requires dimension of (416,416)
+                therefore the input is first resizing to required
+                input dimension and then normalized.
+            *   Now the processed output is further processed to make it a
+                json format which is compatible to TensorFlow Serving input.
+            *   Then a http post request is made at localhost:8501.
+                The post request contain data and headers.
+            *   Incase of any exception, it return relevant error message.
+            *   A list is maintained with each element being a dictionary
+                with Label, Score, and Box being the keys and the name of the
+                object, it's confidence score and it's bounding box
+                coordinates as the respective values of these keys.
+            *   A dictionary is returned with Objects as key and the list
+                generated above as the value
+    Returns:
+            *   Dictionary having Objects as Key and list of dictionaries
+                as the value where the dictionary element has Label, Score
+                and Box as the keys and the name of the object, it's
+                confidence score and it's bounding box coordinates as the
+                respective values of these keys.
+    """
+
+    logger.info(msg="object_detect called")
+    file_path = os.path.join(MEDIA_ROOT, 'object', filename)
+    handle_uploaded_file(input_file, file_path)
+    image = cv2.imread(file_path)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    image = cv2.resize(image, tuple((416, 416)), interpolation=cv2.INTER_LINEAR)
+    image = np.array(image, np.float32) / 255
+    data = json.dumps({"inputs": [image.tolist()]})
+    try:
+        headers = {"content-type": "application/json"}
+        url = urllib.parse.urljoin(base_url, object_detect_url)
+        json_response = requests.post(url, data=data, headers=headers)
+    except requests.exceptions.HTTPError as errh:
+        logger.error(msg=errh)
+        return {"Error": "An HTTP error occurred."}
+    except requests.exceptions.ConnectionError as errc:
+        logger.error(msg=errc)
+        return {"Error": "A Connection error occurred."}
+    except requests.exceptions.Timeout as errt:
+        logger.error(msg=errt)
+        return {"Error": "The request timed out."}
+    except requests.exceptions.TooManyRedirects as errm:
+        logger.error(msg=errm)
+        return {"Error": "Bad URL"}
+    except requests.exceptions.RequestException as err:
+        logger.error(msg=err)
+        return {"Error": "Facial Expression Recognition Not Working"}
+    except Exception as e:
+        logger.error(msg=e)
+        return {"Error": "Facial Expression Recognition Not Working"}
+    predictions = json.loads(json_response.text).get("outputs", "Bad request made.")
+    boxes, scores, classes, nums = predictions["yolo_nms"][0], predictions[
+        "yolo_nms_1"][0], predictions["yolo_nms_2"][0], predictions["yolo_nms_3"][0]
+    result = []
+    class_names = get_class_names(coco_names_path)
+    for num in range(nums):
+        result.append([{"Box": boxes[num]}, {"Score": scores[num]}, {"Label": class_names[int(classes[num])]}])
+    return {"Objects": result}
