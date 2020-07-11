@@ -6,20 +6,25 @@ import skvideo.io
 import subprocess
 import shlex
 import cv2
+import wordninja
 from skimage.io import imread
 import urllib.parse
 from werkzeug.utils import secure_filename
 from Rekognition.settings import MEDIA_ROOT
+from corelib.CRNN import CRNN_utils
 from corelib.facenet.utils import (get_face, embed_image, save_embedding,
                                    identify_face, allowed_file, time_dura,
                                    handle_uploaded_file, save_face,
                                    img_standardize)
+from corelib.EAST.EAST_utils import (preprocess, sort_poly,
+                                     postprocess)
 from corelib.constant import (pnet, rnet, onet, facenet_persistent_session,
                               phase_train_placeholder, embeddings,
                               images_placeholder, image_size, allowed_set,
                               embeddings_path, embedding_dict,
                               Facial_expression_class_names, nsfw_class_names,
-                              base_url, face_exp_url, nsfw_url)
+                              base_url, face_exp_url, nsfw_url, text_reco_url,
+                              char_dict_path, ord_map_dict_path, text_detect_url)
 from corelib.utils import ImageFrNetworkChoices
 from .models import InputImage, InputVideo, InputEmbed, SimilarFaceInImage
 from logger.logging import RekogntionLogger
@@ -31,6 +36,138 @@ from django.db import IntegrityError, DatabaseError
 
 
 logger = RekogntionLogger(name="main_api")
+
+
+def text_reco(image):
+    """     Scene Text Recognition
+    Args:
+            *   image: numpy array of cropped text
+    Workflow:
+            *   A numpy array of a cropped text is taken as input
+                inference input dimension requires dimension of (100,32)
+                therefore the input is first resizing to required
+                input dimension and then normalized.
+            *   Now the processed output is further processed to make it a
+                json format which is compatible to TensorFlow Serving input.
+            *   Then a http post request is made at localhost:8501.
+                The post request contain data and headers.
+            *   Incase of any exception, it return relevant error message.
+            *   output from TensorFlow Serving is further processed using
+                wordninja and then returned as a dictionary which keeps Text
+                as key and processed output as value.
+    Returns:
+            *   Dictionary having text as Key and processed output as value.
+    """
+
+    logger.info(msg="text_reco called")
+    image = cv2.resize(image, tuple((100, 32)), interpolation=cv2.INTER_LINEAR)
+    image = np.array(image, np.float32) / 127.5 - 1.0
+    data = json.dumps({"inputs": [image.tolist()]})
+    try:
+        headers = {"content-type": "application/json"}
+        url = urllib.parse.urljoin(base_url, text_reco_url)
+        json_response = requests.post(url, data=data, headers=headers)
+    except requests.exceptions.HTTPError as errh:
+        logger.error(msg=errh)
+        return {"Error": "An HTTP error occurred."}
+    except requests.exceptions.ConnectionError as errc:
+        logger.error(msg=errc)
+        return {"Error": "A Connection error occurred."}
+    except requests.exceptions.Timeout as errt:
+        logger.error(msg=errt)
+        return {"Error": "The request timed out."}
+    except requests.exceptions.TooManyRedirects as errm:
+        logger.error(msg=errm)
+        return {"Error": "Bad URL"}
+    except requests.exceptions.RequestException as err:
+        logger.error(msg=err)
+        return {"Error": "Facial Expression Recognition Not Working"}
+    except Exception as e:
+        logger.error(msg=e)
+        return {"Error": "Facial Expression Recognition Not Working"}
+    predictions = json.loads(json_response.text).get("outputs", "Bad request made.")
+    codec = CRNN_utils._FeatureIO(
+        char_dict_path=char_dict_path,
+        ord_map_dict_path=ord_map_dict_path,
+    )
+
+    preds = codec.sparse_tensor_to_str_for_tf_serving(
+        decode_indices=predictions['decodes_indices'],
+        decode_values=predictions['decodes_values'],
+        decode_dense_shape=predictions['decodes_dense_shape'],
+    )[0]
+    preds = ' '.join(wordninja.split(preds))
+    return {"Text": preds}
+
+
+def text_detect(image):
+    """     Scene Text Detection
+    Args:
+            *   image: path of image
+    Workflow:
+            *   A numpy array of an image with text is taken as input
+                inference input dimension requires dimension to be in a
+                multiple of 32 therefore the input is first resized to
+                 required input dimension and then normalized.
+            *   Now the processed output is further processed to make it a
+                json format which is compatible to TensorFlow Serving input.
+            *   Then a http post request is made at localhost:8501.
+                The post request contain data and headers.
+            *   Incase of any exception, it return relevant error message.
+            *   output from TensorFlow Serving is further processed using
+                Locality-Aware Non-Maximum Suppression (LANMS)
+            *   A dictionary is created with boxes as the key an coordinates
+                of bounding boxes of text as value
+    Returns:
+            *   Dictionary having boxes as the key and coordinates of bounding
+                boxes of text as value.
+    """
+
+    logger.info(msg="text_detect called")
+    img = cv2.imread(image)[:, :, ::-1]
+    img_resized, (ratio_h, ratio_w) = preprocess(img)
+    img_resized = (img_resized / 127.5) - 1
+    data = json.dumps({"signature_name": "serving_default",
+                       "inputs": [img_resized.tolist()]})
+    try:
+        headers = {"content-type": "application/json"}
+        url = urllib.parse.urljoin(base_url, text_detect_url)
+
+        json_response = requests.post(url, data=data, headers=headers)
+    except requests.exceptions.HTTPError as errh:
+        logger.error(msg=errh)
+        return {"Error": "An HTTP error occurred."}
+    except requests.exceptions.ConnectionError as errc:
+        logger.error(msg=errc)
+        return {"Error": "A Connection error occurred."}
+    except requests.exceptions.Timeout as errt:
+        logger.error(msg=errt)
+        return {"Error": "The request timed out."}
+    except requests.exceptions.TooManyRedirects as errm:
+        logger.error(msg=errm)
+        return {"Error": "Bad URL"}
+    except requests.exceptions.RequestException as err:
+        logger.error(msg=err)
+        return {"Error": "Facial Expression Recognition Not Working"}
+    except Exception as e:
+        logger.error(msg=e)
+        return {"Error": e}
+    predictions = json.loads(json_response.text)["outputs"]
+    score_map = np.array(predictions["pred_score_map/Sigmoid:0"], dtype="float64")
+    geo_map = np.array(predictions["pred_geo_map/concat:0"], dtype="float64")
+
+    boxes = postprocess(score_map=score_map, geo_map=geo_map)
+    result_boxes = []
+    if boxes is not None:
+        boxes = boxes[:, :8].reshape((-1, 4, 2))
+        boxes[:, :, 0] /= ratio_w
+        boxes[:, :, 1] /= ratio_h
+        for box in boxes:
+            box = sort_poly(box.astype(np.int32))
+            if np.linalg.norm(box[0] - box[1]) < 5 or np.linalg.norm(box[3] - box[0]) < 5:
+                continue
+            result_boxes.append(box)
+    return {"Boxes": result_boxes}
 
 
 def faceexp(cropped_face):
@@ -67,7 +204,6 @@ def faceexp(cropped_face):
         headers = {"content-type": "application/json"}
         url = urllib.parse.urljoin(base_url, face_exp_url)
         json_response = requests.post(url, data=data, headers=headers)
-        json.loads(json_response.text)
     except requests.exceptions.HTTPError as errh:
         logger.error(msg=errh)
         return {"Error": "An HTTP error occurred."}
@@ -86,7 +222,7 @@ def faceexp(cropped_face):
     except Exception as e:
         logger.error(msg=e)
         return {"Error": "Facial Expression Recognition Not Working"}
-    predictions = json.loads(json_response.text)["predictions"]
+    predictions = json.loads(json_response.text).get("predictions", "Bad request made.")
     final_result = {}
     for key, value in zip(Facial_expression_class_names, predictions[0]):
         final_result[key] = value
