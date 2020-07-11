@@ -25,7 +25,7 @@ from corelib.constant import (pnet, rnet, onet, facenet_persistent_session,
                               Facial_expression_class_names, nsfw_class_names,
                               base_url, face_exp_url, nsfw_url, text_reco_url,
                               char_dict_path, ord_map_dict_path, text_detect_url)
-from corelib.utils import ImageFrNetworkChoices
+from corelib.utils import ImageFrNetworkChoices, bb_to_cv
 from .models import InputImage, InputVideo, InputEmbed, SimilarFaceInImage
 from logger.logging import RekogntionLogger
 import numpy as np
@@ -100,10 +100,11 @@ def text_reco(image):
     return {"Text": preds}
 
 
-def text_detect(image):
+def text_detect(input_file, filename):
     """     Scene Text Detection
     Args:
-            *   image: path of image
+            *   input_file: Contents of the input image file
+            *   filename: filename of the image
     Workflow:
             *   A numpy array of an image with text is taken as input
                 inference input dimension requires dimension to be in a
@@ -116,15 +117,25 @@ def text_detect(image):
             *   Incase of any exception, it return relevant error message.
             *   output from TensorFlow Serving is further processed using
                 Locality-Aware Non-Maximum Suppression (LANMS)
-            *   A dictionary is created with boxes as the key an coordinates
-                of bounding boxes of text as value
+            *   Calls to text_reco are made for each of these detected
+                boxes whic returns the recognized text in these boxes
+            *   A list is maintained with each element being a dictionary
+                with Boxes as one of the keys and coordinates of the
+                detected bounding box as the value and Text as another key
+                with the text recognized by text_reco as value
+            *   A dictionay is returned with Texts as key and the list
+                generated above as value
     Returns:
-            *   Dictionary having boxes as the key and coordinates of bounding
-                boxes of text as value.
+            *   Dictionary having Texts as the key and list of dictionaries
+                as the value where the dictinary elemet has Boxes and Text
+                as keys and coordinates of bounding boxes and recognized
+                text of that box as the respective value
     """
 
     logger.info(msg="text_detect called")
-    img = cv2.imread(image)[:, :, ::-1]
+    file_path = os.path.join(MEDIA_ROOT, 'text', filename)
+    handle_uploaded_file(input_file, file_path)
+    img = cv2.imread(file_path)[:, :, ::-1]
     img_resized, (ratio_h, ratio_w) = preprocess(img)
     img_resized = (img_resized / 127.5) - 1
     data = json.dumps({"signature_name": "serving_default",
@@ -167,7 +178,12 @@ def text_detect(image):
             if np.linalg.norm(box[0] - box[1]) < 5 or np.linalg.norm(box[3] - box[0]) < 5:
                 continue
             result_boxes.append(box)
-    return {"Boxes": result_boxes}
+    result = []
+    for box in result_boxes:
+        top_left_x, top_left_y, bot_right_x, bot_right_y = bb_to_cv(box)
+        text = text_reco(img[top_left_y - 2:bot_right_y + 2, top_left_x - 2:bot_right_x + 2]).get("Text")
+        result.append({"Boxes": box, "Text": text})
+    return {"Texts": result}
 
 
 def faceexp(cropped_face):

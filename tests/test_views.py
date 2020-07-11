@@ -92,3 +92,18 @@ class TestSimilarFace(TestCase):
 
         response1 = self.client.get('/api/simface/')
         self.assertEqual(status.HTTP_200_OK, response1.status_code)
+
+
+class TestSceneText(TestCase):
+
+    def setUp(self):
+
+        super(TestSceneText, self).setUp()
+        self.client = APIClient()
+        file1 = File(open('tests/testdata/t3.jpeg', 'rb'))
+        self.uploaded_file1 = SimpleUploadedFile("temp1.jpeg", file1.read(), content_type='multipart/form-data')
+
+    def test_post(self):
+
+        response1 = self.client.post('/api/scenetext/', {'file': self.uploaded_file1})
+        self.assertEqual(status.HTTP_200_OK, response1.status_code)
