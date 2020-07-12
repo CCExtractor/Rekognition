@@ -188,15 +188,16 @@ def text_detect(input_file, filename):
 
 
 def text_detect_video(input_file, filename):
-    """     Scene Text Detection
+    """     Scene Text Detection in video
     Args:
-            *   input_file: Contents of the input image file
-            *   filename: filename of the image
+            *   input_file: Contents of the input video file
+            *   filename: filename of the video
     Workflow:
-            *   A numpy array of an image with text is taken as input
-                inference input dimension requires dimension to be in a
-                multiple of 32 therefore the input is first resized to
-                 required input dimension and then normalized.
+            *   uploaded file is read using opencv and gets processed
+                frame by frame
+            *   inference input dimension requires dimension to be in a
+                multiple of 32 therefore each frame is first resized to
+                required input dimension and then normalized.
             *   Now the processed output is further processed to make it a
                 json format which is compatible to TensorFlow Serving input.
             *   Then a http post request is made at localhost:8501.
@@ -210,16 +211,17 @@ def text_detect_video(input_file, filename):
                 with Boxes as one of the keys and coordinates of the
                 detected bounding box as the value and Text as another key
                 with the text recognized by text_reco as value
+            *   Result of every frame is stored in another list
             *   A dictionay is returned with Texts as key and the list
                 generated above as value
     Returns:
             *   Dictionary having Texts as the key and list of dictionaries
                 as the value where the dictinary elemet has Boxes and Text
                 as keys and coordinates of bounding boxes and recognized
-                text of that box as the respective value
+                text of that box as the respective value for every frame
     """
 
-    logger.info(msg="text_detect called")
+    logger.info(msg="text_detect_video called")
     file_path = os.path.join(MEDIA_ROOT, 'text', filename)
     handle_uploaded_file(input_file, file_path)
     video_result = []

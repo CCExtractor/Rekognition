@@ -47,22 +47,22 @@ class SceneText(views.APIView):
 
 
 class SceneTextVideo(views.APIView):
-    """     To localize and recognise text in an image
+    """     To localize and recognise text in a video
 
     Workflow
             *   if  POST method request is made, then initially a random
-                filename is generated and then text_detect method is
-                called which process the image and outputs the result
+                filename is generated and then text_detect_video method
+                is called which process the video and outputs the result
                 containing the dictionary of detected text and bounding
-                boxes of the text
+                boxes of the text for each frame
     Returns:
             *   output dictionary of detected text and bounding
-                boxes of the text
+                boxes of the text for each frame of the video
     """
 
     def post(self, request):
 
-        logger.info(msg="POST Request for Scene Text Extraction made")
+        logger.info(msg="POST Request for Scene Text Extraction in video made")
         filename = getnewuniquefilename(request)
         input_file = request.FILES['file']
         result = text_detect_video(input_file, filename)
