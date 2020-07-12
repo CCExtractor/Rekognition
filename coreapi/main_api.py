@@ -899,38 +899,41 @@ def object_detect_video(input_file, filename):
     vid = cv2.VideoCapture(file_path)
     while(vid.isOpened()):
         ret, image = vid.read()
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        image = cv2.resize(image, tuple((416, 416)), interpolation=cv2.INTER_LINEAR)
-        image = np.array(image, np.float32) / 255
-        data = json.dumps({"inputs": [image.tolist()]})
-        try:
-            headers = {"content-type": "application/json"}
-            url = urllib.parse.urljoin(base_url, object_detect_url)
-            json_response = requests.post(url, data=data, headers=headers)
-        except requests.exceptions.HTTPError as errh:
-            logger.error(msg=errh)
-            return {"Error": "An HTTP error occurred."}
-        except requests.exceptions.ConnectionError as errc:
-            logger.error(msg=errc)
-            return {"Error": "A Connection error occurred."}
-        except requests.exceptions.Timeout as errt:
-            logger.error(msg=errt)
-            return {"Error": "The request timed out."}
-        except requests.exceptions.TooManyRedirects as errm:
-            logger.error(msg=errm)
-            return {"Error": "Bad URL"}
-        except requests.exceptions.RequestException as err:
-            logger.error(msg=err)
-            return {"Error": "Facial Expression Recognition Not Working"}
-        except Exception as e:
-            logger.error(msg=e)
-            return {"Error": "Facial Expression Recognition Not Working"}
-        predictions = json.loads(json_response.text).get("outputs", "Bad request made.")
-        boxes, scores, classes, nums = predictions["yolo_nms"][0], predictions[
-            "yolo_nms_1"][0], predictions["yolo_nms_2"][0], predictions["yolo_nms_3"][0]
-        result = []
-        class_names = get_class_names(coco_names_path)
-        for num in range(nums):
-            result.append([{"Box": boxes[num]}, {"Score": scores[num]}, {"Label": class_names[int(classes[num])]}])
-        video_result.append(result)
+        if ret:
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            image = cv2.resize(image, tuple((416, 416)), interpolation=cv2.INTER_LINEAR)
+            image = np.array(image, np.float32) / 255
+            data = json.dumps({"inputs": [image.tolist()]})
+            try:
+                headers = {"content-type": "application/json"}
+                url = urllib.parse.urljoin(base_url, object_detect_url)
+                json_response = requests.post(url, data=data, headers=headers)
+            except requests.exceptions.HTTPError as errh:
+                logger.error(msg=errh)
+                return {"Error": "An HTTP error occurred."}
+            except requests.exceptions.ConnectionError as errc:
+                logger.error(msg=errc)
+                return {"Error": "A Connection error occurred."}
+            except requests.exceptions.Timeout as errt:
+                logger.error(msg=errt)
+                return {"Error": "The request timed out."}
+            except requests.exceptions.TooManyRedirects as errm:
+                logger.error(msg=errm)
+                return {"Error": "Bad URL"}
+            except requests.exceptions.RequestException as err:
+                logger.error(msg=err)
+                return {"Error": "Facial Expression Recognition Not Working"}
+            except Exception as e:
+                logger.error(msg=e)
+                return {"Error": "Facial Expression Recognition Not Working"}
+            predictions = json.loads(json_response.text).get("outputs", "Bad request made.")
+            boxes, scores, classes, nums = predictions["yolo_nms"][0], predictions[
+                "yolo_nms_1"][0], predictions["yolo_nms_2"][0], predictions["yolo_nms_3"][0]
+            result = []
+            class_names = get_class_names(coco_names_path)
+            for num in range(nums):
+                result.append([{"Box": boxes[num]}, {"Score": scores[num]}, {"Label": class_names[int(classes[num])]}])
+            video_result.append(result)
+        else:
+            break
     return {"Objects": video_result}
