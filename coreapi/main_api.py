@@ -228,55 +228,58 @@ def text_detect_video(input_file, filename):
     vid = cv2.VideoCapture(file_path)
     while(vid.isOpened()):
         ret, img = vid.read()
-        img = img[:, :, ::-1]
-        img_resized, (ratio_h, ratio_w) = preprocess(img)
-        img_resized = (img_resized / 127.5) - 1
-        data = json.dumps({"signature_name": "serving_default",
-                           "inputs": [img_resized.tolist()]})
-        try:
-            headers = {"content-type": "application/json"}
-            url = urllib.parse.urljoin(base_url, text_detect_url)
+        if ret:
+            img = img[:, :, ::-1]
+            img_resized, (ratio_h, ratio_w) = preprocess(img)
+            img_resized = (img_resized / 127.5) - 1
+            data = json.dumps({"signature_name": "serving_default",
+                               "inputs": [img_resized.tolist()]})
+            try:
+                headers = {"content-type": "application/json"}
+                url = urllib.parse.urljoin(base_url, text_detect_url)
 
-            json_response = requests.post(url, data=data, headers=headers)
-        except requests.exceptions.HTTPError as errh:
-            logger.error(msg=errh)
-            return {"Error": "An HTTP error occurred."}
-        except requests.exceptions.ConnectionError as errc:
-            logger.error(msg=errc)
-            return {"Error": "A Connection error occurred."}
-        except requests.exceptions.Timeout as errt:
-            logger.error(msg=errt)
-            return {"Error": "The request timed out."}
-        except requests.exceptions.TooManyRedirects as errm:
-            logger.error(msg=errm)
-            return {"Error": "Bad URL"}
-        except requests.exceptions.RequestException as err:
-            logger.error(msg=err)
-            return {"Error": "Facial Expression Recognition Not Working"}
-        except Exception as e:
-            logger.error(msg=e)
-            return {"Error": e}
-        predictions = json.loads(json_response.text)["outputs"]
-        score_map = np.array(predictions["pred_score_map/Sigmoid:0"], dtype="float64")
-        geo_map = np.array(predictions["pred_geo_map/concat:0"], dtype="float64")
+                json_response = requests.post(url, data=data, headers=headers)
+            except requests.exceptions.HTTPError as errh:
+                logger.error(msg=errh)
+                return {"Error": "An HTTP error occurred."}
+            except requests.exceptions.ConnectionError as errc:
+                logger.error(msg=errc)
+                return {"Error": "A Connection error occurred."}
+            except requests.exceptions.Timeout as errt:
+                logger.error(msg=errt)
+                return {"Error": "The request timed out."}
+            except requests.exceptions.TooManyRedirects as errm:
+                logger.error(msg=errm)
+                return {"Error": "Bad URL"}
+            except requests.exceptions.RequestException as err:
+                logger.error(msg=err)
+                return {"Error": "Facial Expression Recognition Not Working"}
+            except Exception as e:
+                logger.error(msg=e)
+                return {"Error": e}
+            predictions = json.loads(json_response.text)["outputs"]
+            score_map = np.array(predictions["pred_score_map/Sigmoid:0"], dtype="float64")
+            geo_map = np.array(predictions["pred_geo_map/concat:0"], dtype="float64")
 
-        boxes = postprocess(score_map=score_map, geo_map=geo_map)
-        result_boxes = []
-        if boxes is not None:
-            boxes = boxes[:, :8].reshape((-1, 4, 2))
-            boxes[:, :, 0] /= ratio_w
-            boxes[:, :, 1] /= ratio_h
-            for box in boxes:
-                box = sort_poly(box.astype(np.int32))
-                if np.linalg.norm(box[0] - box[1]) < 5 or np.linalg.norm(box[3] - box[0]) < 5:
-                    continue
-                result_boxes.append(box)
-        result = []
-        for box in result_boxes:
-            top_left_x, top_left_y, bot_right_x, bot_right_y = bb_to_cv(box)
-            text = text_reco(img[top_left_y - 2:bot_right_y + 2, top_left_x - 2:bot_right_x + 2]).get("Text")
-            result.append({"Boxes": box, "Text": text})
-        video_result.append(result)
+            boxes = postprocess(score_map=score_map, geo_map=geo_map)
+            result_boxes = []
+            if boxes is not None:
+                boxes = boxes[:, :8].reshape((-1, 4, 2))
+                boxes[:, :, 0] /= ratio_w
+                boxes[:, :, 1] /= ratio_h
+                for box in boxes:
+                    box = sort_poly(box.astype(np.int32))
+                    if np.linalg.norm(box[0] - box[1]) < 5 or np.linalg.norm(box[3] - box[0]) < 5:
+                        continue
+                    result_boxes.append(box)
+            result = []
+            for box in result_boxes:
+                top_left_x, top_left_y, bot_right_x, bot_right_y = bb_to_cv(box)
+                text = text_reco(img[top_left_y - 2:bot_right_y + 2, top_left_x - 2:bot_right_x + 2]).get("Text")
+                result.append({"Boxes": box, "Text": text})
+            video_result.append(result)
+        else:
+            break
     return {"Texts": video_result}
 
 
