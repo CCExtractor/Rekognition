@@ -859,3 +859,78 @@ def object_detect(input_file, filename):
     for num in range(nums):
         result.append([{"Box": boxes[num]}, {"Score": scores[num]}, {"Label": class_names[int(classes[num])]}])
     return {"Objects": result}
+
+
+def object_detect_video(input_file, filename):
+    """     Detecting Objects in video
+    Args:
+            *   input_file: Contents of the input video file
+            *   filename: filename of the video
+    Workflow:
+            *   uploaded file is read using opencv and gets processed
+                frame by frame
+            *   inference input dimension requires dimension of (416,416)
+                therefore the frame is first resizing to required
+                input dimension and then normalized.
+            *   Now the processed output is further processed to make it a
+                json format which is compatible to TensorFlow Serving input.
+            *   Then a http post request is made at localhost:8501.
+                The post request contain data and headers.
+            *   Incase of any exception, it return relevant error message.
+            *   A list is maintained with each element being a dictionary
+                with Label, Score, and Box being the keys and the name of the
+                object, it's confidence score and it's bounding box
+                coordinates as the respective values of these keys.
+            *   Result of every frame is stored in another list
+            *   A dictionary is returned with Objects as key and the list
+                generated above as the value
+    Returns:
+            *   Dictionary having Objects as Key and list of dictionaries
+                as the value where the dictionary element has Label, Score
+                and Box as the keys and the name of the object, it's
+                confidence score and it's bounding box coordinates as the
+                respective values of these keys for every frame
+    """
+
+    logger.info(msg="object_detect_video called")
+    file_path = os.path.join(MEDIA_ROOT, 'object', filename)
+    handle_uploaded_file(input_file, file_path)
+    video_result = []
+    vid = cv2.VideoCapture(file_path)
+    while(vid.isOpened()):
+        ret, image = vid.read()
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        image = cv2.resize(image, tuple((416, 416)), interpolation=cv2.INTER_LINEAR)
+        image = np.array(image, np.float32) / 255
+        data = json.dumps({"inputs": [image.tolist()]})
+        try:
+            headers = {"content-type": "application/json"}
+            url = urllib.parse.urljoin(base_url, object_detect_url)
+            json_response = requests.post(url, data=data, headers=headers)
+        except requests.exceptions.HTTPError as errh:
+            logger.error(msg=errh)
+            return {"Error": "An HTTP error occurred."}
+        except requests.exceptions.ConnectionError as errc:
+            logger.error(msg=errc)
+            return {"Error": "A Connection error occurred."}
+        except requests.exceptions.Timeout as errt:
+            logger.error(msg=errt)
+            return {"Error": "The request timed out."}
+        except requests.exceptions.TooManyRedirects as errm:
+            logger.error(msg=errm)
+            return {"Error": "Bad URL"}
+        except requests.exceptions.RequestException as err:
+            logger.error(msg=err)
+            return {"Error": "Facial Expression Recognition Not Working"}
+        except Exception as e:
+            logger.error(msg=e)
+            return {"Error": "Facial Expression Recognition Not Working"}
+        predictions = json.loads(json_response.text).get("outputs", "Bad request made.")
+        boxes, scores, classes, nums = predictions["yolo_nms"][0], predictions[
+            "yolo_nms_1"][0], predictions["yolo_nms_2"][0], predictions["yolo_nms_3"][0]
+        result = []
+        class_names = get_class_names(coco_names_path)
+        for num in range(nums):
+            result.append([{"Box": boxes[num]}, {"Score": scores[num]}, {"Label": class_names[int(classes[num])]}])
+        video_result.append(result)
+    return {"Objects": video_result}
