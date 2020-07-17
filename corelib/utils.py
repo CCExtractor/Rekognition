@@ -54,3 +54,27 @@ def get_class_names(file_name):
 
     logger.info(msg="get_class_names called")
     return [c.strip() for c in open(file_name).readlines()]
+
+
+def get_classes(file_name):
+    """     Read contents of file and return tuple of words
+    Args:
+            *   file_name: path of file to be read
+    Workflow:
+            *   Reads file line by line and removes
+                the leading and trailing characters
+                in each line
+            *   Splits each line into a list and returns
+                letters occuring after the 3rd elemnt in
+                the of the first element of the list
+            *   converts list to tuple
+    Returns:
+            *   tuple of required words from the file
+    """
+
+    logger.info(msg="get_classes called")
+    classes = []
+    with open(file_name) as class_file:
+        for line in class_file:
+            classes.append(line.strip().split(' ')[0][3:])
+    return tuple(classes)
