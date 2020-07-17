@@ -221,7 +221,7 @@ def scene_detect(input_file, filename):
     file_path = os.path.join(MEDIA_ROOT, 'scene', filename)
     handle_uploaded_file(input_file, file_path)
     img = cv2.imread(file_path)[:, :, ::-1]
-    img_resized = cv2.resize(img,(224,224))
+    img_resized = cv2.resize(img, (224, 224))
     data = json.dumps({"signature_name": "serving_default",
                        "inputs": [img_resized.tolist()]})
     try:
@@ -253,8 +253,8 @@ def scene_detect(input_file, filename):
     top_preds_score = np.sort(predictions)[::-1][0:5]
     classes = get_classes(scene_labels_path)
     result = []
-    for i in range(0,5):
-        result.append({"Scene":classes[top_preds[i]],"Score":top_preds_score[i]})
+    for i in range(0, 5):
+        result.append({"Scene": classes[top_preds[i]], "Score": top_preds_score[i]})
     return {"Scenes": result}
 
 
