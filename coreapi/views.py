@@ -5,7 +5,7 @@ from corelib.facenet.utils import (getnewuniquefilename)
 from .main_api import (facerecogniseinimage, facerecogniseinvideo,
                        createembedding, process_streaming_video,
                        nsfwclassifier, similarface, object_detect,
-                       text_detect, object_detect_video text_detect_video)
+                       text_detect, object_detect_video, text_detect_video)
 from .serializers import (EmbedSerializer, NameSuggestedSerializer,
                           SimilarFaceSerializer, ImageFrSerializers)
 from .models import InputEmbed, NameSuggested, SimilarFaceInImage
