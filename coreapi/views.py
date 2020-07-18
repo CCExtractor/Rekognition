@@ -5,7 +5,7 @@ from corelib.facenet.utils import (getnewuniquefilename)
 from .main_api import (facerecogniseinimage, facerecogniseinvideo,
                        createembedding, process_streaming_video,
                        nsfwclassifier, similarface, object_detect,
-                       text_detect)
+                       text_detect, text_detect_video)
 from .serializers import (EmbedSerializer, NameSuggestedSerializer,
                           SimilarFaceSerializer, ImageFrSerializers)
 from .models import InputEmbed, NameSuggested, SimilarFaceInImage
@@ -40,6 +40,32 @@ class SceneText(views.APIView):
         filename = getnewuniquefilename(request)
         input_file = request.FILES['file']
         result = text_detect(input_file, filename)
+        if "Error" not in result:
+            return Response(result, status=status.HTTP_200_OK)
+        else:
+            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SceneTextVideo(views.APIView):
+    """     To localize and recognise text in a video
+
+    Workflow
+            *   if  POST method request is made, then initially a random
+                filename is generated and then text_detect_video method
+                is called which process the video and outputs the result
+                containing the dictionary of detected text and bounding
+                boxes of the text for each frame
+    Returns:
+            *   output dictionary of detected text and bounding
+                boxes of the text for each frame of the video
+    """
+
+    def post(self, request):
+
+        logger.info(msg="POST Request for Scene Text Extraction in video made")
+        filename = getnewuniquefilename(request)
+        input_file = request.FILES['file']
+        result = text_detect_video(input_file, filename)
         if "Error" not in result:
             return Response(result, status=status.HTTP_200_OK)
         else:
