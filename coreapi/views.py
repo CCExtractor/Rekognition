@@ -5,7 +5,7 @@ from corelib.facenet.utils import (getnewuniquefilename)
 from .main_api import (facerecogniseinimage, facerecogniseinvideo,
                        createembedding, process_streaming_video,
                        nsfwclassifier, similarface, object_detect,
-                       text_detect, text_detect_video)
+                       text_detect, object_detect_video, text_detect_video)
 from .serializers import (EmbedSerializer, NameSuggestedSerializer,
                           SimilarFaceSerializer, ImageFrSerializers)
 from .models import InputEmbed, NameSuggested, SimilarFaceInImage
@@ -418,6 +418,33 @@ class ObjectDetect(views.APIView):
         filename = getnewuniquefilename(request)
         input_file = request.FILES['file']
         result = object_detect(input_file, filename)
+        if "Error" not in result:
+            return Response(result, status=status.HTTP_200_OK)
+        else:
+            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ObjectDetectVideo(views.APIView):
+    """     To detect objects in a video
+
+    Workflow
+            *   if  POST method request is made, then initially a random
+                filename is generated and then object_detect_video method is
+                called which process the image and outputs the result
+                containing the dictionary of detected objects, confidence
+                scores and bounding box coordinates for each frame
+
+    Returns:
+            *   output dictionary of detected objects, confidence scores
+                and bounding box coordinates for each frame of the video
+    """
+
+    def post(self, request):
+
+        logger.info(msg="POST Request for Object Detection in video made")
+        filename = getnewuniquefilename(request)
+        input_file = request.FILES['file']
+        result = object_detect_video(input_file, filename)
         if "Error" not in result:
             return Response(result, status=status.HTTP_200_OK)
         else:
