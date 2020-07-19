@@ -282,8 +282,8 @@ def text_detect_video(input_file, filename):
         else:
             break
     return {"Texts": video_result}
-  
-  
+
+
 def scene_detect(input_file, filename):
     """     Scene Text Detection
     Args:
