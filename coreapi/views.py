@@ -70,8 +70,8 @@ class SceneDetect(views.APIView):
             return Response(result, status=status.HTTP_200_OK)
         else:
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
-          
-          
+
+
 class SceneTextVideo(views.APIView):
     """     To localize and recognise text in a video
     Workflow
