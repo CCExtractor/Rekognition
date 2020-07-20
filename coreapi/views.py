@@ -4,7 +4,9 @@ from rest_framework.response import Response
 from corelib.facenet.utils import (getnewuniquefilename)
 from .main_api import (facerecogniseinimage, facerecogniseinvideo,
                        createembedding, process_streaming_video,
-                       nsfwclassifier, similarface)
+                       nsfwclassifier, similarface, object_detect,
+                       text_detect, object_detect_video, scene_detect,
+                       text_detect_video)
 from .serializers import (EmbedSerializer, NameSuggestedSerializer,
                           SimilarFaceSerializer, ImageFrSerializers)
 from .models import InputEmbed, NameSuggested, SimilarFaceInImage
@@ -17,6 +19,82 @@ import random
 
 
 logger = RekogntionLogger(name="view")
+
+
+class SceneText(views.APIView):
+    """     To localize and recognise text in an image
+
+    Workflow
+            *   if  POST method request is made, then initially a random
+                filename is generated and then text_detect method is
+                called which process the image and outputs the result
+                containing the dictionary of detected text and bounding
+                boxes of the text
+    Returns:
+            *   output dictionary of detected text and bounding
+                boxes of the text
+    """
+
+    def post(self, request):
+
+        logger.info(msg="POST Request for Scene Text Extraction made")
+        filename = getnewuniquefilename(request)
+        input_file = request.FILES['file']
+        result = text_detect(input_file, filename)
+        if "Error" not in result:
+            return Response(result, status=status.HTTP_200_OK)
+        else:
+            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SceneDetect(views.APIView):
+    """     To classify scene in an image
+    Workflow
+            *   if  POST method request is made, then initially a random
+                filename is generated and then scene_detect method is
+                called which process the image and outputs the result
+                containing the dictionary of probability of type of
+                scene in the image
+    Returns:
+            *   output dictionary of detected scenes and probabilities
+                of scenes in image
+    """
+
+    def post(self, request):
+
+        logger.info(msg="POST Request for Scene Detection made")
+        filename = getnewuniquefilename(request)
+        input_file = request.FILES['file']
+        result = scene_detect(input_file, filename)
+        if "Error" not in result:
+            return Response(result, status=status.HTTP_200_OK)
+        else:
+            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SceneTextVideo(views.APIView):
+    """     To localize and recognise text in a video
+    Workflow
+            *   if  POST method request is made, then initially a random
+                filename is generated and then text_detect_video method
+                is called which process the video and outputs the result
+                containing the dictionary of detected text and bounding
+                boxes of the text for each frame
+    Returns:
+            *   output dictionary of detected text and bounding
+                boxes of the text for each frame of the video
+    """
+
+    def post(self, request):
+
+        logger.info(msg="POST Request for Scene Text Extraction in video made")
+        filename = getnewuniquefilename(request)
+        input_file = request.FILES['file']
+        result = text_detect_video(input_file, filename)
+        if "Error" not in result:
+            return Response(result, status=status.HTTP_200_OK)
+        else:
+            return Response(result, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ImageFr(views.APIView):
@@ -338,6 +416,60 @@ class SimilarFace(views.APIView):
         reference_img = request.FILES['file']
         compare_img = request.FILES['compareImage']
         result = similarface(reference_img, compare_img, filename)
+        if "Error" not in result:
+            return Response(result, status=status.HTTP_200_OK)
+        else:
+            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ObjectDetect(views.APIView):
+    """     To detect objects in an image
+
+    Workflow
+            *   if  POST method request is made, then initially a random
+                filename is generated and then object_detect method is
+                called which process the image and outputs the result
+                containing the dictionary of detected objects, confidence
+                scores and bounding box coordinates
+
+    Returns:
+            *   output dictionary of detected objects, confidence scores
+                and bounding box coordinates
+    """
+
+    def post(self, request):
+
+        logger.info(msg="POST Request for Object Detection made")
+        filename = getnewuniquefilename(request)
+        input_file = request.FILES['file']
+        result = object_detect(input_file, filename)
+        if "Error" not in result:
+            return Response(result, status=status.HTTP_200_OK)
+        else:
+            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ObjectDetectVideo(views.APIView):
+    """     To detect objects in a video
+
+    Workflow
+            *   if  POST method request is made, then initially a random
+                filename is generated and then object_detect_video method is
+                called which process the image and outputs the result
+                containing the dictionary of detected objects, confidence
+                scores and bounding box coordinates for each frame
+
+    Returns:
+            *   output dictionary of detected objects, confidence scores
+                and bounding box coordinates for each frame of the video
+    """
+
+    def post(self, request):
+
+        logger.info(msg="POST Request for Object Detection in video made")
+        filename = getnewuniquefilename(request)
+        input_file = request.FILES['file']
+        result = object_detect_video(input_file, filename)
         if "Error" not in result:
             return Response(result, status=status.HTTP_200_OK)
         else:

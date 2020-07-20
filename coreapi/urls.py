@@ -11,5 +11,9 @@ urlpatterns = [
     path('nsfw/', views.NsfwRecognise.as_view(), name='nsfw'),
     path('ytstream/', views.StreamVideoFr.as_view(), name='youtube_process'),
     path('simface/', views.SimilarFace.as_view(), name='similar_face'),
-
+    path('objects/', views.ObjectDetect.as_view(), name='object_detect'),
+    path('scenetext/', views.SceneText.as_view(), name='scene_text'),
+    path('scenedetect/', views.SceneDetect.as_view(), name='scene_detect'),
+    path('objectsvideo/', views.ObjectDetectVideo.as_view(), name='object_detect_video'),
+    path('scenetextvideo/', views.SceneTextVideo.as_view(), name='scene_text_video'),
 ]
