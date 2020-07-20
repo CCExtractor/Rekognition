@@ -25,8 +25,9 @@ from corelib.constant import (pnet, rnet, onet, facenet_persistent_session,
                               Facial_expression_class_names, nsfw_class_names,
                               base_url, face_exp_url, nsfw_url, text_reco_url,
                               char_dict_path, ord_map_dict_path, text_detect_url,
-                              coco_names_path, object_detect_url)
-from corelib.utils import ImageFrNetworkChoices, get_class_names, bb_to_cv
+                              coco_names_path, object_detect_url, scene_detect_url,
+                              scene_labels_path)
+from corelib.utils import ImageFrNetworkChoices, get_class_names, bb_to_cv, get_classes
 from .models import InputImage, InputVideo, InputEmbed, SimilarFaceInImage
 from logger.logging import RekogntionLogger
 import numpy as np
@@ -281,6 +282,76 @@ def text_detect_video(input_file, filename):
         else:
             break
     return {"Texts": video_result}
+
+
+def scene_detect(input_file, filename):
+    """     Scene Text Detection
+    Args:
+            *   input_file: Contents of the input image file
+            *   filename: filename of the image
+    Workflow:
+            *   A numpy array of an image is taken as input (RGB).
+            *   inference input dimension requires dimension of (224,224)
+                therefore the input is first resizing to required dimension
+            *   Now the processed output is further processed to make it a
+                json format which is compatible to TensorFlow Serving input.
+            *   Then a http post request is made at localhost:8501.
+                The post request contain data and headers.
+            *   Incase of any exception, it return relevant error message.
+            *   output from TensorFlow Serving is further processed to find
+                the classes that have been recognized
+            *   A list is maintained with each element being a dictionary
+                with Scene as one of the keys and the detected class as the
+                value and Score as another key with the probability of that
+                class as value
+            *   A dictionay is returned with Scenes as key and the list
+                generated above as value
+    Returns:
+            *   Dictionary having Scenes as the key and list of dictionaries
+                as the value where the dictinary elemet has Scene and Score
+                as keys and detected class and confidence score of that
+                class as the respective value
+    """
+
+    logger.info(msg="scene_detect called")
+    file_path = os.path.join(MEDIA_ROOT, 'scene', filename)
+    handle_uploaded_file(input_file, file_path)
+    img = cv2.imread(file_path)[:, :, ::-1]
+    img_resized = cv2.resize(img, (224, 224))
+    data = json.dumps({"signature_name": "serving_default",
+                       "inputs": [img_resized.tolist()]})
+    try:
+        headers = {"content-type": "application/json"}
+        url = urllib.parse.urljoin(base_url, scene_detect_url)
+
+        json_response = requests.post(url, data=data, headers=headers)
+    except requests.exceptions.HTTPError as errh:
+        logger.error(msg=errh)
+        return {"Error": "An HTTP error occurred."}
+    except requests.exceptions.ConnectionError as errc:
+        logger.error(msg=errc)
+        return {"Error": "A Connection error occurred."}
+    except requests.exceptions.Timeout as errt:
+        logger.error(msg=errt)
+        return {"Error": "The request timed out."}
+    except requests.exceptions.TooManyRedirects as errm:
+        logger.error(msg=errm)
+        return {"Error": "Bad URL"}
+    except requests.exceptions.RequestException as err:
+        logger.error(msg=err)
+        return {"Error": "Facial Expression Recognition Not Working"}
+    except Exception as e:
+        logger.error(msg=e)
+        return {"Error": e}
+    predictions = json.loads(json_response.text)["outputs"][0]
+
+    top_preds = np.argsort(predictions)[::-1][0:5]
+    top_preds_score = np.sort(predictions)[::-1][0:5]
+    classes = get_classes(scene_labels_path)
+    result = []
+    for i in range(0, 5):
+        result.append({"Scene": classes[top_preds[i]], "Score": top_preds_score[i]})
+    return {"Scenes": result}
 
 
 def faceexp(cropped_face):
