@@ -1104,3 +1104,167 @@ def object_detect_video(input_file, filename):
         else:
             break
     return {"Objects": video_result}
+    
+    
+def nsfw_video(input_file, filename):
+    """     NSFW classification in videos
+    Args:
+            *   input_file: Contents of the input video file
+            *   filename: filename of the video
+    Workflow:
+            *   uploaded file is read using opencv and gets processed
+                frame by frame
+            *   The numpy array of each frame is taken as input (RGB).
+                inference input dimension requires dimension of (64,64,1)
+                and therefore the RGB input is resized to the required
+                input dimension.
+            *   Now the processed output is further processed to make it a
+                json format which is compatible to TensorFlow Serving input.
+            *   Then a http post request is made at localhost:8501 .
+                The post request contain data and headers.
+            *   Incase of any exception, it return empty string.
+            *   output from TensorFlow Serving is then parsed and a dictionary
+                is defined which keeps classes and probabilities as the two
+                keys. Value of Classes is the class with maximum probability
+                and value of probabilities is a dictionary of classes with
+                their respective probabilities
+            *   Result of every frame is stored in a list
+            *   A dictionary is returned with Result as key and the list
+                generated above as the value
+    Returns:
+            *   Dictionary having Result as Key and list of dictionaries
+                as the value where the dictionary element keeps classes
+                and probabilities as the two keys. Value of Classes is
+                the class with maximum probability and value of probabilities
+                is a dictionary of classes with their respective probabilities
+    """
+
+    logger.info(msg="nsfw_video called")
+    file_path = os.path.join(MEDIA_ROOT, 'nsfw', filename)
+
+    handle_uploaded_file(input_file, file_path)
+    vid = cv2.VideoCapture(file_path)
+    video_result = []
+    while(vid.isOpened()):
+        ret, img = vid.read()
+        if ret:
+            img = resize(img, (64, 64), anti_aliasing=True, mode='constant')
+            if (img.shape[2] == 4):
+                img = img[..., :3]
+
+            data = np.asarray(img, dtype="float32")
+            data = img_standardize(data)
+            image_data = data.astype(np.float16, copy=False)
+            url = urllib.parse.urljoin(base_url, nsfw_url)
+            jsondata = json.dumps({"inputs": [image_data.tolist()]})
+            try:
+                response = requests.post(url, data=jsondata)
+            except requests.exceptions.HTTPError as errh:
+                logger.error(msg=errh)
+                return {"Error": "An HTTP error occurred."}
+            except requests.exceptions.ConnectionError as errc:
+                logger.error(msg=errc)
+                return {"Error": "A Connection error occurred."}
+            except requests.exceptions.Timeout as errt:
+                logger.error(msg=errt)
+                return {"Error": "The request timed out."}
+            except requests.exceptions.TooManyRedirects as errm:
+                logger.error(msg=errm)
+                return {"Error": "Bad URL"}
+            except requests.exceptions.RequestException as err:
+                logger.error(msg=err)
+                return {"Error": "NSFW Classification Not Working"}
+            except Exception as e:
+                logger.error(msg=e)
+                return {"Error": "NSFW Classification Not Working"}
+            data = response.json()
+            outputs = data['outputs']
+            predict_result = {"classes": nsfw_class_names.get(outputs['classes'][0])}
+            predict_result['probabilities'] = {nsfw_class_names.get(i): l for i,
+                                               l in enumerate(outputs['probabilities'][0])}
+            video_result.append(predict_result)
+        else:
+            break
+    return {"Result": video_result}
+    
+    
+def scene_video(input_file, filename):
+    """     Scene classification in videos
+    Args:
+            *   input_file: Contents of the input video file
+            *   filename: filename of the video
+    Workflow:
+            *   uploaded file is read using opencv and gets processed
+                frame by frame
+            *   A numpy array of an image is taken as input (RGB).
+            *   inference input dimension requires dimension of (224,224)
+                therefore the input is first resizing to required dimension
+            *   Now the processed output is further processed to make it a
+                json format which is compatible to TensorFlow Serving input.
+            *   Then a http post request is made at localhost:8501.
+                The post request contain data and headers.
+            *   Incase of any exception, it return relevant error message.
+            *   output from TensorFlow Serving is further processed to find
+                the classes that have been recognized
+            *   A list is maintained with each element being a dictionary
+                with Scene as one of the keys and the detected class as the
+                value and Score as another key with the probability of that
+                class as value
+            *   Result of every frame is stored in a list
+            *   A dictionary is returned with Result as key and the list
+                generated above as the value
+    Returns:
+            *   Dictionary having Result as Key and list of dictionaries
+                as the value where the dictionary element has Scenes as
+                the key and list of dictionaries as the value and these
+                dictinary elemet has Scene and Score as keys and detected
+                class and confidence score of that class as the respective value
+    """
+
+    logger.info(msg="scene_video called")
+    file_path = os.path.join(MEDIA_ROOT, 'scene', filename)
+    handle_uploaded_file(input_file, file_path)
+    vid = cv2.VideoCapture(file_path)
+    video_result = []
+    while(vid.isOpened()):
+        ret, image = vid.read()
+        if ret:
+            img = image[:, :, ::-1]
+            img_resized = cv2.resize(img, (224, 224))
+            data = json.dumps({"signature_name": "serving_default",
+                               "inputs": [img_resized.tolist()]})
+            try:
+                headers = {"content-type": "application/json"}
+                url = urllib.parse.urljoin(base_url, scene_detect_url)
+
+                json_response = requests.post(url, data=data, headers=headers)
+            except requests.exceptions.HTTPError as errh:
+                logger.error(msg=errh)
+                return {"Error": "An HTTP error occurred."}
+            except requests.exceptions.ConnectionError as errc:
+                logger.error(msg=errc)
+                return {"Error": "A Connection error occurred."}
+            except requests.exceptions.Timeout as errt:
+                logger.error(msg=errt)
+                return {"Error": "The request timed out."}
+            except requests.exceptions.TooManyRedirects as errm:
+                logger.error(msg=errm)
+                return {"Error": "Bad URL"}
+            except requests.exceptions.RequestException as err:
+                logger.error(msg=err)
+                return {"Error": "Facial Expression Recognition Not Working"}
+            except Exception as e:
+                logger.error(msg=e)
+                return {"Error": e}
+            predictions = json.loads(json_response.text)["outputs"][0]
+
+            top_preds = np.argsort(predictions)[::-1][0:5]
+            top_preds_score = np.sort(predictions)[::-1][0:5]
+            classes = get_classes(scene_labels_path)
+            result = []
+            for i in range(0, 5):
+                result.append({"Scene": classes[top_preds[i]], "Score": top_preds_score[i]})
+            video_result.append(result)
+        else:
+            break
+    return {"Result": video_result}
