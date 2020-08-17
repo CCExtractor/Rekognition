@@ -16,4 +16,7 @@ urlpatterns = [
     path('scenedetect/', views.SceneDetect.as_view(), name='scene_detect'),
     path('objectsvideo/', views.ObjectDetectVideo.as_view(), name='object_detect_video'),
     path('scenetextvideo/', views.SceneTextVideo.as_view(), name='scene_text_video'),
+    path('nsfwvideo/', views.NsfwVideo.as_view(), name='nsfw_video'),
+    path('scenevideo/', views.SceneVideo.as_view(), name='scene_video'),
+
 ]
