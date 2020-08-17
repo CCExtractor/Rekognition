@@ -120,8 +120,8 @@ class NsfwVideo(views.APIView):
             return Response(result, status=status.HTTP_200_OK)
         else:
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
-            
-            
+
+
 class SceneVideo(views.APIView):
     """     To classify scenes video
     Workflow
@@ -145,7 +145,6 @@ class SceneVideo(views.APIView):
             return Response(result, status=status.HTTP_200_OK)
         else:
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 class ImageFr(views.APIView):

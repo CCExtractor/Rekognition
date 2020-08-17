@@ -1104,8 +1104,8 @@ def object_detect_video(input_file, filename):
         else:
             break
     return {"Objects": video_result}
-    
-    
+
+
 def nsfw_video(input_file, filename):
     """     NSFW classification in videos
     Args:
@@ -1186,8 +1186,8 @@ def nsfw_video(input_file, filename):
         else:
             break
     return {"Result": video_result}
-    
-    
+
+
 def scene_video(input_file, filename):
     """     Scene classification in videos
     Args:
