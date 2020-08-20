@@ -28,7 +28,7 @@ from corelib.constant import (pnet, rnet, onet, facenet_persistent_session,
                               coco_names_path, object_detect_url, scene_detect_url,
                               scene_labels_path)
 from corelib.utils import ImageFrNetworkChoices, get_class_names, bb_to_cv, get_classes
-from .models import InputImage, InputVideo, InputEmbed, SimilarFaceInImage
+from coreapi.models import InputImage, InputVideo, InputEmbed, SimilarFaceInImage
 from logger.logging import RekogntionLogger
 import numpy as np
 import requests

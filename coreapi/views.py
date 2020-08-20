@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework import views, status
 from rest_framework.response import Response
 from corelib.facenet.utils import (getnewuniquefilename)
-from .main_api import (facerecogniseinimage, facerecogniseinvideo,
+from corelib.main_api import (facerecogniseinimage, facerecogniseinvideo,
                        createembedding, process_streaming_video,
                        nsfwclassifier, similarface, object_detect,
                        text_detect, object_detect_video, scene_detect,
