@@ -1,0 +1,25 @@
+version: '3.7'
+
+services:
+  web:
+    build: ./PMRekognition
+    command: bash -c "python3 manage.py makemigrations && python3 manage.py migrate && python3 manage.py runserver 8000"
+    container_name: pmr
+    volumes:
+      - ./PMRekognition/:/usr/src/PMRekognition/
+    ports:
+      - 8000:8000
+    env_file:
+      - ./.env.dev
+    depends_on:
+      - db
+  db:
+    image: postgres:12.0-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=pmr
+volumes:
+  postgres_data:
