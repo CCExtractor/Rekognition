@@ -1,13 +1,13 @@
 FROM python:3.6
 
 # set work directory
-WORKDIR /app
+WORKDIR /usr/src/PMRekognition
 
 # set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
-ENV DEBUG 0
 
+# install psycopg2 dependencies
 # install psycopg2
 RUN apt-get update && apt-get install -y --no-install-recommends \
         tzdata \
@@ -20,22 +20,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-
 # install dependencies
 COPY ./requirements.txt .
-RUN pip install -r requirements.txt
+RUN pip3 install -r requirements.txt
 
-COPY ./download_model.sh .
-RUN chmod +x download_model.sh
-RUN ./download_model.sh
-
+COPY ./entrypoint.sh .
 
 # copy project
 COPY . .
 
-# add and run as non-root user
-# RUN adduser -D myuser
-# USER myuser
-
-# run gunicorn
-CMD gunicorn Rekognition.wsgi:application --bind 0.0.0.0:$PORT
+# download models
+RUN chmod +x download_model.sh
+RUN ./download_model.sh
+ENTRYPOINT ["/usr/src/PMRekognition/entrypoint.sh"]

@@ -2,11 +2,11 @@ from django.shortcuts import render
 from rest_framework import views, status
 from rest_framework.response import Response
 from corelib.facenet.utils import (getnewuniquefilename)
-from .main_api import (facerecogniseinimage, facerecogniseinvideo,
+from corelib.main_api import (facerecogniseinimage, facerecogniseinvideo,
                        createembedding, process_streaming_video,
                        nsfwclassifier, similarface, object_detect,
                        text_detect, object_detect_video, scene_detect,
-                       text_detect_video)
+                       text_detect_video, scene_video, nsfw_video)
 from .serializers import (EmbedSerializer, NameSuggestedSerializer,
                           SimilarFaceSerializer, ImageFrSerializers)
 from .models import InputEmbed, NameSuggested, SimilarFaceInImage
@@ -47,6 +47,82 @@ class SceneText(views.APIView):
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
 
 
+class SceneTextVideo(views.APIView):
+    """     To localize and recognise text in a video
+    Workflow
+            *   if  POST method request is made, then initially a random
+                filename is generated and then text_detect_video method
+                is called which process the video and outputs the result
+                containing the dictionary of detected text and bounding
+                boxes of the text for each frame
+    Returns:
+            *   output dictionary of detected text and bounding
+                boxes of the text for each frame of the video
+    """
+
+    def post(self, request):
+
+        logger.info(msg="POST Request for Scene Text Extraction in video made")
+        filename = getnewuniquefilename(request)
+        input_file = request.FILES['file']
+        result = text_detect_video(input_file, filename)
+        if "Error" not in result:
+            return Response(result, status=status.HTTP_200_OK)
+        else:
+            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+
+class NsfwRecognise(views.APIView):
+    """     To recognise whether a image is nsfw or not
+
+    Workflow
+            *   if  POST method request is made, then initially a random
+                filename is generated and then nsfwclassifier method is
+                called which process the image and outputs the result
+                containing the dictionary of probability of type of content
+                in the image
+
+    Returns:
+            *   output dictionary of probability content in the image
+    """
+
+    def post(self, request):
+
+        logger.info(msg="POST Request for NSFW Classification made")
+        filename = getnewuniquefilename(request)
+        input_file = request.FILES['file']
+        result = nsfwclassifier(input_file, filename)
+        if "Error" not in result:
+            return Response(result, status=status.HTTP_200_OK)
+        else:
+            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+
+class NsfwVideo(views.APIView):
+    """     To recognise which frames in a video are NSFW
+    Workflow
+            *   if  POST method request is made, then initially a random
+                filename is generated and then nsfw_video method
+                is called which process the video and outputs the result
+                containing the the dictionary of probability of type of
+                scene in the video for each frame
+    Returns:
+            *   output dictionary of probability content in the each frame
+                of the video
+    """
+
+    def post(self, request):
+
+        logger.info(msg="POST Request for NSFW Classification in video made")
+        filename = getnewuniquefilename(request)
+        input_file = request.FILES['file']
+        result = nsfw_video(input_file, filename)
+        if "Error" not in result:
+            return Response(result, status=status.HTTP_200_OK)
+        else:
+            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+
 class SceneDetect(views.APIView):
     """     To classify scene in an image
     Workflow
@@ -72,25 +148,25 @@ class SceneDetect(views.APIView):
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
 
 
-class SceneTextVideo(views.APIView):
-    """     To localize and recognise text in a video
+class SceneVideo(views.APIView):
+    """     To classify scenes video
     Workflow
             *   if  POST method request is made, then initially a random
-                filename is generated and then text_detect_video method
+                filename is generated and then scene_video method
                 is called which process the video and outputs the result
-                containing the dictionary of detected text and bounding
-                boxes of the text for each frame
+                containing the the dictionary of probability of type of
+                content in the video for each frame
     Returns:
-            *   output dictionary of detected text and bounding
-                boxes of the text for each frame of the video
+            *   output dictionary of probability scene in the each frame
+                of the video
     """
 
     def post(self, request):
 
-        logger.info(msg="POST Request for Scene Text Extraction in video made")
+        logger.info(msg="POST Request for Scene Classification in video made")
         filename = getnewuniquefilename(request)
         input_file = request.FILES['file']
-        result = text_detect_video(input_file, filename)
+        result = scene_video(input_file, filename)
         if "Error" not in result:
             return Response(result, status=status.HTTP_200_OK)
         else:
@@ -136,32 +212,6 @@ class ImageFr(views.APIView):
             logger.error(msg=image_serializer.errors)
             return Response(image_serializer.errors,
                             status=status.HTTP_400_BAD_REQUEST)
-
-
-class NsfwRecognise(views.APIView):
-    """     To recognise whether a image is nsfw or not
-
-    Workflow
-            *   if  POST method request is made, then initially a random
-                filename is generated and then nsfwclassifier method is
-                called which process the image and outputs the result
-                containing the dictionary of probability of type of content
-                in the image
-
-    Returns:
-            *   output dictionary of probability content in the image
-    """
-
-    def post(self, request):
-
-        logger.info(msg="POST Request for NSFW Classification made")
-        filename = getnewuniquefilename(request)
-        input_file = request.FILES['file']
-        result = nsfwclassifier(input_file, filename)
-        if "Error" not in result:
-            return Response(result, status=status.HTTP_200_OK)
-        else:
-            return Response(result, status=status.HTTP_400_BAD_REQUEST)
 
 
 class VideoFr(views.APIView):
