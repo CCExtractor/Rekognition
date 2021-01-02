@@ -41,13 +41,13 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'cceface.apps.CcefaceConfig',
+    # 'cceface.apps.CcefaceConfig',
     'django.contrib.staticfiles',
     'rest_framework',
     'coreapi',
-    'django_celery_beat',
-    'django_celery_results',
-    'corsheaders',
+    # 'django_celery_beat',
+    # 'django_celery_results',
+    # 'corsheaders',
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True
