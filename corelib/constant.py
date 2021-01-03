@@ -4,8 +4,6 @@ from corelib.facenet.align import detect_face
 import tensorflow as tf
 import os
 
-
-upload_path = os.path.join(BASE_DIR, 'cceface/uploads')
 embeddings_path = os.path.join(BASE_DIR, 'corelib/embeddings')
 allowed_set = set(['png', 'jpg', 'jpeg', 'PNG', 'JPEG', 'JPG'])
 facenet_model_path = BASE_DIR + '/corelib/model/facenet/2017/20170512-110547.pb'
