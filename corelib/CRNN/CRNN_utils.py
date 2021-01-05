@@ -7,7 +7,7 @@ from logger.logging import RekogntionLogger
 logger = RekogntionLogger(name="CRNN_utils")
 
 
-class _FeatureIO(object):
+class _FeatureIO:
     """
         Feature IO Class
     """
@@ -63,7 +63,7 @@ class _FeatureIO(object):
         return res
 
 
-class CharDictBuilder(object):
+class CharDictBuilder:
     """
         To read char dict
     """

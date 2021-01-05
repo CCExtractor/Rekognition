@@ -60,7 +60,7 @@ def layer(op):
     return layer_decorated
 
 
-class Network(object):
+class Network:
 
     def __init__(self, inputs, trainable=True):
         # The input nodes for this network

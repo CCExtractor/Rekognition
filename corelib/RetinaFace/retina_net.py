@@ -28,7 +28,7 @@ def retry_request(retries=3, backoff_factor=0.3, status_forcelist=(500, 502, 504
     return session
 
 
-class FaceDetectionRetina(object):
+class FaceDetectionRetina:
     """
     Used for FaceDetectionRetina, also this class acts as a sub mobule for
     embeddings and Video Recognition Modules
