@@ -1,65 +1,65 @@
-# absl-py==0.7.1
-# aiohttp==3.5.4
-# amqp==2.5.0
-# appnope==0.1.0
-# astor==0.8.0
-# async-timeout==3.0.1
-# attrs==19.1.0
-# autopep8==1.4.4
-# Babel==2.7.0
-# backcall==0.1.0
-# billiard==3.6.0.0
-# celery==4.3.0
-# certifi==2019.3.9
-# chardet==3.0.4
-# cloudpickle==1.1.1
-# coverage==4.0.3
-# coveralls==1.7.0
-# cycler==0.10.0
-# dask==1.2.2
-# decorator==4.4.0
-# Django==2.2.1
-# django-celery-beat==1.5.0
-# django-celery-results==1.1.2
-# django-cors-headers==3.0.2
-# django-timezone-field==3.0
-# djangorestframework==3.9.4
-# docopt==0.6.2
-# entrypoints==0.3
-# flake8==3.7.7
-# flower==0.9.3
-# gast==0.2.2
-# grpcio==1.20.1
-# h5py==2.9.0
-# idna==2.8
-# idna-ssl==1.1.0
-# imageio==2.5.0
-# ipdb==0.12
-# ipython==7.5.0
-# ipython-genutils==0.2.0
-# jedi==0.14.0
-# joblib==0.13.2
-# Keras-Applications==1.0.7
-# Keras-Preprocessing==1.0.9
-# kiwisolver==1.1.0
-# kombu==4.6.1
-# Markdown==3.1.1
-# matplotlib==3.1.0
-# mccabe==0.6.1
-# mock==3.0.5
-# multidict==4.5.2
-# networkx==2.3
-# numpy==1.16.1
-# opencv-python==4.1.0.25
-# parso==0.5.0
-# pep8==1.7.1
-# pexpect==4.7.0
-# pickleshare==0.7.5
-# Pillow==6.0.0
-# prompt-toolkit==2.0.9
-# protobuf==3.7.1
-# psycopg2==2.7.7
-# psycopg2-binary==2.8.2
+absl-py==0.7.1
+aiohttp==3.5.4
+amqp==2.5.0
+appnope==0.1.0
+astor==0.8.0
+async-timeout==3.0.1
+attrs==19.1.0
+autopep8==1.4.4
+Babel==2.7.0
+backcall==0.1.0
+billiard==3.6.0.0
+celery==4.3.0
+certifi==2019.3.9
+chardet==3.0.4
+cloudpickle==1.1.1
+coverage==4.0.3
+coveralls==1.7.0
+cycler==0.10.0
+dask==1.2.2
+decorator==4.4.0
+Django==2.2.1
+django-celery-beat==1.5.0
+django-celery-results==1.1.2
+django-cors-headers==3.0.2
+django-timezone-field==3.0
+djangorestframework==3.9.4
+docopt==0.6.2
+entrypoints==0.3
+flake8==3.7.7
+flower==0.9.3
+gast==0.2.2
+grpcio==1.20.1
+h5py==2.9.0
+idna==2.8
+idna-ssl==1.1.0
+imageio==2.5.0
+ipdb==0.12
+ipython==7.5.0
+ipython-genutils==0.2.0
+jedi==0.14.0
+joblib==0.13.2
+Keras-Applications==1.0.7
+Keras-Preprocessing==1.0.9
+kiwisolver==1.1.0
+kombu==4.6.1
+Markdown==3.1.1
+matplotlib==3.1.0
+mccabe==0.6.1
+mock==3.0.5
+multidict==4.5.2
+networkx==2.3
+numpy==1.16.1
+opencv-python==4.1.0.25
+parso==0.5.0
+pep8==1.7.1
+pexpect==4.7.0
+pickleshare==0.7.5
+Pillow==6.0.0
+prompt-toolkit==2.0.9
+protobuf==3.7.1
+psycopg2==2.7.7
+psycopg2-binary==2.8.2
 ptyprocess==0.6.0
 pycodestyle==2.5.0
 pyflakes==2.1.1
