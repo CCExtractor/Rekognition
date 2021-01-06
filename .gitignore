@@ -13,6 +13,7 @@ corelib/facenet/model/
 *.pyc
 __pycache__
 /coverage.data
+rekog/*
 /coverage/
 .coverage
 .vscode

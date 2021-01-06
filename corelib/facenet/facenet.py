@@ -15,6 +15,7 @@ from sklearn.model_selection import KFold
 from scipy import interpolate
 from tensorflow.python.training import training
 import random
+import skimage
 import re
 from tensorflow.python.platform import gfile
 import math
@@ -310,7 +311,7 @@ def load_data(image_paths, do_random_crop, do_random_flip, image_size, do_prewhi
             img = prewhiten(img)
         img = crop(img, do_random_crop, image_size)
         img = flip(img, do_random_flip)
-        img = misc.imresize(img, (160, 160, 3))
+        img = skimage.transform.resize(img, (160, 160, 3))
         # print(image_paths[i].split('/')[6],img.shape,images.shape)
         images[i, :, :, :] = img
     return images
