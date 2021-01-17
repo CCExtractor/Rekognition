@@ -21,3 +21,6 @@ rekog/*
 env/
 db.sqlite3
 *.log
+.idea/
+.github/
+__pycache__/
