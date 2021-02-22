@@ -2,11 +2,15 @@ import os
 import tensorflow as tf
 import numpy as np
 import glob
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 from tensorflow.python.platform import gfile
 from corelib.facenet.facenet import get_model_filenames
 from corelib.facenet.align import detect_face
 from corelib.facenet.facenet import load_img
-from scipy.misc import imresize, imsave
+# from scipy.misc import imsave
+from skimage.io import imsave, imread
+import skimage
 from collections import defaultdict
 import string
 import random
@@ -122,8 +126,9 @@ def get_face(img, pnet, rnet, onet, image_size):
             bb[2] = np.minimum(det[2] + margin / 2, img_size[1])
             bb[3] = np.minimum(det[3] + margin / 2, img_size[0])
             cropped = img[bb[1]: bb[3], bb[0]:bb[2], :]
-            face_img = imresize(arr=cropped, size=(
-                input_image_size, input_image_size), mode='RGB')
+            # face_img = imresize(arr=cropped, size=(
+            #     input_image_size, input_image_size), mode='RGB')
+            face_img = skimage.transform.resize(cropped, (input_image_size, input_image_size))
             all_faces.append(face_img)
             all_bb.append(bb)
     return all_faces, all_bb
