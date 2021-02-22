@@ -1,25 +1,25 @@
 # Development Enironment setup
-Install python 3.6
+## Install python 3.6
 ```
 sudo add-apt-repository ppa:deadsnakes/ppa
 sudo apt-get update
 sudo apt-get install python3.6
 ```
 
-Run the following command to setup the virtualenv.
+## Setup the virtual enviornment
 ```
 pip3 install virtualenv
 virtualenv -p python3.6 myenv  
 source myenv/bin/activate
 ```
-Clone the repo
+## Clone the repository
 ```
 git clone https://github.com/pymit/Rekognition
 cd Rekognition
 pip install -r requirements.txt
 ```
 ***
-# Postgres setup
+## Postgres setup
 
 	sudo apt update
 	sudo apt install postgresql postgresql-contrib
@@ -35,7 +35,7 @@ pip install -r requirements.txt
 	ALTER DATABASE pmr OWNER TO admin;
 ***
 
-# ReactJS setup for frontend 
+## ReactJS setup for frontend 
 
 	git clone https://github.com/pymit/RekoUI
 	cd RekoUI
@@ -45,7 +45,7 @@ pip install -r requirements.txt
 	npm start
 ***
 
-# Downloading the models
+## Downloading the models
 //current directory  Rekognition
 
 	cd media 
@@ -56,14 +56,17 @@ pip install -r requirements.txt
 	cd facenet
 	wget https://www.dropbox.com/s/jm8grrifh5yk7is/2017.zip?dl=1 -O 2017.zip
 	unzip 2017.zip
+	rm 2017.zip
 	cd ..
 	mkdir tfs
 	cd tfs
 	wget https://www.dropbox.com/s/v66z9ernx0xqsk1/TFSModels.zip?dl=1
 	unzip TFSModels.zip
+	rm TFSModels.zip
+	cd ../../..
 
 ***
-# TensorFlow Serving setup using Docker
+## TensorFlow Serving setup using Docker
 	sudo apt-get update
 	sudo apt install docker.io
 	sudo chmod 666 /var/run/docker.sock
@@ -71,13 +74,13 @@ pip install -r requirements.txt
 
 ` docker run -it -p 8500:8500 -p 8501:8501 -v  <absolute path to tfs model's parent directory>:/home/ tensorflow/serving:nightly-devel`
 
-then in docker shell, run the below command
+#### then in docker shell, run the below command
 
 `tensorflow_model_server --port=8500 --rest_api_port=8501 --model_config_file=/home/configs/models.conf`
 
 ***
 
-### Finally 
+## Apply migrations 
 * Migrate
 
     ```
@@ -89,12 +92,12 @@ then in docker shell, run the below command
     python manage.py collectstatic  --dry-run
     ```
 
-##### install ffmpeg
+## install ffmpeg
 ``` 
 sudo apt install ffmpeg
 ```
 
-Start django application
+## Start django application
 
 ```
 python manage.py runserver 8000
