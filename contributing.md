@@ -92,7 +92,7 @@ pip install -r requirements.txt
     python manage.py collectstatic  --dry-run
     ```
 
-## install ffmpeg
+## Install ffmpeg
 ``` 
 sudo apt install ffmpeg
 ```
