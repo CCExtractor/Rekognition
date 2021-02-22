@@ -46,7 +46,7 @@ pip install -r requirements.txt
 ***
 
 ## Downloading the models
-//current directory  Rekognition
+##### current directory  Rekognition
 
 	cd media 
 	mkdir {face,output,similarFace,text,object}
