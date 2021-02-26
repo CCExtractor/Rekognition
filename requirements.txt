@@ -1,5 +1,5 @@
 absl-py==0.7.1
-aiohttp==3.5.4
+aiohttp==3.7.4
 amqp==2.5.0
 appnope==0.1.0
 astor==0.8.0
