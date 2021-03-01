@@ -12,7 +12,7 @@ This project aims at providing a free alternative to Amazon Rekognition services
 
 
 ## Setup
-To setup the project locally for development environment check this wiki [link](https://github.com/pymit/Rekognition/wiki/Project-Setup-in-Ubuntu-18.04)
+To setup the project locally for development environment check this wiki [link](https://github.com/npbit/Rekognition/blob/dev/contributing.md)
 
 
 ## Usage
