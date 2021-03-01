@@ -698,7 +698,10 @@ def facerecogniseinimage(input_file, filename, network):
             logger.error(msg=e)
             return {"Error": e}
 
-        img = imread(fname=input_file, mode='RGB')
+        
+        img = cv2.imread(file_path)
+        
+        # img = imread(fname=input_file, pilmode='RGB')
         if (img.shape[2] == 4):
             img = img[..., :3]
 
