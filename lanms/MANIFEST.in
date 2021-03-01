@@ -1,0 +1,34 @@
+# Include the license file
+include LICENSE
+
+# Include the library file
+include lanms/adaptor.so
+
+# Include cpp source files and Makefile
+include adaptor.cpp
+include lanms.h
+include Makefile
+
+
+include include/clipper/clipper.hpp
+include include/clipper/clipper.cpp
+include include/pybind11/stl_bind.h
+include include/pybind11/embed.h
+include include/pybind11/attr.h
+include include/pybind11/class_support.h
+include include/pybind11/pytypes.h
+include include/pybind11/complex.h
+include include/pybind11/operators.h
+include include/pybind11/eval.h
+include include/pybind11/pybind11.h
+include include/pybind11/descr.h
+include include/pybind11/eigen.h
+include include/pybind11/buffer_info.h
+include include/pybind11/chrono.h
+include include/pybind11/options.h
+include include/pybind11/common.h
+include include/pybind11/cast.h
+include include/pybind11/numpy.h
+include include/pybind11/typeid.h
+include include/pybind11/functional.h
+include include/pybind11/stl.h
