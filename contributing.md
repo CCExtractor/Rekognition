@@ -15,8 +15,9 @@ source myenv/bin/activate
 ## Clone the repository
 ```
 git clone https://github.com/pymit/Rekognition
-cd Rekognition
-pip install -r requirements.txt
+cd Rekognition/lanms
+sudo python setup.py install
+cd ..
 ```
 ***
 ## Postgres setup
