@@ -19,7 +19,8 @@ To setup the project locally for development environment check this wiki [link](
 This project currently supports
 | Feature     | cURL        |
 | :---        | :----       |
-| Face Recognition      | `curl -i -X POST -H "Content-Type: multipart/form-data " -F "file=@<path to image file> " http://127.0.0.1:8000/api/image/`       |
+Face Recognition with FaceNet  |`curl -i -X POST -H "Content-Type: multipart/form-data " -F "file=@<path to image file> " --form network=1 http://127.0.0.1:8000/api/image/` | 
+Face Recognition with RetinaNet  |`curl -i -X POST -H "Content-Type: multipart/form-data " -F "file=@<path to image file> " --form network=2 http://127.0.0.1:8000/api/image/`    |
 | Similar Face Search   | `curl -i -X POST -H "Content-Type: multipart/form-data" -F "file=@ <path to reference image>" -F "compareImage=@ <path to compare Image>" http://127.0.0.1:8000/api/simface/`               |
 | NSFW Classifier       | `curl -i -X POST -H "Content-Type: multipart/form-data " -F "file=@<path to image file> " http://127.0.0.1:8000/api/nsfw/`        |
 | Text Extraction       | `curl -i -X POST -H "Content-Type: multipart/form-data " -F "file=@<path to image file> " http://127.0.0.1:8000/api/scenetext/`   |

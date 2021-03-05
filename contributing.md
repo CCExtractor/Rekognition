@@ -63,11 +63,12 @@ pip install -r requirements.txt
 	wget https://www.dropbox.com/s/v66z9ernx0xqsk1/TFSModels.zip?dl=1
 	unzip TFSModels.zip
 	rm TFSModels.zip
-	cd ..
+	cd ../../..
+  cd data
 	mkdir text_reco
 	wget https://www.dropbox.com/s/dl/h2owqbmnrsvqo0c/ord_map_en.json
 	wget https://www.dropbox.com/s/dl/yzkijd7j5yflhli/char_dict_en.json
-	cd ../../..
+  cd ..	
 
 ***
 ## TensorFlow Serving setup using Docker

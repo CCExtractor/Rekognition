@@ -1,7 +1,8 @@
 import cv2
 import numpy as np
 import json
-from scipy.misc import imresize
+# from scipy.misc import imresize
+from skimage.transform import resize
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
@@ -28,7 +29,7 @@ def retry_request(retries=3, backoff_factor=0.3, status_forcelist=(500, 502, 504
     return session
 
 
-class FaceDetectionRetina:
+class FaceDetectionRetina(object):
     """
     Used for FaceDetectionRetina, also this class acts as a sub mobule for
     embeddings and Video Recognition Modules
@@ -165,7 +166,7 @@ class FaceDetectionRetina:
                 bb[2] = int(face["x2"])
                 bb[3] = int(face["y2"])
                 cropped = img[bb[1]:bb[3], bb[0]: bb[2], :]
-                face_img = imresize(arr=cropped, size=size, mode='RGB')
+                face_img = resize(cropped, size)
                 all_faces.append(face_img)
                 all_bb.append(bb)
         return all_faces, all_bb
