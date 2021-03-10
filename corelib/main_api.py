@@ -698,7 +698,10 @@ def facerecogniseinimage(input_file, filename, network):
             logger.error(msg=e)
             return {"Error": e}
 
-        img = imread(fname=input_file, mode='RGB')
+        
+        img = cv2.imread(file_path)
+        
+        # img = imread(fname=input_file, pilmode='RGB')
         if (img.shape[2] == 4):
             img = img[..., :3]
 
@@ -1067,11 +1070,13 @@ def similarface(reference_img, compare_img, filename):
     ref_img = reference_img
     com_img = compare_img
 
-    ref_img = imread(fname=ref_img, mode='RGB')
+    
+    ref_img = cv2.imread(os.path.join(file_folder, 'referenceImage.jpg'))
     if (ref_img.shape[2] == 4):
         ref_img = ref_img[..., :3]
 
-    com_img = imread(fname=com_img, mode='RGB')
+    
+    com_img = cv2.imread(os.path.join(file_folder, 'compareImage.jpg'))
     if (com_img.shape[2] == 4):
         com_img = com_img[..., :3]
 
