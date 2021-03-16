@@ -6,17 +6,13 @@ sudo apt-get update
 sudo apt-get install python3.6
 ```
 
-## Setup the virtual enviornment
-```
-pip3 install virtualenv
-virtualenv -p python3.6 myenv  
-source myenv/bin/activate
-```
-## Clone the repository
+
+## Clone the repository and setup venv
 ```
 git clone https://github.com/pymit/Rekognition
 cd Rekognition
-pip install -r requirements.txt
+./setup.sh
+source myenv/bin/activate
 ```
 ***
 ## Postgres setup
