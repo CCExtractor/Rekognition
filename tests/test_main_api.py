@@ -33,3 +33,13 @@ class TestNsfwClassifier(TestCase):
 		result2 = json.loads(requests.post(self.url, files=self.test_obj2).text)
 		self.assertEqual(result2["classes"].lower(),self.label2)
 
+class TestSimilarFacceSearch(TestCase):
+	def setUp(self):
+		super(TestSimilarFacceSearch,self).setUp()
+		self.url = "http://127.0.0.1:8000/api/simface/"
+		self.test_obj = {"file":open("./tests/testdata/reference.jpg","rb") , "compareImage":open("./tests/testdata/compare.jpg","rb")}
+		self.output = 5
+
+	def test_similar_face_search(self):
+		result = json.loads(requests.post(self.url,files=self.test_obj).text)
+		self.assertEqual(result["result"][1],self.output)
