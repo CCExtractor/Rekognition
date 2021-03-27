@@ -35,3 +35,6 @@ coco_names_path = './data/object_detect/coco.names'
 scene_labels_path = './data/scene_detect/places365.txt'
 object_detect_url = 'models/yolov3:predict'
 scene_detect_url = 'models/places:predict'
+object_detect_api = "http://127.0.0.1:8000/api/objects/"
+nsfw_classifier_api = "http://127.0.0.1:8000/api/nsfw/"
+sim_face_search_api = "http://127.0.0.1:8000/api/simface/"
