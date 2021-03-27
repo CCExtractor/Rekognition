@@ -24,10 +24,10 @@ class TestNsfwClassifier(TestCase):
 
 	def test_nsfw_classification(self):
 		result1 = json.loads(requests.post(nsfw_classifier_api, files=self.test_obj1).text)
-		self.assertEqual(result1["classes"].lower(),self.label1)
+		self.assertEqual(result1.get("classes").lower(),self.label1)
 
 		result2 = json.loads(requests.post(nsfw_classifier_api, files=self.test_obj2).text)
-		self.assertEqual(result2["classes"].lower(),self.label2)
+		self.assertEqual(result2.get("classes").lower(),self.label2)
 
 class TestSimilarFacceSearch(TestCase):
 	def setUp(self):
