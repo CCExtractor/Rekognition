@@ -1,7 +1,4 @@
 from django.test import TestCase
-import sys
-import os
-sys.path.append(os.getcwd() + '/../coreapi')
 from coreapi.models import InputImage, InputVideo, SimilarFaceInImage, InputEmbed, NameSuggested # noqa: E402
 import uuid
 
