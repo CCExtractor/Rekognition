@@ -1,9 +1,9 @@
 from django.test import TestCase
-from rest_framework.test import APIClient
 from django.core.files import File
 from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework import status
-
+settings.configure()
+from rest_framework.test import APIClient # noqa: E402
 
 class TestImageFr(TestCase):
 
