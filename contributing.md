@@ -56,9 +56,9 @@ source myenv/bin/activate
 	cd ..
 	mkdir tfs
 	cd tfs
-	wget https://www.dropbox.com/s/v66z9ernx0xqsk1/TFSModels.zip?dl=1
-	unzip TFSModels.zip
-	rm TFSModels.zip
+	wget https://www.dropbox.com/s/v0ai89jj5npowt1/tfs.zip
+	unzip tfs.zip
+	rm tfs.zip
 	cd ../../..
 	cd data
 	mkdir text_reco
