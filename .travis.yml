@@ -39,10 +39,19 @@ before_script:
   - psql -U postgres -c "ALTER ROLE admin SET timezone TO 'UTC'"
   - psql -U postgres -c "ALTER USER admin CREATEDB"
   - psql -U postgres -c "ALTER DATABASE pmr OWNER TO admin"
+  - mkdir tests/testdata
+  - cd tests/testdata
+  - wget https://www.dropbox.com/s/1bnxg32zvgjv0pl/compareImage.jpeg
+  - wget https://www.dropbox.com/s/1bnxg32zvgjv0pl/compareImage.jpeg
+  - wget https://www.dropbox.com/s/x3qpga9gc4ifamn/t1.png
+  - wget https://www.dropbox.com/s/l5t09lp8u4ok593/t2.jpeg
+  - wget https://www.dropbox.com/s/hzlpo74tk0xwzzh/t3.jpeg
+  - cd ../..
 
 script:
   - flake8 .
-  - coverage run cceface/tests.py
+  - coverage run tests/test_views.py
+  - coverage run tests/test_models.py
 
 after_success:
   - coveralls
