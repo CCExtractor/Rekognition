@@ -62,9 +62,10 @@ source myenv/bin/activate
 	cd ../../..
 	cd data
 	mkdir text_reco
+	cd text_reco
 	wget https://www.dropbox.com/s/dl/h2owqbmnrsvqo0c/ord_map_en.json
 	wget https://www.dropbox.com/s/dl/yzkijd7j5yflhli/char_dict_en.json
-	cd ..	
+	cd ../..	
 
 ***
 ## TensorFlow Serving setup using Docker
