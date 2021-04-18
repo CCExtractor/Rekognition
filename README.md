@@ -16,6 +16,14 @@ NSFW Classifier: Not-Safe-For-Work(NSFW) works by filtering the not suitable ima
 Text Extraction: The feature extracts textual data from a digital image and converts it to it’s ASCII character that a computer can recognize.
 Object Detection: The feature detects, locate and trace the object from the input image.
 Scene Classification: This feature classifies a scene image to one of the predefined scene categories by comprehending the entire image.
+The application also supports analysis of Video data in the following features:
+ 1) Text detection in videos
+ 2) Scene classification in videos
+ 3) NSFW classification in videos
+ 4) VideoFR
+ 5) Object detection in videos
+ The results of the above features are similar to that in the case of Images since the model applies similar algorithms in the frames of the Video.
+
 
 ## Setup
 To setup the project locally for development environment check this wiki [link](https://github.com/pymit/Rekognition/wiki/Project-Setup-in-Ubuntu-18.04)
