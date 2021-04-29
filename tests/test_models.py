@@ -1,5 +1,6 @@
 from django.test import TestCase
 import os
+import sys
 sys.path.append(os.getcwd()+"/..")
 import django  # noqa: E402
 django.setup()
