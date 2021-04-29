@@ -1,8 +1,11 @@
 from django.db import models
 from django.utils import timezone
 import uuid
-import django
-django.setup()
+from django.conf import settings
+
+if not settings.configured:
+	settings.configure()
+
 # Create your models here.
 
 
