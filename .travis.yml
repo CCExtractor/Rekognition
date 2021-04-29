@@ -50,8 +50,8 @@ before_script:
 
 script:
   - flake8 .
-  - coverage run tests/test_views.py
-  - coverage run tests/test_models.py
+  - coverage run -m tests.test_views.py
+  - coverage run -m tests.test_models.py
 
 after_success:
   - coveralls
