@@ -4,7 +4,7 @@ import uuid
 from django.conf import settings
 
 if not settings.configured:
-	settings.configure()
+    settings.configure()
 
 # Create your models here.
 
