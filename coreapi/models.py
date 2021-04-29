@@ -6,6 +6,7 @@ if not settings.configured:
     settings.configure()
 # Create your models here.
 
+
 class InputVideo(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=80)
