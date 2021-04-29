@@ -4,7 +4,8 @@ from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework import status
 settings.configure()
-from rest_framework.test import APIClient # noqa: E402
+from rest_framework.test import APIClient  # noqa: E402
+
 
 class TestImageFr(TestCase):
 
