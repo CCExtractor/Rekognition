@@ -47,6 +47,7 @@ before_script:
   - wget https://www.dropbox.com/s/l5t09lp8u4ok593/t2.jpeg
   - wget https://www.dropbox.com/s/hzlpo74tk0xwzzh/t3.jpeg
   - cd ../..
+  - export DJANGO_SETTINGS_MODULE="Rekognition.settings"
 
 script:
   - flake8 .
