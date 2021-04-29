@@ -1,7 +1,7 @@
 from django.test import TestCase
 import os
 import sys
-sys.path.append(os.getcwd()+"/..")
+sys.path.append(os.getcwd() + "/..")
 import django  # noqa: E402
 django.setup()
 from coreapi.models import InputImage, InputVideo, SimilarFaceInImage, InputEmbed, NameSuggested  # noqa: E402
