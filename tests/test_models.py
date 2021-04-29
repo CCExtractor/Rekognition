@@ -8,7 +8,6 @@ django.setup()
 from coreapi.models import InputImage, InputVideo, SimilarFaceInImage, InputEmbed, NameSuggested  # noqa: E402
 
 
-
 class TestInputImage(TestCase):
 
     def setUp(self):
