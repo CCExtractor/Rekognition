@@ -39,10 +39,20 @@ before_script:
   - psql -U postgres -c "ALTER ROLE admin SET timezone TO 'UTC'"
   - psql -U postgres -c "ALTER USER admin CREATEDB"
   - psql -U postgres -c "ALTER DATABASE pmr OWNER TO admin"
+  - mkdir tests/testdata
+  - cd tests/testdata
+  - wget https://www.dropbox.com/s/1bnxg32zvgjv0pl/compareImage.jpeg
+  - wget https://www.dropbox.com/s/1bnxg32zvgjv0pl/compareImage.jpeg
+  - wget https://www.dropbox.com/s/x3qpga9gc4ifamn/t1.png
+  - wget https://www.dropbox.com/s/l5t09lp8u4ok593/t2.jpeg
+  - wget https://www.dropbox.com/s/hzlpo74tk0xwzzh/t3.jpeg
+  - cd ../..
+  - export DJANGO_SETTINGS_MODULE="Rekognition.settings"
 
 script:
   - flake8 .
-  - coverage run cceface/tests.py
+  - coverage run -m tests.test_views
+  - coverage run -m tests.test_models
 
 after_success:
   - coveralls

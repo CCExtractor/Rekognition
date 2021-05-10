@@ -1,8 +1,11 @@
 from django.test import TestCase
-
-from coreapi.models import InputImage, InputVideo, SimilarFaceInImage, InputEmbed, NameSuggested
-
+import os
+import sys
 import uuid
+sys.path.append(os.getcwd() + "/..")
+import django  # noqa: E402
+django.setup()
+from coreapi.models import InputImage, InputVideo, SimilarFaceInImage, InputEmbed, NameSuggested  # noqa: E402
 
 
 class TestInputImage(TestCase):

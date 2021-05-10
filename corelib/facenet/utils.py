@@ -1,15 +1,13 @@
 import os
-import tensorflow as tf
 import numpy as np
 import glob
 import tensorflow.compat.v1 as tf
-tf.disable_v2_behavior()
 from tensorflow.python.platform import gfile
 from corelib.facenet.facenet import get_model_filenames
 from corelib.facenet.align import detect_face
 from corelib.facenet.facenet import load_img
 # from scipy.misc import imsave
-from skimage.io import imsave, imread
+from skimage.io import imsave
 import skimage
 from collections import defaultdict
 import string
@@ -17,7 +15,7 @@ import random
 from Rekognition.settings import MEDIA_ROOT
 from logger.logging import RekogntionLogger
 
-
+tf.disable_v2_behavior()
 logger = RekogntionLogger(name="utils")
 
 
