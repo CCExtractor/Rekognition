@@ -29,6 +29,52 @@ class TestImageFr(TestCase):
 
         response1 = self.client.get('/api/image/')
         self.assertEqual(status.HTTP_200_OK, response1.status_code)
+        
+class TestVideoFr(TestCase):
+
+    def setUp(self):
+
+        super(TestVideoFr, self).setUp()
+        self.client = APIClient()
+        file1 = File(open('tests/testdata/test1.mp4', 'rb'))
+        self.uploaded_file1 = SimpleUploadedFile("temp1.png", file1.read(), content_type='multipart/form-data')
+        file2 = File(open('tests/testdata/test2.mp4', 'rb'))
+        self.uploaded_file2 = SimpleUploadedFile("temp2.jpeg", file2.read(), content_type='multipart/form-data')
+
+    def test_post(self):
+
+        response1 = self.client.post('/api/old_video/', {'file': self.uploaded_file1})
+        self.assertEqual(status.HTTP_200_OK, response1.status_code)
+        response2 = self.client.post('/api/old_video/', {'file': self.uploaded_file2})
+        self.assertEqual(status.HTTP_200_OK, response2.status_code)
+
+    def test_get(self):
+
+        response1 = self.client.get('/api/old_video/')
+        self.assertEqual(status.HTTP_200_OK, response1.status_code)
+
+class TestAsyncVideoFr(TestCase):
+
+    def setUp(self):
+
+        super(TestAsyncVideoFr, self).setUp()
+        self.client = APIClient()
+        file1 = File(open('tests/testdata/test1.mp4', 'rb'))
+        self.uploaded_file1 = SimpleUploadedFile("temp1.png", file1.read(), content_type='multipart/form-data')
+        file2 = File(open('tests/testdata/test2.mp4', 'rb'))
+        self.uploaded_file2 = SimpleUploadedFile("temp2.jpeg", file2.read(), content_type='multipart/form-data')
+
+    def test_post(self):
+
+        response1 = self.client.post('/api/video/', {'file': self.uploaded_file1})
+        self.assertEqual(status.HTTP_200_OK, response1.status_code)
+        response2 = self.client.post('/api/video/', {'file': self.uploaded_file2})
+        self.assertEqual(status.HTTP_200_OK, response2.status_code)
+
+    def test_get(self):
+
+        response1 = self.client.get('/api/video/')
+        self.assertEqual(status.HTTP_200_OK, response1.status_code)
 
 
 class TestNsfwRecognise(TestCase):
@@ -47,6 +93,24 @@ class TestNsfwRecognise(TestCase):
         response1 = self.client.post('/api/nsfw/', {'file': self.uploaded_file1})
         self.assertEqual(status.HTTP_200_OK, response1.status_code)
         response2 = self.client.post('/api/nsfw/', {'file': self.uploaded_file2})
+        self.assertEqual(status.HTTP_200_OK, response2.status_code)
+        
+class TestNsfwVideo(TestCase):
+
+    def setUp(self):
+
+        super(TestNsfwVideo, self).setUp()
+        self.client = APIClient()
+        file1 = File(open('tests/testdata/test3.mp4', 'rb'))
+        self.uploaded_file1 = SimpleUploadedFile("temp1.png", file1.read(), content_type='multipart/form-data')
+        file2 = File(open('tests/testdata/test4.mp4.jpeg', 'rb'))
+        self.uploaded_file2 = SimpleUploadedFile("temp2.jpeg", file2.read(), content_type='multipart/form-data')
+
+    def test_post(self):
+
+        response1 = self.client.post('/api/nsfwvideo/', {'file': self.uploaded_file1})
+        self.assertEqual(status.HTTP_200_OK, response1.status_code)
+        response2 = self.client.post('/api/nsfwvideo/', {'file': self.uploaded_file2})
         self.assertEqual(status.HTTP_200_OK, response2.status_code)
 
 
@@ -113,6 +177,24 @@ class TestObjectDetect(TestCase):
         self.assertEqual(status.HTTP_200_OK, response1.status_code)
         response2 = self.client.post('/api/objects/', {'file': self.uploaded_file2})
         self.assertEqual(status.HTTP_200_OK, response2.status_code)
+        
+class TestObjectDetectVideo(TestCase):
+
+    def setUp(self):
+
+        super(TestObjectDetectVideo, self).setUp()
+        self.client = APIClient()
+        file1 = File(open('tests/testdata/obj1.mp4', 'rb'))
+        self.uploaded_file1 = SimpleUploadedFile("temp1.mp4", file1.read(), content_type='multipart/form-data')
+        file2 = File(open('tests/testdata/obj2.mp4', 'rb'))
+        self.uploaded_file2 = SimpleUploadedFile("temp2.mp4", file2.read(), content_type='multipart/form-data')
+
+    def test_post(self):
+
+        response1 = self.client.post('/api/objectsvideo/', {'file': self.uploaded_file1})
+        self.assertEqual(status.HTTP_200_OK, response1.status_code)
+        response2 = self.client.post('/api/objectsvideo/', {'file': self.uploaded_file2})
+        self.assertEqual(status.HTTP_200_OK, response2.status_code)
 
 
 class TestSceneText(TestCase):
@@ -129,6 +211,19 @@ class TestSceneText(TestCase):
         response1 = self.client.post('/api/scenetext/', {'file': self.uploaded_file1})
         self.assertEqual(status.HTTP_200_OK, response1.status_code)
 
+class TestSceneTextVideo(TestCase):
+
+    def setUp(self):
+
+        super(TestSceneTextVideo, self).setUp()
+        self.client = APIClient()
+        file1 = File(open('tests/testdata/text.mp4', 'rb'))
+        self.uploaded_file1 = SimpleUploadedFile("temp1.mp4", file1.read(), content_type='multipart/form-data')
+
+    def test_post(self):
+
+        response1 = self.client.post('/api/scenetextvideo/', {'file': self.uploaded_file1})
+        self.assertEqual(status.HTTP_200_OK, response1.status_code)
 
 class TestSceneDetect(TestCase):
 
@@ -142,4 +237,18 @@ class TestSceneDetect(TestCase):
     def test_post(self):
 
         response1 = self.client.post('/api/scenedetect/', {'file': self.uploaded_file1})
+        self.assertEqual(status.HTTP_200_OK, response1.status_code)
+        
+class TestSceneVideo(TestCase):
+
+    def setUp(self):
+
+        super(TestSceneVideo, self).setUp()
+        self.client = APIClient()
+        file1 = File(open('tests/testdata/scene1.mp4', 'rb'))
+        self.uploaded_file1 = SimpleUploadedFile("temp1.mp4", file1.read(), content_type='multipart/form-data')
+
+    def test_post(self):
+
+        response1 = self.client.post('/api/scenevideo/', {'file': self.uploaded_file1})
         self.assertEqual(status.HTTP_200_OK, response1.status_code)
