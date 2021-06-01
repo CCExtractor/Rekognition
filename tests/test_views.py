@@ -29,7 +29,8 @@ class TestImageFr(TestCase):
 
         response1 = self.client.get('/api/image/')
         self.assertEqual(status.HTTP_200_OK, response1.status_code)
-        
+
+
 class TestVideoFr(TestCase):
 
     def setUp(self):
@@ -52,6 +53,7 @@ class TestVideoFr(TestCase):
 
         response1 = self.client.get('/api/old_video/')
         self.assertEqual(status.HTTP_200_OK, response1.status_code)
+
 
 class TestAsyncVideoFr(TestCase):
 
@@ -94,7 +96,8 @@ class TestNsfwRecognise(TestCase):
         self.assertEqual(status.HTTP_200_OK, response1.status_code)
         response2 = self.client.post('/api/nsfw/', {'file': self.uploaded_file2})
         self.assertEqual(status.HTTP_200_OK, response2.status_code)
-        
+
+
 class TestNsfwVideo(TestCase):
 
     def setUp(self):
@@ -177,7 +180,8 @@ class TestObjectDetect(TestCase):
         self.assertEqual(status.HTTP_200_OK, response1.status_code)
         response2 = self.client.post('/api/objects/', {'file': self.uploaded_file2})
         self.assertEqual(status.HTTP_200_OK, response2.status_code)
-        
+
+
 class TestObjectDetectVideo(TestCase):
 
     def setUp(self):
@@ -211,6 +215,7 @@ class TestSceneText(TestCase):
         response1 = self.client.post('/api/scenetext/', {'file': self.uploaded_file1})
         self.assertEqual(status.HTTP_200_OK, response1.status_code)
 
+
 class TestSceneTextVideo(TestCase):
 
     def setUp(self):
@@ -225,6 +230,7 @@ class TestSceneTextVideo(TestCase):
         response1 = self.client.post('/api/scenetextvideo/', {'file': self.uploaded_file1})
         self.assertEqual(status.HTTP_200_OK, response1.status_code)
 
+
 class TestSceneDetect(TestCase):
 
     def setUp(self):
@@ -238,7 +244,8 @@ class TestSceneDetect(TestCase):
 
         response1 = self.client.post('/api/scenedetect/', {'file': self.uploaded_file1})
         self.assertEqual(status.HTTP_200_OK, response1.status_code)
-        
+
+
 class TestSceneVideo(TestCase):
 
     def setUp(self):
