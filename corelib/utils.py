@@ -38,6 +38,14 @@ class ImageFrNetworkChoices(IntEnum):
     @classmethod
     def choices(cls):
         return [(key.value, key.name) for key in cls]
+    
+class TextNetworkChoices(IntEnum):
+    EAST = 1
+    TBPP = 2
+
+    @classmethod
+    def choices(cls):
+        return [(key.value, key.name) for key in cls]
 
 
 def get_class_names(file_name):
