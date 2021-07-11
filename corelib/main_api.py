@@ -35,7 +35,7 @@ import requests
 from skimage.transform import resize
 from corelib.RetinaFace.retina_net import FaceDetectionRetina
 from django.db import IntegrityError, DatabaseError
-
+from tbpp.utils.bboxes import rbox3_to_polygon
 
 logger = RekogntionLogger(name="main_api")
 
@@ -102,7 +102,7 @@ def text_reco(image):
     return {"Text": preds}
 
 
-def text_detect(input_file, filename):
+def text_detect(input_file, filename,network):
     """     Scene Text Detection
     Args:
             *   input_file: Contents of the input image file
@@ -138,48 +138,87 @@ def text_detect(input_file, filename):
     file_path = os.path.join(MEDIA_ROOT, 'text', filename)
     handle_uploaded_file(input_file, file_path)
     img = cv2.imread(file_path)[:, :, ::-1]
-    img_resized, (ratio_h, ratio_w) = preprocess(img)
-    img_resized = (img_resized / 127.5) - 1
-    data = json.dumps({"signature_name": "serving_default",
-                       "inputs": [img_resized.tolist()]})
-    try:
-        headers = {"content-type": "application/json"}
-        url = urllib.parse.urljoin(base_url, text_detect_url)
+    
+    if network==TextNetworkChoices.EAST
+        img_resized, (ratio_h, ratio_w) = preprocess(img)
+        img_resized = (img_resized / 127.5) - 1
+        data = json.dumps({"signature_name": "serving_default",
+                           "inputs": [img_resized.tolist()]})
+        try:
+            headers = {"content-type": "application/json"}
+            url = urllib.parse.urljoin(base_url, text_detect_url)
 
-        json_response = requests.post(url, data=data, headers=headers)
-    except requests.exceptions.HTTPError as errh:
-        logger.error(msg=errh)
-        return {"Error": "An HTTP error occurred."}
-    except requests.exceptions.ConnectionError as errc:
-        logger.error(msg=errc)
-        return {"Error": "A Connection error occurred."}
-    except requests.exceptions.Timeout as errt:
-        logger.error(msg=errt)
-        return {"Error": "The request timed out."}
-    except requests.exceptions.TooManyRedirects as errm:
-        logger.error(msg=errm)
-        return {"Error": "Bad URL"}
-    except requests.exceptions.RequestException as err:
-        logger.error(msg=err)
-        return {"Error": "Facial Expression Recognition Not Working"}
-    except Exception as e:
-        logger.error(msg=e)
-        return {"Error": e}
-    predictions = json.loads(json_response.text)["outputs"]
-    score_map = np.array(predictions["pred_score_map/Sigmoid:0"], dtype="float64")
-    geo_map = np.array(predictions["pred_geo_map/concat:0"], dtype="float64")
+            json_response = requests.post(url, data=data, headers=headers)
+        except requests.exceptions.HTTPError as errh:
+            logger.error(msg=errh)
+            return {"Error": "An HTTP error occurred."}
+        except requests.exceptions.ConnectionError as errc:
+            logger.error(msg=errc)
+            return {"Error": "A Connection error occurred."}
+        except requests.exceptions.Timeout as errt:
+            logger.error(msg=errt)
+            return {"Error": "The request timed out."}
+        except requests.exceptions.TooManyRedirects as errm:
+            logger.error(msg=errm)
+            return {"Error": "Bad URL"}
+        except requests.exceptions.RequestException as err:
+            logger.error(msg=err)
+            return {"Error": "Text Recognition Not Working"}
+        except Exception as e:
+            logger.error(msg=e)
+            return {"Error": e}
+        predictions = json.loads(json_response.text)["outputs"]
+        score_map = np.array(predictions["pred_score_map/Sigmoid:0"], dtype="float64")
+        geo_map = np.array(predictions["pred_geo_map/concat:0"], dtype="float64")
 
-    boxes = postprocess(score_map=score_map, geo_map=geo_map)
-    result_boxes = []
-    if boxes is not None:
-        boxes = boxes[:, :8].reshape((-1, 4, 2))
-        boxes[:, :, 0] /= ratio_w
-        boxes[:, :, 1] /= ratio_h
-        for box in boxes:
-            box = sort_poly(box.astype(np.int32))
-            if np.linalg.norm(box[0] - box[1]) < 5 or np.linalg.norm(box[3] - box[0]) < 5:
-                continue
-            result_boxes.append(box)
+        boxes = postprocess(score_map=score_map, geo_map=geo_map)
+        result_boxes = []
+        if boxes is not None:
+            boxes = boxes[:, :8].reshape((-1, 4, 2))
+            boxes[:, :, 0] /= ratio_w
+            boxes[:, :, 1] /= ratio_h
+            for box in boxes:
+                box = sort_poly(box.astype(np.int32))
+                if np.linalg.norm(box[0] - box[1]) < 5 or np.linalg.norm(box[3] - box[0]) < 5:
+                    continue
+                result_boxes.append(box)
+    else
+        img=cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        img_h,img_w,_=img.shape
+        img=cv2.resize(img, (512, 512))
+        data = json.dumps({"signature_name": "serving_default",
+                       "inputs": [new.tolist()]})
+        try:
+            headers = {"content-type": "application/json"}
+            json_response = requests.post("http://localhost:8501/v1/models/tbpp:predict", data=data, headers=headers)
+        except requests.exceptions.HTTPError as errh:
+            logger.error(msg=errh)
+            return {"Error": "An HTTP error occurred."}
+        except requests.exceptions.ConnectionError as errc:
+            logger.error(msg=errc)
+            return {"Error": "A Connection error occurred."}
+        except requests.exceptions.Timeout as errt:
+            logger.error(msg=errt)
+            return {"Error": "The request timed out."}
+        except requests.exceptions.TooManyRedirects as errm:
+            logger.error(msg=errm)
+            return {"Error": "Bad URL"}
+        except requests.exceptions.RequestException as err:
+            logger.error(msg=err)
+            return {"Error": "Text Recognition Not Working"}
+        except Exception as e:
+            logger.error(msg=e)
+            return {"Error": e}
+        result = prior_util.decode(a[0], .2)
+        quads = result[:,4:12]
+        probs = result[:,17]
+        rboxes = result[:,12:17]
+        
+        result_boxes = []
+        for b in rboxes:
+            result_boxes.append(rbox3_to_polygon(b)*[img_h,img_w])
+            
+            
     result = []
     for box in result_boxes:
         top_left_x, top_left_y, bot_right_x, bot_right_y = bb_to_cv(box)
