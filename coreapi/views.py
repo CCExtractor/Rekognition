@@ -8,7 +8,7 @@ from corelib.main_api import (facerecogniseinimage, facerecogniseinvideo,
                               text_detect, object_detect_video, scene_detect,
                               text_detect_video, scene_video, nsfw_video)
 from .serializers import (EmbedSerializer, NameSuggestedSerializer,
-                          SimilarFaceSerializer, ImageFrSerializers)
+                          SimilarFaceSerializer, ImageFrSerializers,TextSerializers)
 from .models import InputEmbed, NameSuggested, SimilarFaceInImage
 from logger.logging import RekogntionLogger
 from rest_framework.views import APIView
@@ -34,17 +34,32 @@ class SceneText(views.APIView):
             *   output dictionary of detected text and bounding
                 boxes of the text
     """
+    serializer = TextSerializers
+    
+    def get(self, request):
 
+        logger.info(msg="GET Request for Text Reocgnition made")
+        serializer = self.serializer()
+        return Response(serializer.data)
+    
     def post(self, request):
 
         logger.info(msg="POST Request for Scene Text Extraction made")
+        image_serializer = self.serializer(data=request.data)
         filename = getnewuniquefilename(request)
         input_file = request.FILES['file']
-        result = text_detect(input_file, filename)
-        if "Error" not in result:
-            return Response(result, status=status.HTTP_200_OK)
+        if image_serializer.is_valid():
+            network = image_serializer.data["network"]
+            result = text_detect(input_file, filename,network)
+            if "Error" not in result:
+                return Response(result, status=status.HTTP_200_OK)
+            else:
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            logger.error(msg=image_serializer.errors)
+            return Response(image_serializer.errors,
+                            status=status.HTTP_400_BAD_REQUEST)
+ 
 
 
 class SceneTextVideo(views.APIView):
