@@ -246,8 +246,10 @@ def text_detect_video(input_file, filename):
         ret, img = vid.read()
         if ret:
             img = img[:, :, ::-1]
-            img_resized, (ratio_h, ratio_w) = preprocess(img)
-            img_resized = (img_resized / 127.5) - 1
+            img=cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+            img_resized=cv2.resize(img, (512, 512))
+            #img_resized, (ratio_h, ratio_w) = preprocess(img)
+            #img_resized = (img_resized / 127.5) - 1
             data = json.dumps({"signature_name": "serving_default",
                                "inputs": [img_resized.tolist()]})
             try:
@@ -273,16 +275,21 @@ def text_detect_video(input_file, filename):
             except Exception as e:
                 logger.error(msg=e)
                 return {"Error": e}
-            predictions = json.loads(json_response.text)["outputs"]
-            score_map = np.array(predictions["pred_score_map/Sigmoid:0"], dtype="float64")
-            geo_map = np.array(predictions["pred_geo_map/concat:0"], dtype="float64")
-
-            boxes = postprocess(score_map=score_map, geo_map=geo_map)
+            prior_util = PriorUtil(TBPP512_dense_separable(softmax=False))
+            result=np.array(json.loads(json_response.text)["outputs"])
+    
+            predictions = prior_util.decode(result[0], .2)
+            #score_map = np.array(predictions["pred_score_map/Sigmoid:0"], dtype="float64")
+            #geo_map = np.array(predictions["pred_geo_map/concat:0"], dtype="float64")
+            #boxes = postprocess(score_map=score_map, geo_map=geo_map)
+            boxes=predictions[:,0:4]
             result_boxes = []
             if boxes is not None:
                 boxes = boxes[:, :8].reshape((-1, 4, 2))
-                boxes[:, :, 0] /= ratio_w
-                boxes[:, :, 1] /= ratio_h
+                #boxes[:, :, 0] /= ratio_w
+                #boxes[:, :, 1] /= ratio_h
+                boxes[:,:,0]*=img.shape[0]
+                boxes[:,:,1]*=img.shape[1]
                 for box in boxes:
                     box = sort_poly(box.astype(np.int32))
                     if np.linalg.norm(box[0] - box[1]) < 5 or np.linalg.norm(box[3] - box[0]) < 5:
