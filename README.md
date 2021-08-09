@@ -3,7 +3,7 @@
 ![](https://www.ccextractor.org/_media/public:gsoc:gsoc-cc.png)
 Google Summer Of Code Project under CCExtractor Development
 
-[![Build Status](https://travis-ci.org/pymit/Rekognition.svg?branch=master)](https://travis-ci.org/pymit/Rekognition)
+[![Build Status](https://travis-ci.org/ccextractor/Rekognition.svg?branch=master)](https://travis-ci.org/CCExtractor/Rekognition)
 [![Python 3.X](https://img.shields.io/badge/python-3.X-blue.svg)](https://www.python.org/downloads/)
 [![GPLv3 license](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/pymit/Rekognition/blob/master/LICENSE)
 

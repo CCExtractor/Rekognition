@@ -12,6 +12,7 @@ import urllib.parse
 from werkzeug.utils import secure_filename
 from Rekognition.settings import MEDIA_ROOT
 from corelib.CRNN import CRNN_utils
+from corelib.textbox import  TBPP512_dense_separable, rbox3_to_polygon, PriorUtil
 from corelib.facenet.utils import (get_face, embed_image, save_embedding,
                                    identify_face, allowed_file, time_dura,
                                    handle_uploaded_file, save_face,
@@ -69,6 +70,8 @@ def text_reco(image):
         headers = {"content-type": "application/json"}
         url = urllib.parse.urljoin(base_url, text_reco_url)
         json_response = requests.post(url, data=data, headers=headers)
+        logger.info(msg=url)
+        
     except requests.exceptions.HTTPError as errh:
         logger.error(msg=errh)
         return {"Error": "An HTTP error occurred."}
@@ -133,13 +136,17 @@ def text_detect(input_file, filename):
                 as keys and coordinates of bounding boxes and recognized
                 text of that box as the respective value
     """
-
+    
     logger.info(msg="text_detect called")
     file_path = os.path.join(MEDIA_ROOT, 'text', filename)
     handle_uploaded_file(input_file, file_path)
+    
     img = cv2.imread(file_path)[:, :, ::-1]
-    img_resized, (ratio_h, ratio_w) = preprocess(img)
-    img_resized = (img_resized / 127.5) - 1
+    img=cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    img_resized=cv2.resize(img, (512, 512))
+    #img_resized, (ratio_h, ratio_w) = preprocess(img)
+    #img_resized = (img_resized / 127.5) - 1
+    
     data = json.dumps({"signature_name": "serving_default",
                        "inputs": [img_resized.tolist()]})
     try:
@@ -165,25 +172,33 @@ def text_detect(input_file, filename):
     except Exception as e:
         logger.error(msg=e)
         return {"Error": e}
-    predictions = json.loads(json_response.text)["outputs"]
-    score_map = np.array(predictions["pred_score_map/Sigmoid:0"], dtype="float64")
-    geo_map = np.array(predictions["pred_geo_map/concat:0"], dtype="float64")
-
-    boxes = postprocess(score_map=score_map, geo_map=geo_map)
+    
+    prior_util = PriorUtil(TBPP512_dense_separable(softmax=False))
+    result=np.array(json.loads(json_response.text)["outputs"])
+    
+    predictions = prior_util.decode(result[0], .2)
+    #score_map = np.array(predictions["pred_score_map/Sigmoid:0"], dtype="float64")
+    #geo_map = np.array(predictions["pred_geo_map/concat:0"], dtype="float64")
+    #boxes = postprocess(score_map=score_map, geo_map=geo_map)
+    boxes=predictions[:,0:4]
     result_boxes = []
     if boxes is not None:
         boxes = boxes[:, :8].reshape((-1, 4, 2))
-        boxes[:, :, 0] /= ratio_w
-        boxes[:, :, 1] /= ratio_h
+        #boxes[:, :, 0] /= ratio_w
+        #boxes[:, :, 1] /= ratio_h
+        boxes[:,:,0]*=img.shape[0]
+        boxes[:,:,1]*=img.shape[1]
         for box in boxes:
             box = sort_poly(box.astype(np.int32))
             if np.linalg.norm(box[0] - box[1]) < 5 or np.linalg.norm(box[3] - box[0]) < 5:
                 continue
             result_boxes.append(box)
+    
+    
     result = []
     for box in result_boxes:
         top_left_x, top_left_y, bot_right_x, bot_right_y = bb_to_cv(box)
-        text = text_reco(img[top_left_y - 2:bot_right_y + 2, top_left_x - 2:bot_right_x + 2]).get("Text")
+        text=text_reco(img[top_left_y :bot_right_y,top_left_x :bot_right_x ]).get("Text")
         result.append({"Boxes": box, "Text": text})
     return {"Texts": result}
 
@@ -231,8 +246,10 @@ def text_detect_video(input_file, filename):
         ret, img = vid.read()
         if ret:
             img = img[:, :, ::-1]
-            img_resized, (ratio_h, ratio_w) = preprocess(img)
-            img_resized = (img_resized / 127.5) - 1
+            img=cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+            img_resized=cv2.resize(img, (512, 512))
+            #img_resized, (ratio_h, ratio_w) = preprocess(img)
+            #img_resized = (img_resized / 127.5) - 1
             data = json.dumps({"signature_name": "serving_default",
                                "inputs": [img_resized.tolist()]})
             try:
@@ -258,16 +275,21 @@ def text_detect_video(input_file, filename):
             except Exception as e:
                 logger.error(msg=e)
                 return {"Error": e}
-            predictions = json.loads(json_response.text)["outputs"]
-            score_map = np.array(predictions["pred_score_map/Sigmoid:0"], dtype="float64")
-            geo_map = np.array(predictions["pred_geo_map/concat:0"], dtype="float64")
-
-            boxes = postprocess(score_map=score_map, geo_map=geo_map)
+            prior_util = PriorUtil(TBPP512_dense_separable(softmax=False))
+            result=np.array(json.loads(json_response.text)["outputs"])
+    
+            predictions = prior_util.decode(result[0], .2)
+            #score_map = np.array(predictions["pred_score_map/Sigmoid:0"], dtype="float64")
+            #geo_map = np.array(predictions["pred_geo_map/concat:0"], dtype="float64")
+            #boxes = postprocess(score_map=score_map, geo_map=geo_map)
+            boxes=predictions[:,0:4]
             result_boxes = []
             if boxes is not None:
                 boxes = boxes[:, :8].reshape((-1, 4, 2))
-                boxes[:, :, 0] /= ratio_w
-                boxes[:, :, 1] /= ratio_h
+                #boxes[:, :, 0] /= ratio_w
+                #boxes[:, :, 1] /= ratio_h
+                boxes[:,:,0]*=img.shape[0]
+                boxes[:,:,1]*=img.shape[1]
                 for box in boxes:
                     box = sort_poly(box.astype(np.int32))
                     if np.linalg.norm(box[0] - box[1]) < 5 or np.linalg.norm(box[3] - box[0]) < 5:
