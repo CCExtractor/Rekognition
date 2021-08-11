@@ -168,7 +168,7 @@ def text_detect(input_file, filename):
         return {"Error": "Bad URL"}
     except requests.exceptions.RequestException as err:
         logger.error(msg=err)
-        return {"Error": "Facial Expression Recognition Not Working"}
+        return {"Error": "Text Detection Not Working"}
     except Exception as e:
         logger.error(msg=e)
         return {"Error": e}
@@ -271,7 +271,7 @@ def text_detect_video(input_file, filename):
                 return {"Error": "Bad URL"}
             except requests.exceptions.RequestException as err:
                 logger.error(msg=err)
-                return {"Error": "Facial Expression Recognition Not Working"}
+                return {"Error": "Text Detection(video) Not Working"}
             except Exception as e:
                 logger.error(msg=e)
                 return {"Error": e}
@@ -361,7 +361,7 @@ def scene_detect(input_file, filename):
         return {"Error": "Bad URL"}
     except requests.exceptions.RequestException as err:
         logger.error(msg=err)
-        return {"Error": "Facial Expression Recognition Not Working"}
+        return {"Error": "Scene Text Detect Not Working"}
     except Exception as e:
         logger.error(msg=e)
         return {"Error": e}
@@ -440,7 +440,7 @@ def scene_video(input_file, filename):
                 return {"Error": "Bad URL"}
             except requests.exceptions.RequestException as err:
                 logger.error(msg=err)
-                return {"Error": "Facial Expression Recognition Not Working"}
+                return {"Error": "Scene Text Detect(video) Not Working"}
             except Exception as e:
                 logger.error(msg=e)
                 return {"Error": e}
@@ -652,10 +652,10 @@ def nsfw_video(input_file, filename):
                 return {"Error": "Bad URL"}
             except requests.exceptions.RequestException as err:
                 logger.error(msg=err)
-                return {"Error": "NSFW Classification Not Working"}
+                return {"Error": "NSFW Classification(video) Not Working"}
             except Exception as e:
                 logger.error(msg=e)
-                return {"Error": "NSFW Classification Not Working"}
+                return {"Error": "NSFW Classification(video) Not Working"}
             data = response.json()
             outputs = data['outputs']
             predict_result = {"classes": nsfw_class_names.get(outputs['classes'][0])}
@@ -1202,10 +1202,11 @@ def object_detect(input_file, filename):
         return {"Error": "Bad URL"}
     except requests.exceptions.RequestException as err:
         logger.error(msg=err)
-        return {"Error": "Facial Expression Recognition Not Working"}
+        return {"Error": "Object Detection Not Working"}
     except Exception as e:
         logger.error(msg=e)
-        return {"Error": "Facial Expression Recognition Not Working"}
+
+        return {"Error": "ObjectDetection Not Working"}
        
     predictions = np.array(json.loads(json_response.text)["outputs"])
     
@@ -1215,6 +1216,11 @@ def object_detect(input_file, filename):
     boxes[:,2]*=(imgh/640)
     boxes[:,1]*=(imgw/640)
     boxes[:,3]*=(imgw/640)
+
+#         return {"Error": "ObjectDetection Not Working"}
+#     predictions = json.loads(json_response.text).get("outputs", "Bad request made.")
+#     boxes, scores, classes, nums = predictions["yolo_nms"][0], predictions[
+#         "yolo_nms_1"][0], predictions["yolo_nms_2"][0], predictions["yolo_nms_3"][0]
     result = []
     class_names = get_class_names(coco_names_path)
     for num in range(100):
@@ -1283,12 +1289,19 @@ def object_detect_video(input_file, filename):
                 return {"Error": "Bad URL"}
             except requests.exceptions.RequestException as err:
                 logger.error(msg=err)
-                return {"Error": "Facial Expression Recognition Not Working"}
+                return {"Error": "Object Detection(video) Not Working"}
             except Exception as e:
                 logger.error(msg=e)
-                return {"Error": "Facial Expression Recognition Not Working"}
+
+                return {"Error": "Object Detection(video) Not Working"}
             predictions = np.array(json.loads(json_response.text)["outputs"])
             boxes, scores, classes = predictions[0][:,1:5], predictions[0][:,5], predictions[0][:,6]
+
+#                 return {"Error": "Object Detection(video) Not Working"}
+#             predictions = json.loads(json_response.text).get("outputs", "Bad request made.")
+#             boxes, scores, classes, nums = predictions["yolo_nms"][0], predictions[
+#                 "yolo_nms_1"][0], predictions["yolo_nms_2"][0], predictions["yolo_nms_3"][0]
+
             result = []
             nums=100
             boxes[:,0]*=(imgh/640)
