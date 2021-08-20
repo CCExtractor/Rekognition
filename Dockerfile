@@ -1,14 +1,9 @@
-FROM python:3.6
+FROM python:3.8
+RUN echo $(pwd)
 
-# set work directory
-WORKDIR /usr/src/PMRekognition
-
-# set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-# install psycopg2 dependencies
-# install psycopg2
 RUN apt-get update && apt-get install -y --no-install-recommends \
         tzdata \
         python3-setuptools \
@@ -19,17 +14,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+RUN apt-get install tensorflow_model_server
 
 # install dependencies
 COPY ./requirements.txt .
 RUN pip3 install -r requirements.txt
 
-COPY ./entrypoint.sh .
-
-# copy project
 COPY . .
 
-# download models
-RUN chmod +x download_model.sh
-RUN ./download_model.sh
-ENTRYPOINT ["/usr/src/PMRekognition/entrypoint.sh"]
+CMD tensorflow_model_server --port=8500 --rest_api_port=8501 --model_config_file=$(pwd)/corelib/model/tfs/model_volume/configs/models.conf
+
+CMD python3 manage.py flush --no-input
+CMD python3 manage.py migrate
+CMD python3 manage.py runserver 8000
+EXPOSE 8000
