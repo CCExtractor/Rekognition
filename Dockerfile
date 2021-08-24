@@ -19,40 +19,40 @@ curl https://storage.googleapis.com/tensorflow-serving-apt/tensorflow-serving.re
 RUN apt-get update
 
 RUN apt-get install tensorflow-model-server
-
-# install dependencies
-COPY ./requirements.txt .
-RUN pip3 install -r requirements.txt
+WORKDIR $(pwd)
 
 #download models and set-up folders
 WORKDIR media 
-CMD mkdir {face,output,similarFace,text,object}
+RUN mkdir {face,output,similarFace,text,object}
 WORKDIR ..
 WORKDIR corelib/model
-CMD mkdir facenet
+RUN mkdir facenet
 WORKDIR facenet
-CMD wget https://www.dropbox.com/s/jm8grrifh5yk7is/2017.zip?dl=1 -O 2017.zip
-CMD unzip 2017.zip
-CMD rm 2017.zip
+RUN wget https://www.dropbox.com/s/jm8grrifh5yk7is/2017.zip?dl=1 -O 2017.zip
+RUN unzip 2017.zip
+RUN rm 2017.zip
 WORKDIR ..
-CMD mkdir tfs
+RUN mkdir tfs
 WORKDIR tfs
-CMD wget https://www.dropbox.com/s/v0ai89jj5npowt1/tfs.zip
-CMD unzip tfs.zip
-CMD rm tfs.zip
+RUN wget https://www.dropbox.com/s/v0ai89jj5npowt1/tfs.zip
+RUN unzip tfs.zip
+RUN rm tfs.zip
 WORKDIR ../../..
 WORKDIR data
-CMD mkdir text_reco
+RUN mkdir text_reco
 WORKDIR text_reco
-CMD wget https://www.dropbox.com/s/dl/h2owqbmnrsvqo0c/ord_map_en.json
-CMD wget https://www.dropbox.com/s/dl/yzkijd7j5yflhli/char_dict_en.json
+RUN wget https://www.dropbox.com/s/dl/h2owqbmnrsvqo0c/ord_map_en.json
+RUN wget https://www.dropbox.com/s/dl/yzkijd7j5yflhli/char_dict_en.json
 WORKDIR ../..
-
+# install dependencies
+COPY ./requirements.txt .
+RUN pip3 install -r requirements.txt
+RUN pip3 install -U numpy
 COPY . .
 
-CMD tensorflow_model_server --port=8500 --rest_api_port=8501 --model_config_file=$(pwd)/corelib/model/tfs/model_volume/configs/models.conf
+RUN tensorflow_model_server --port=8500 --rest_api_port=8501 --model_config_file=$(pwd)/corelib/model/tfs/model_volume/configs/models.conf
 
-CMD python3 manage.py flush --no-input
-CMD python3 manage.py migrate
-CMD python3 manage.py runserver 8000
+RUN python3 manage.py flush --no-input
+RUN python3 manage.py migrate
+RUN python3 manage.py runserver 8000
 EXPOSE 8000
