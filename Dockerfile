@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
-RUN apt-get install tensorflow_model_server
+RUN apt-get install tensorflow-model-server
 
 # install dependencies
 COPY ./requirements.txt .
