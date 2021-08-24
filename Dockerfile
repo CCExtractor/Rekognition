@@ -1,14 +1,9 @@
-FROM python:3.6
+FROM python:3.8
+RUN echo $(pwd)
 
-# set work directory
-WORKDIR /usr/src/PMRekognition
-
-# set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-# install psycopg2 dependencies
-# install psycopg2
 RUN apt-get update && apt-get install -y --no-install-recommends \
         tzdata \
         python3-setuptools \
@@ -19,17 +14,45 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+RUN echo "deb [arch=amd64] http://storage.googleapis.com/tensorflow-serving-apt stable tensorflow-model-server tensorflow-model-server-universal" |  tee /etc/apt/sources.list.d/tensorflow-serving.list && \
+curl https://storage.googleapis.com/tensorflow-serving-apt/tensorflow-serving.release.pub.gpg |  apt-key add -
+RUN apt-get update
 
+RUN apt-get install tensorflow-model-server
+WORKDIR $(pwd)
+
+#download models and set-up folders
+WORKDIR media 
+RUN mkdir {face,output,similarFace,text,object}
+WORKDIR ..
+WORKDIR corelib/model
+RUN mkdir facenet
+WORKDIR facenet
+RUN wget https://www.dropbox.com/s/jm8grrifh5yk7is/2017.zip?dl=1 -O 2017.zip
+RUN unzip 2017.zip
+RUN rm 2017.zip
+WORKDIR ..
+RUN mkdir tfs
+WORKDIR tfs
+RUN wget https://www.dropbox.com/s/v0ai89jj5npowt1/tfs.zip
+RUN unzip tfs.zip
+RUN rm tfs.zip
+WORKDIR ../../..
+WORKDIR data
+RUN mkdir text_reco
+WORKDIR text_reco
+RUN wget https://www.dropbox.com/s/dl/h2owqbmnrsvqo0c/ord_map_en.json
+RUN wget https://www.dropbox.com/s/dl/yzkijd7j5yflhli/char_dict_en.json
+WORKDIR ../..
 # install dependencies
 COPY ./requirements.txt .
 RUN pip3 install -r requirements.txt
-
-COPY ./entrypoint.sh .
-
-# copy project
+RUN pip3 install -U numpy
 COPY . .
 
-# download models
-RUN chmod +x download_model.sh
-RUN ./download_model.sh
-ENTRYPOINT ["/usr/src/PMRekognition/entrypoint.sh"]
+RUN tensorflow_model_server --port=8500 --rest_api_port=8501 --model_config_file=$(pwd)/corelib/model/tfs/model_volume/configs/models.conf
+
+RUN python3 manage.py flush --no-input
+RUN python3 manage.py migrate
+RUN python3 manage.py runserver 8000
+EXPOSE 8000

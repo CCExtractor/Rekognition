@@ -5,14 +5,26 @@ Google Summer Of Code Project under CCExtractor Development
 
 [![Build Status](https://travis-ci.org/ccextractor/Rekognition.svg?branch=master)](https://travis-ci.org/CCExtractor/Rekognition)
 [![Python 3.X](https://img.shields.io/badge/python-3.X-blue.svg)](https://www.python.org/downloads/)
-[![GPLv3 license](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/pymit/Rekognition/blob/master/LICENSE)
+[![GPLv3 license](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/ccextractor/Rekognition/blob/master/LICENSE)
 
 ---
 This project aims at providing a free alternative to Amazon Rekognition services.
 
 
 ## Setup
-To setup the project locally for development environment check this wiki [link](https://github.com/pymit/Rekognition/wiki/Project-Setup-in-Ubuntu-18.04)
+### For End-User
+```
+git clone https://github.com/pymit/Rekognition
+
+docker image build ./
+```
+Note down the IMAGEID at the end and run the docker
+
+```
+docker run -p 8000:8000 <IMAGEID>
+```
+### For Developers
+To setup the project locally for development environment check this wiki [link](https://github.com/YB221/Rekognition/blob/master/contributing.md)
 
 
 ## Usage
