@@ -25,28 +25,28 @@ COPY ./requirements.txt .
 RUN pip3 install -r requirements.txt
 
 #download models and set-up folders
-CMD cd media 
+WORKDIR media 
 CMD mkdir {face,output,similarFace,text,object}
-CMD cd ..
-CMD cd corelib/model
+WORKDIR ..
+WORKDIR corelib/model
 CMD mkdir facenet
-CMD cd facenet
+WORKDIR facenet
 CMD wget https://www.dropbox.com/s/jm8grrifh5yk7is/2017.zip?dl=1 -O 2017.zip
 CMD unzip 2017.zip
 CMD rm 2017.zip
-CMD cd ..
+WORKDIR ..
 CMD mkdir tfs
-CMD cd tfs
+WORKDIR tfs
 CMD wget https://www.dropbox.com/s/v0ai89jj5npowt1/tfs.zip
 CMD unzip tfs.zip
 CMD rm tfs.zip
-CMD cd ../../..
-CMD cd data
+WORKDIR ../../..
+WORKDIR data
 CMD mkdir text_reco
-CMD cd text_reco
+WORKDIR text_reco
 CMD wget https://www.dropbox.com/s/dl/h2owqbmnrsvqo0c/ord_map_en.json
 CMD wget https://www.dropbox.com/s/dl/yzkijd7j5yflhli/char_dict_en.json
-CMD cd ../..
+WORKDIR ../..
 
 COPY . .
 
