@@ -6,7 +6,7 @@ astor==0.8.0
 async-timeout==3.0.1
 attrs==19.1.0
 autopep8==1.4.4
-Babel==2.7.0
+Babel==2.9.1
 backcall==0.1.0
 billiard==3.6.0.0
 celery==4.3.0
