@@ -95,7 +95,6 @@ def text_reco(image):
         char_dict_path=char_dict_path,
         ord_map_dict_path=ord_map_dict_path,
     )
-    #print("Response \n",type(predictions),"Length is ",len(predictions))
     preds = codec.sparse_tensor_to_str_for_tf_serving(
         decode_indices=predictions['decodes_indices'],
         decode_values=predictions['decodes_values'],
@@ -175,7 +174,6 @@ def text_detect(input_file, filename):
     
     prior_util = PriorUtil(TBPP512_dense_separable(softmax=False))
     result=np.array(json.loads(json_response.text)["outputs"])
-    print("Result of Bounding boxes \n",type(result),result.shape)
     
     predictions = prior_util.decode(result[0], .2)
     #score_map = np.array(predictions["pred_score_map/Sigmoid:0"], dtype="float64")
@@ -257,9 +255,6 @@ def text_detect_video(input_file, filename):
             try:
                 headers = {"content-type": "application/json"}
                 url = urllib.parse.urljoin(base_url, text_detect_url)
-                logger.info(msg="For bounding box requesting at url "+url)
-
-
                 json_response = requests.post(url, data=data, headers=headers)
             except requests.exceptions.HTTPError as errh:
                 logger.error(msg=errh)
