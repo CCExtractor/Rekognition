@@ -6,7 +6,7 @@ from corelib.main_api import (facerecogniseinimage, facerecogniseinvideo,
                               createembedding, process_streaming_video,
                               nsfwclassifier, similarface, object_detect,
                               text_detect, object_detect_video, scene_detect,
-                              text_detect_video, scene_video, nsfw_video)
+                              text_detect_video, scene_video, nsfw_video,generate_caption)
 from .serializers import (EmbedSerializer, NameSuggestedSerializer,
                           SimilarFaceSerializer, ImageFrSerializers)
 from .models import InputEmbed, NameSuggested, SimilarFaceInImage
@@ -45,6 +45,30 @@ class SceneText(views.APIView):
             return Response(result, status=status.HTTP_200_OK)
         else:
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
+class CaptionDetect(views.APIView):
+    """     To generate caption from an image
+
+    Workflow
+            *   if  POST method request is made, then initially a random
+                filename is generated and then caption_generate method is
+                called which process the image and outputs the result
+                containing the detected text as a string
+    Returns:
+            *   outputs the result
+                containing the detected text as a string
+    """
+
+    def post(self, request):
+
+        logger.info(msg="POST Request for Caption Generation made")
+        filename = getnewuniquefilename(request)
+        input_file = request.FILES['file']
+        result = generate_caption(input_file, filename)
+        if "Error" not in result:
+            return Response(result, status=status.HTTP_200_OK)
+        else:
+            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class SceneTextVideo(views.APIView):
