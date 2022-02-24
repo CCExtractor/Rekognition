@@ -58,6 +58,7 @@ pickleshare==0.7.5
 Pillow==8.2.0
 pmrlanms
 prompt-toolkit==2.0.9
+protobuf==3.9.2
 psycopg2-binary==2.8.6
 ptyprocess==0.6.0
 pycodestyle==2.5.0
@@ -96,4 +97,3 @@ youtube-dl==2019.6.8
 dj_database_url
 gunicorn==20.1.0
 wordninja==0.1.5
-protobuf==3.19.3

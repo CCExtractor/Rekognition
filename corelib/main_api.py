@@ -1,18 +1,3 @@
-import string
-import os
-from time import time
-import numpy as np
-import json
-import pickle
-from tensorflow.keras.models import load_model
-from tensorflow.keras.applications.inception_v3 import preprocess_input
-from tensorflow.keras.preprocessing.sequence import pad_sequences
-from tensorflow.keras.preprocessing import sequence
-from keras.preprocessing.image import load_img,img_to_array
-
-
-
-
 import os
 import math
 import uuid
@@ -42,9 +27,8 @@ from corelib.constant import (pnet, rnet, onet, facenet_persistent_session,
                               Facial_expression_class_names, nsfw_class_names,
                               base_url, face_exp_url, nsfw_url, text_reco_url,
                               char_dict_path, ord_map_dict_path, text_detect_url,
-                              caption_generation_url,image_vectorization_url,
                               coco_names_path, object_detect_url, scene_detect_url,
-                              scene_labels_path,dict_ixtoword_path,dict_wordtoix_path)
+                              scene_labels_path)
 from corelib.utils import ImageFrNetworkChoices, get_class_names, bb_to_cv, get_classes
 from coreapi.models import InputImage, InputVideo, InputEmbed, SimilarFaceInImage
 from logger.logging import RekogntionLogger
@@ -111,7 +95,6 @@ def text_reco(image):
         char_dict_path=char_dict_path,
         ord_map_dict_path=ord_map_dict_path,
     )
-    #print("Response \n",type(predictions),"Length is ",len(predictions))
     preds = codec.sparse_tensor_to_str_for_tf_serving(
         decode_indices=predictions['decodes_indices'],
         decode_values=predictions['decodes_values'],
@@ -119,234 +102,6 @@ def text_reco(image):
     )[0]
     preds = ' '.join(wordninja.split(preds))
     return {"Text": preds}
-
-def greedyCaptionSearch(photo):
-    """     Caption Generation
-    Args:
-            *   image: A feature vector of size 2048,1)
-    Workflow:
-            *   The inputted imgage together with a sequence is fed to the function
-                predict_caption
-            *   The sequence variable keeps on getting updated with 
-                new predicted words from the predict_caption
-                
-            *   The predict_caption function is called multiple times to 
-                generate the whole caption
-            *   A string is returned containing generated caption
-    Returns:
-            *   A string with generated caption
-    """
-    in_text = 'startseq'
-    a_file = open(dict_ixtoword_path, "rb")
-    ixtoword = pickle.load(a_file)
-    a_file.close()
-    b_file = open(dict_wordtoix_path, "rb")
-    wordtoix = pickle.load(b_file)
-    b_file.close()
-    max_length=51
-    for i in range(max_length):
-        sequence = [wordtoix[w] for w in in_text.split() if w in wordtoix]
-        sequence = pad_sequences([sequence], maxlen=max_length)
-        preds=predict_captions(photo,sequence)        
-        yhat = np.argmax(preds)
-        word = ixtoword[yhat]
-        in_text += ' ' + word
-        if word == 'endseq':
-            break
-
-    final = in_text.split()
-    final = final[1:-1]
-    final = ' '.join(final)
-    return final
-
-def beam_search_predictions(image, beam_index = 3):
-    """     Caption Generation
-    Args:
-            *   image: A feature vector of size 2048,1)
-            *   beam_index :beam_index to average and search for words
-                in the given range
-    Workflow:
-            *   The inputted imgage together with the par_caps is fed to the function
-                predict_caption
-            *   The par_caps variable keeps on getting updated with 
-                new predicted words from the predict_caption
-                
-            *   The predict_caption function is called multiple times to 
-                generate the whole caption
-            *   A string is returned containing generated caption
-    Returns:
-            *   A string with generated caption
-    """
-
-    a_file = open(dict_ixtoword_path, "rb")
-    ixtoword = pickle.load(a_file)
-    a_file.close()
-    b_file = open(dict_wordtoix_path, "rb")
-    wordtoix = pickle.load(b_file)
-    b_file.close()
-    max_length=51
-    start = [wordtoix["startseq"]]
-    start_word = [[start, 0.0]]
-    while len(start_word[0][0]) < max_length:
-        temp = []
-        for s in start_word:
-            par_caps = sequence.pad_sequences([s[0]], maxlen=max_length, padding='post')
-            preds=predict_captions(image,par_caps)
-            # preds = model.predict([image,par_caps], verbose=0)
-            word_preds = np.argsort(preds[0])[-beam_index:]
-            # Getting the top <beam_index>(n) predictions and creating a 
-            # new list so as to put them via the model again
-            for w in word_preds:
-                next_cap, prob = s[0][:], s[1]
-                next_cap.append(w)
-                prob += preds[0][w]
-                temp.append([next_cap, prob])
-                    
-        start_word = temp
-        # Sorting according to the probabilities
-        start_word = sorted(start_word, reverse=False, key=lambda l: l[1])
-        # Getting the top words
-        start_word = start_word[-beam_index:]
-    
-    start_word = start_word[-1][0]
-    intermediate_caption = [ixtoword[i] for i in start_word]
-    final_caption = []
-    
-    for i in intermediate_caption:
-        if i != 'endseq':
-            final_caption.append(i)
-        else:
-            break
-
-    final_caption = ' '.join(final_caption[1:])
-    return final_caption
-
-def generate_caption(input_file, filename):
-    """     Caption Generation
-    Args:
-            *   input_file: Contents of the input image file
-            *   filename: filename of the image
-    Workflow:
-            *   A numpy array of an image with text is taken as input
-                inference input dimension requires dimension to be (299,299)
-                hence the image is resized to (299,299).
-            *   Now the processed output is further processed to make it a
-                json format which is compatible to TensorFlow Serving input.
-            *   Then a http post request is made at localhost:8501.
-                The post request contain data and headers.
-            *   Incase of any exception, it return relevant error message.
-            *   Calls to predict_captions are made and the result is stored
-                in the result parameter (There are four results result_greedy,
-                result_beam_search_3,result_beam_search_5,result_beam_search_7)
-            *   A dictionary is maintained having predicitons of the various caption serach algorithms
-            *   A dictionary with generated captions using 4 different search algorithms is returned
-    Returns:
-            *   A dictionary with generated captions using 4 different search algorithms
-    """
-    
-    logger.info(msg="generate caption called")
-    file_path = os.path.join(MEDIA_ROOT, 'text', filename)
-    handle_uploaded_file(input_file, file_path)
-    img = cv2.imread(file_path)[:, :, ::-1]
-    img=cv2.resize(img,(299,299))
-    image = img_to_array(img)
-    image = np.expand_dims(image, axis=0)
-    image = preprocess_input(image)
-    data = json.dumps({"signature_name": "serving_default", 
-                        "instances": image.tolist()})
-    try:
-        headers = {"content-type": "application/json"}
-        url = urllib.parse.urljoin(base_url, image_vectorization_url)
-        json_response = requests.post(url, data=data, headers=headers)
-    except requests.exceptions.HTTPError as errh:
-        logger.error(msg=errh)
-        return {"Error": "An HTTP error occurred."}
-    except requests.exceptions.ConnectionError as errc:
-        logger.error(msg=errc)
-        return {"Error": "A Connection error occurred."}
-    except requests.exceptions.Timeout as errt:
-        logger.error(msg=errt)
-        return {"Error": "The request timed out."}
-    except requests.exceptions.TooManyRedirects as errm:
-        logger.error(msg=errm)
-        return {"Error": "Bad URL"}
-    except requests.exceptions.RequestException as err:
-        logger.error(msg=err)
-        return {"Error": "Text Detection Not Working"}
-    except Exception as e:
-        logger.error(msg=e)
-        return {"Error": e}
-    predictions = json.loads(json_response.text)
-    fea_vec=np.array(predictions["predictions"])
-    fea_vec = np.reshape(fea_vec, fea_vec.shape[1])
-    fea_vec = fea_vec.reshape((1, 2048))
-    logger.info(msg="predict_caption (Greedy Search) called")
-    result_greedy=greedyCaptionSearch(fea_vec)
-    #result_beam_search_3=beam_search_predictions(fea_vec, beam_index = 3)
-    #result_beam_search_5=beam_search_predictions(fea_vec, beam_index = 5)
-    logger.info(msg="predict_caption (Beam Search) called")
-    result_beam_search_7=beam_search_predictions(fea_vec, beam_index = 7)
-    res={"Greedy":result_greedy,"Beam Search(K=7)": result_beam_search_7,}
-    
-    return {"Texts": res}
-
-
-def predict_captions(image,sequence):
-    """     Image Vectorzation
-    Args:
-            *   image: ndarray of dimension (2048,1)
-            *   sequence an ndarray of indexes of generated words
-    Workflow:
-            *   A numpy array feature vector in taken as input
-                inference input dimension requires dimension of (2048,1)
-            *   Now the image is further processed to make it a
-                json format which is compatible to TensorFlow Serving input.
-            *   Then a http post request is made at localhost:8501.
-                The post request contain data and headers.
-            *   Incase of any exception, it return relevant error message.
-            *   output from TensorFlow Serving is further processed using
-                and a word is generated against that input and then the same
-                model is called again internally until the generated caption is
-                over or its length exceeds 51.
-            *   A sting of number of words =1 is returned as output
-    Returns:
-            *   Generated word for a caption .
-    """
-    #logger.info(msg="predict_caption called")
-    in1=image.tolist()
-    in2=sequence.tolist()
-    headers = {"content-type": "application/json"}
-    data = json.dumps({"signature_name":"serving_default","inputs": {'input_2':in1,'input_3':in2}})
-    try:
-        headers = {"content-type": "application/json"}
-        url = urllib.parse.urljoin(base_url, caption_generation_url)
-        json_response = requests.post(url, data=data, headers=headers)
-        
-    except requests.exceptions.HTTPError as errh:
-        logger.error(msg=errh)
-        return {"Error": "An HTTP error occurred."}
-    except requests.exceptions.ConnectionError as errc:
-        logger.error(msg=errc)
-        return {"Error": "A Connection error occurred."}
-    except requests.exceptions.Timeout as errt:
-        logger.error(msg=errt)
-        return {"Error": "The request timed out."}
-    except requests.exceptions.TooManyRedirects as errm:
-        logger.error(msg=errm)
-        return {"Error": "Bad URL"}
-    except requests.exceptions.RequestException as err:
-        logger.error(msg=err)
-        return {"Error": "Caption Predicition Not Working"}
-    except Exception as e:
-        logger.error(msg=e)
-        return {"Error": "Caption Predicition Not Working"}
-    predictions = json.loads(json_response.text)
-    # print("Predicitons are ",predictions)
-    res=predictions['outputs']
-    preds=np.array(res)
-    return preds
-
-
 
 
 def text_detect(input_file, filename):
@@ -419,7 +174,6 @@ def text_detect(input_file, filename):
     
     prior_util = PriorUtil(TBPP512_dense_separable(softmax=False))
     result=np.array(json.loads(json_response.text)["outputs"])
-    print("Result of Bounding boxes \n",type(result),result.shape)
     
     predictions = prior_util.decode(result[0], .2)
     #score_map = np.array(predictions["pred_score_map/Sigmoid:0"], dtype="float64")
@@ -501,8 +255,6 @@ def text_detect_video(input_file, filename):
             try:
                 headers = {"content-type": "application/json"}
                 url = urllib.parse.urljoin(base_url, text_detect_url)
-
-
                 json_response = requests.post(url, data=data, headers=headers)
             except requests.exceptions.HTTPError as errh:
                 logger.error(msg=errh)
