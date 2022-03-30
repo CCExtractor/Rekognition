@@ -34,7 +34,6 @@ h5py==3.1.0
 idna==2.8
 idna-ssl==1.1.0
 imageio==2.5.0
-ipdb==0.12.3
 ipython==7.5.0
 ipython-genutils==0.2.0
 jedi==0.14.0
@@ -50,13 +49,12 @@ mock==3.0.5
 multidict==4.5.2
 networkx==2.3
 numpy
-opencv-python==4.3.0.38
+opencv-python==4.1.2.30
 parso==0.5.0
 pep8==1.7.1
 pexpect==4.7.0
 pickleshare==0.7.5
 Pillow==8.2.0
-pmrlanms
 prompt-toolkit==2.0.9
 protobuf==3.9.2
 psycopg2-binary==2.8.6
@@ -97,3 +95,5 @@ youtube-dl==2019.6.8
 dj_database_url
 gunicorn==20.1.0
 wordninja==0.1.5
+ipdb
+pmrlanms

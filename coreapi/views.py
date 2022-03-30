@@ -16,6 +16,8 @@ from rest_framework.parsers import MultiPartParser, FormParser
 import asyncio
 from threading import Thread
 import random
+import tracemalloc
+import time
 
 
 logger = RekogntionLogger(name="view")
@@ -36,12 +38,20 @@ class SceneText(views.APIView):
     """
 
     def post(self, request):
-
+        tracemalloc.start()
+        start=time.time()
         logger.info(msg="POST Request for Scene Text Extraction made")
         filename = getnewuniquefilename(request)
         input_file = request.FILES['file']
         result = text_detect(input_file, filename)
         if "Error" not in result:
+            logger.info(msg="Memory Used = "+str((tracemalloc.get_traced_memory()[1]-tracemalloc.get_traced_memory()[0])*0.001))
+            end=time.time()
+            logger.info(msg="Time For Prediction = "+str(int(end-start)))
+            result['Time']=int(end-start)
+            result["Memory"]=(tracemalloc.get_traced_memory()[1]-tracemalloc.get_traced_memory()[0])*0.001
+            tracemalloc.stop()
+
             return Response(result, status=status.HTTP_200_OK)
         else:
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
@@ -61,12 +71,19 @@ class SceneTextVideo(views.APIView):
     """
 
     def post(self, request):
-
+        tracemalloc.start()
+        start=time.time()
         logger.info(msg="POST Request for Scene Text Extraction in video made")
         filename = getnewuniquefilename(request)
         input_file = request.FILES['file']
         result = text_detect_video(input_file, filename)
         if "Error" not in result:
+            end=time.time()
+            logger.info(msg="Time For Prediction = "+str(int(end-start)))
+            result['Time']=int(end-start)
+            result["Memory"]=(tracemalloc.get_traced_memory()[1]-tracemalloc.get_traced_memory()[0])*0.001
+            logger.info(msg="Memory Used = "+str((tracemalloc.get_traced_memory()[1]-tracemalloc.get_traced_memory()[0])*0.001))
+            tracemalloc.stop()
             return Response(result, status=status.HTTP_200_OK)
         else:
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
@@ -87,12 +104,19 @@ class NsfwRecognise(views.APIView):
     """
 
     def post(self, request):
-
+        tracemalloc.start()
+        start=time.time()
         logger.info(msg="POST Request for NSFW Classification made")
         filename = getnewuniquefilename(request)
         input_file = request.FILES['file']
         result = nsfwclassifier(input_file, filename)
         if "Error" not in result:
+            end=time.time()
+            logger.info(msg="Time For Prediction = "+str(int(end-start)))
+            result['Time']=int(end-start)
+            result["Memory"]=(tracemalloc.get_traced_memory()[1]-tracemalloc.get_traced_memory()[0])*0.001
+            logger.info(msg="Memory Used = "+str((tracemalloc.get_traced_memory()[1]-tracemalloc.get_traced_memory()[0])*0.001))
+            tracemalloc.stop()
             return Response(result, status=status.HTTP_200_OK)
         else:
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
@@ -112,12 +136,19 @@ class NsfwVideo(views.APIView):
     """
 
     def post(self, request):
-
+        tracemalloc.start()
+        start=time.time()
         logger.info(msg="POST Request for NSFW Classification in video made")
         filename = getnewuniquefilename(request)
         input_file = request.FILES['file']
         result = nsfw_video(input_file, filename)
         if "Error" not in result:
+            end=time.time()
+            logger.info(msg="Time For Prediction = "+str(int(end-start)))
+            result['Time']=int(end-start)
+            result["Memory"]=(tracemalloc.get_traced_memory()[1]-tracemalloc.get_traced_memory()[0])*0.001
+            logger.info(msg="Memory Used = "+str((tracemalloc.get_traced_memory()[1]-tracemalloc.get_traced_memory()[0])*0.001))
+            tracemalloc.stop()
             return Response(result, status=status.HTTP_200_OK)
         else:
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
@@ -137,12 +168,19 @@ class SceneDetect(views.APIView):
     """
 
     def post(self, request):
-
+        tracemalloc.start()
+        start=time.time()
         logger.info(msg="POST Request for Scene Detection made")
         filename = getnewuniquefilename(request)
         input_file = request.FILES['file']
         result = scene_detect(input_file, filename)
         if "Error" not in result:
+            end=time.time()
+            logger.info(msg="Time For Prediction = "+str(int(end-start)))
+            result['Time']=int(end-start)
+            result["Memory"]=(tracemalloc.get_traced_memory()[1]-tracemalloc.get_traced_memory()[0])*0.001
+            logger.info(msg="Memory Used = "+str((tracemalloc.get_traced_memory()[1]-tracemalloc.get_traced_memory()[0])*0.001))
+            tracemalloc.stop()
             return Response(result, status=status.HTTP_200_OK)
         else:
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
@@ -162,12 +200,19 @@ class SceneVideo(views.APIView):
     """
 
     def post(self, request):
-
+        tracemalloc.start()
+        start=time.time()
         logger.info(msg="POST Request for Scene Classification in video made")
         filename = getnewuniquefilename(request)
         input_file = request.FILES['file']
         result = scene_video(input_file, filename)
         if "Error" not in result:
+            end=time.time()
+            logger.info(msg="Time For Prediction = "+str(int(end-start)))
+            result['Time']=int(end-start)
+            result["Memory"]=(tracemalloc.get_traced_memory()[1]-tracemalloc.get_traced_memory()[0])*0.001
+            logger.info(msg="Memory Used = "+str((tracemalloc.get_traced_memory()[1]-tracemalloc.get_traced_memory()[0])*0.001))
+            tracemalloc.stop()
             return Response(result, status=status.HTTP_200_OK)
         else:
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
@@ -196,7 +241,8 @@ class ImageFr(views.APIView):
         return Response(serializer.data)
 
     def post(self, request):
-
+        tracemalloc.start()
+        start=time.time()
         logger.info(msg="POST Request for Face Recognition made")
         image_serializer = self.serializer(data=request.data)
         filename = getnewuniquefilename(request)
@@ -205,6 +251,12 @@ class ImageFr(views.APIView):
             network = image_serializer.data["network"]
             result = facerecogniseinimage(input_file, filename, network)
             if "Error" not in result:
+                end=time.time()
+                logger.info(msg="Time For Prediction = "+str(int(end-start)))
+                result['Time']=int(end-start)
+                result["Memory"]=(tracemalloc.get_traced_memory()[1]-tracemalloc.get_traced_memory()[0])*0.001
+                logger.info(msg="Memory Used = "+str((tracemalloc.get_traced_memory()[1]-tracemalloc.get_traced_memory()[0])*0.001))
+                tracemalloc.stop()
                 return Response(result, status=status.HTTP_200_OK)
             else:
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
@@ -229,12 +281,19 @@ class VideoFr(views.APIView):
     """
 
     def post(self, request):
-
+        tracemalloc.start()
+        start=time.time()
         logger.info(msg="POST Request for Face Recognition in Video made")
         filename = getnewuniquefilename(request)
         input_file = request.FILES['file']
         result = facerecogniseinvideo(input_file, filename)
         if "Error" not in result:
+            end=time.time()
+            logger.info(msg="Time For Prediction = "+str(int(end-start)))
+            result['Time']=int(end-start)
+            result["Memory"]=(tracemalloc.get_traced_memory()[1]-tracemalloc.get_traced_memory()[0])*0.001
+            logger.info(msg="Memory Used = "+str((tracemalloc.get_traced_memory()[1]-tracemalloc.get_traced_memory()[0])*0.001))
+            tracemalloc.stop()
             return Response(result, status=status.HTTP_200_OK)
         else:
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
@@ -264,12 +323,19 @@ class EMBEDDING(views.APIView):
         return Response({'data': serializer.data})
 
     def post(self, request):
-
+        tracemalloc.start()
+        start=time.time()
         logger.info(msg="POST Request for generating embeddings made")
         filename = request.FILES['file'].name
         input_file = request.FILES['file']
         result = createembedding(input_file, filename)
         if "Error" not in result:
+            logger.info(msg="Time For Prediction = "+str(int(end-start)))
+            result['Time']=int(end-start)
+            result["Memory"]=(tracemalloc.get_traced_memory()[1]-tracemalloc.get_traced_memory()[0])*0.001
+            logger.info(msg="Memory Used = "+str((tracemalloc.get_traced_memory()[1]-tracemalloc.get_traced_memory()[0])*0.001))
+            tracemalloc.stop()
+            
             return Response(result, status=status.HTTP_200_OK)
         else:
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
@@ -335,6 +401,7 @@ class FeedbackFeature(APIView):
 
     def post(self, request, *args, **kwargs):
         request.data._mutable = True
+        start=time.time()
 
         feedbackmodel = InputEmbed.objects.get(id=request.data["feedback_id"])
         request.data["feedback"] = feedbackmodel
@@ -427,13 +494,20 @@ class StreamVideoFr(views.APIView):
     """
 
     def post(self, request):
-
+        tracemalloc.start()
+        start=time.time()
         logger.info(msg="POST Request for Procesing Youtube Videos made")
         streamlink = request.data["StreamLink"]
         videoid = (str(streamlink).split('/')[-1]).split('\"')[0]
         ytlink = str("https://www.youtube.com/watch?v=" + str(videoid))
         result = process_streaming_video(ytlink, (videoid))
         if "Error" not in result:
+            end=time.time()
+            logger.info(msg="Time For Prediction = "+str(int(end-start)))
+            result['Time']=int(end-start)
+            result["Memory"]=(tracemalloc.get_traced_memory()[1]-tracemalloc.get_traced_memory()[0])*0.001
+            logger.info(msg="Memory Used = "+str((tracemalloc.get_traced_memory()[1]-tracemalloc.get_traced_memory()[0])*0.001))
+            tracemalloc.stop()
             return Response(result, status=status.HTTP_200_OK)
         else:
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
@@ -460,6 +534,8 @@ class SimilarFace(views.APIView):
         return Response({'data': serializer.data})
 
     def post(self, request):
+        tracemalloc.start()
+        start=time.time()
 
         logger.info(msg="POST Request for Similar Face Recognition made")
         filename = getnewuniquefilename(request)
@@ -467,6 +543,12 @@ class SimilarFace(views.APIView):
         compare_img = request.FILES['compareImage']
         result = similarface(reference_img, compare_img, filename)
         if "Error" not in result:
+            end=time.time()
+            logger.info(msg="Time For Prediction = "+str(int(end-start)))
+            result['Time']=int(end-start)
+            result["Memory"]=(tracemalloc.get_traced_memory()[1]-tracemalloc.get_traced_memory()[0])*0.001
+            logger.info(msg="Memory Used = "+str((tracemalloc.get_traced_memory()[1]-tracemalloc.get_traced_memory()[0])*0.001))
+            tracemalloc.stop()
             return Response(result, status=status.HTTP_200_OK)
         else:
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
@@ -488,12 +570,20 @@ class ObjectDetect(views.APIView):
     """
 
     def post(self, request):
+        tracemalloc.start()
+        start=time.time()
 
         logger.info(msg="POST Request for Object Detection made")
         filename = getnewuniquefilename(request)
         input_file = request.FILES['file']
         result = object_detect(input_file, filename)
         if "Error" not in result:
+            end=time.time()
+            logger.info(msg="Time For Prediction = "+str(int(end-start)))
+            result['Time']=int(end-start)
+            result["Memory"]=(tracemalloc.get_traced_memory()[1]-tracemalloc.get_traced_memory()[0])*0.001
+            logger.info(msg="Memory Used = "+str((tracemalloc.get_traced_memory()[1]-tracemalloc.get_traced_memory()[0])*0.001))
+            tracemalloc.stop()
             return Response(result, status=status.HTTP_200_OK)
         else:
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
@@ -515,12 +605,19 @@ class ObjectDetectVideo(views.APIView):
     """
 
     def post(self, request):
-
+        tracemalloc.start()
+        start=time.time()
         logger.info(msg="POST Request for Object Detection in video made")
         filename = getnewuniquefilename(request)
         input_file = request.FILES['file']
         result = object_detect_video(input_file, filename)
         if "Error" not in result:
+            end=time.time()
+            logger.info(msg="Time For Prediction = "+str(int(end-start)))
+            result['Time']=int(end-start)
+            result["Memory"]=(tracemalloc.get_traced_memory()[1]-tracemalloc.get_traced_memory()[0])*0.001
+            logger.info()
+            tracemalloc.stop()
             return Response(result, status=status.HTTP_200_OK)
         else:
             return Response(result, status=status.HTTP_400_BAD_REQUEST)

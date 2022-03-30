@@ -6,7 +6,6 @@ import skvideo.io
 import subprocess
 import shlex
 import cv2
-import os
 import wordninja
 from skimage.io import imread
 import urllib.parse
@@ -62,6 +61,8 @@ def text_reco(image):
     Returns:
             *   Dictionary having text as Key and processed output as value.
     """
+    print("Size of image = ",image.shape)
+
     logger.info(msg="text_reco called")
     image = cv2.resize(image, tuple((100, 32)), interpolation=cv2.INTER_LINEAR)
     image = np.array(image, np.float32) / 127.5 - 1.0
@@ -90,17 +91,19 @@ def text_reco(image):
     except Exception as e:
         logger.error(msg=e)
         return {"Error": "Facial Expression Recognition Not Working"}
-    predictions = json.loads(json_response.text).get("outputs")
+    predictions = json.loads(json_response.text).get("outputs", "Bad request made.")
     codec = CRNN_utils._FeatureIO(
         char_dict_path=char_dict_path,
         ord_map_dict_path=ord_map_dict_path,
     )
+
     preds = codec.sparse_tensor_to_str_for_tf_serving(
         decode_indices=predictions['decodes_indices'],
         decode_values=predictions['decodes_values'],
         decode_dense_shape=predictions['decodes_dense_shape'],
     )[0]
     preds = ' '.join(wordninja.split(preds))
+    
     return {"Text": preds}
 
 
@@ -139,11 +142,10 @@ def text_detect(input_file, filename):
     logger.info(msg="text_detect called")
     file_path = os.path.join(MEDIA_ROOT, 'text', filename)
     handle_uploaded_file(input_file, file_path)
+    
     img = cv2.imread(file_path)[:, :, ::-1]
-    img=cv2.resize(img,(512,512))
     img=cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    img_resized=img.copy()
-    #img=cv2.resize(img,tuple(img_sh))
+    img_resized=cv2.resize(img, (512, 512))
     #img_resized, (ratio_h, ratio_w) = preprocess(img)
     #img_resized = (img_resized / 127.5) - 1
     
@@ -152,6 +154,7 @@ def text_detect(input_file, filename):
     try:
         headers = {"content-type": "application/json"}
         url = urllib.parse.urljoin(base_url, text_detect_url)
+
         json_response = requests.post(url, data=data, headers=headers)
     except requests.exceptions.HTTPError as errh:
         logger.error(msg=errh)
@@ -198,7 +201,6 @@ def text_detect(input_file, filename):
     for box in result_boxes:
         top_left_x, top_left_y, bot_right_x, bot_right_y = bb_to_cv(box)
         text=text_reco(img[top_left_y :bot_right_y,top_left_x :bot_right_x ]).get("Text")
-        	              		
         result.append({"Boxes": box, "Text": text})
     return {"Texts": result}
 
@@ -255,6 +257,7 @@ def text_detect_video(input_file, filename):
             try:
                 headers = {"content-type": "application/json"}
                 url = urllib.parse.urljoin(base_url, text_detect_url)
+
                 json_response = requests.post(url, data=data, headers=headers)
             except requests.exceptions.HTTPError as errh:
                 logger.error(msg=errh)
@@ -480,7 +483,6 @@ def faceexp(cropped_face):
             *   Dictionary having all the faces and corresponding facial
                 expression and it's values.
     """
-
     logger.info(msg="faceexp called")
     img = cv2.resize(cropped_face, (100, 100), interpolation=cv2.INTER_AREA)
     img = np.array(img).reshape((1, 100, 100, 3))
@@ -1172,7 +1174,10 @@ def object_detect(input_file, filename):
                 and Box as the keys and the name of the object, it's
                 confidence score and it's bounding box coordinates as the
                 respective values of these keys.
+
     """
+
+
 
     logger.info(msg="object_detect called")
     file_path = os.path.join(MEDIA_ROOT, 'object', filename)
@@ -1223,7 +1228,9 @@ def object_detect(input_file, filename):
     result = []
     class_names = get_class_names(coco_names_path)
     for num in range(100):
+        
         result.append([{"Box": boxes[num]}, {"Score": scores[num]}, {"Label": class_names[int(classes[num])]}])
+
     return {"Objects": result}
 
 
