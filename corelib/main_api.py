@@ -101,6 +101,7 @@ def text_reco(image):
         decode_dense_shape=predictions['decodes_dense_shape'],
     )[0]
     preds = ' '.join(wordninja.split(preds))
+    
     return {"Text": preds}
 
 
@@ -480,7 +481,6 @@ def faceexp(cropped_face):
             *   Dictionary having all the faces and corresponding facial
                 expression and it's values.
     """
-
     logger.info(msg="faceexp called")
     img = cv2.resize(cropped_face, (100, 100), interpolation=cv2.INTER_AREA)
     img = np.array(img).reshape((1, 100, 100, 3))
@@ -1172,7 +1172,10 @@ def object_detect(input_file, filename):
                 and Box as the keys and the name of the object, it's
                 confidence score and it's bounding box coordinates as the
                 respective values of these keys.
+
     """
+
+
 
     logger.info(msg="object_detect called")
     file_path = os.path.join(MEDIA_ROOT, 'object', filename)
@@ -1223,7 +1226,9 @@ def object_detect(input_file, filename):
     result = []
     class_names = get_class_names(coco_names_path)
     for num in range(100):
+        
         result.append([{"Box": boxes[num]}, {"Score": scores[num]}, {"Label": class_names[int(classes[num])]}])
+
     return {"Objects": result}
 
 
