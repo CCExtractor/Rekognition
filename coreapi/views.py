@@ -349,7 +349,6 @@ class SceneVideo(views.APIView):
             else :
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
 
-
 class ImageFr(views.APIView):
     """     To recognise faces in image
 
