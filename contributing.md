@@ -1,4 +1,4 @@
-# Development Enironment setup
+# Development Environment setup
 ## Install python 3.6
 ```
 sudo add-apt-repository ppa:deadsnakes/ppa
@@ -75,6 +75,8 @@ source myenv/bin/activate
 	docker pull tensorflow/serving:nightly-devel
 
 ` docker run -it -p 8500:8500 -p 8501:8501 -v  <absolute path to tfs model's parent directory>:/home/ tensorflow/serving:nightly-devel`
+
+Here, absolute path is: `.../Rekognition/corelib/model/tfs/model_volume/`
 
 #### then in docker shell, run the below command
 
