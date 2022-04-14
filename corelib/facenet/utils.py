@@ -7,8 +7,9 @@ from corelib.facenet.facenet import get_model_filenames
 from corelib.facenet.align import detect_face
 from corelib.facenet.facenet import load_img
 # from scipy.misc import imsave
-from skimage.io import imsave
-import skimage
+# from skimage.io import imsave
+# import skimage
+import cv2
 from collections import defaultdict
 import string
 import random
@@ -59,7 +60,7 @@ def save_image(img, filename, upload_path):
 
     logger.info(msg="save_image called")
     try:
-        imsave(os.path.join(upload_path, filename), arr=np.squeeze(img))
+        cv2.imwrite(os.path.join(upload_path, filename), np.squeeze(img))
     except Exception as e:
         logger.error(msg=e)
 
@@ -126,7 +127,7 @@ def get_face(img, pnet, rnet, onet, image_size):
             cropped = img[bb[1]: bb[3], bb[0]:bb[2], :]
             # face_img = imresize(arr=cropped, size=(
             #     input_image_size, input_image_size), mode='RGB')
-            face_img = skimage.transform.resize(cropped, (input_image_size, input_image_size))
+            face_img = cv2.resize(cropped, (input_image_size, input_image_size))
             all_faces.append(face_img)
             all_bb.append(bb)
     return all_faces, all_bb
@@ -152,7 +153,7 @@ def save_face(img, where, filename):
     logger.info(msg="save_face called")
     path = os.path.join(MEDIA_ROOT, where, str(filename) + '.jpg')
     try:
-        imsave(path, arr=np.squeeze(img))
+        cv2.imwrite(path, np.squeeze(img))
     except Exception as e:
         logger.error(msg=e)
 
