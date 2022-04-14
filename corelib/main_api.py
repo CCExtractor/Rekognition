@@ -2,7 +2,6 @@ import os
 import math
 import uuid
 import json
-import skvideo.io
 import subprocess
 import shlex
 import cv2
@@ -887,8 +886,7 @@ def facerecogniseinvideo(input_file, filename):
             *   Video file is first saved into videos which is subfolder of
                 MEDIA_ROOT directory.
             *   Information about the video is saved into database
-            *   Using skvideo meta information of the video is extracted
-            *   With the help of extracted metadata frame/sec (fps) is
+            *   Using OpenCV, frame/sec (fps) is
                 calculated and with this frame_hop is calculated.
                 Now this frame_hop is actually useful in decreasing the
                 number of frames to be processed, say for example if a video
@@ -896,7 +894,7 @@ def facerecogniseinvideo(input_file, filename):
                 processed, It reduces the computation work. Ofcourse for more
                 accuracy the frame_hop can be reduced, but It is observed that
                 this affect the output very little.
-            *   Now videofile is read using skvideo.io.vreader(), Now, each
+            *   Now videofile is read using cv2.VideoCapture(), Now, each
                 frame is read from videogen. Now timestamp of the particular
                 image or face calculated using above metadata.
             *   Now a locallist is maintained which keeps the all face ids.
@@ -945,13 +943,19 @@ def facerecogniseinvideo(input_file, filename):
         return {"Error": e}
 
     videofile = file_path
-    metadata = skvideo.io.ffprobe(videofile)
-    str_fps = metadata["video"]['@avg_frame_rate'].split('/')
-    fps = float(float(str_fps[0]) / float(str_fps[1]))
-
-    timestamps = [(float(1) / fps)]
-    total_frame = float(metadata["video"]["@nb_frames"])
-    total_duration = float(metadata["video"]["@duration"])
+    
+    '''If opencv version 3+ is used: 
+    (major_ver, minor_ver, subminor_ver) = (cv2.__version__).split('.')
+    if int(major_ver)  < 3 :
+      fps = video.get(cv2.cv.CV_CAP_PROP_FPS)
+    else :
+      fps = video.get(cv2.CAP_PROP_FPS)'''
+    
+    videogen = cv2.VideoCapture(videofile)
+    
+    total_frame = int(videogen.get(cv2.cv.CV_CAP_PROP_FRAME_COUNT))
+    fps = videogen.get(cv2.cv.CV_CAP_PROP_FPS)
+    total_duration = float(total_frame / fps) #in seconds
 
     frame_hop = int(math.ceil(fps / 10))
     gap_in_sec = (total_duration / total_frame) * frame_hop * 3 * 1000
@@ -961,8 +965,10 @@ def facerecogniseinvideo(input_file, filename):
     ids = []
     cache_embeddings = {}
 
-    videogen = skvideo.io.vreader(videofile)
-    for curr_frame in (videogen):
+    success,curr_frame  = cv2.VideoCapture(videofile)
+    success = True
+    while success:
+        success,curr_frame = videogen.read()
         count = count + 1
         if count % frame_hop == 0:
             # multiplying to get the timestamps in milliseconds
