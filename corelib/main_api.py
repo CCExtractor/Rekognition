@@ -8,7 +8,6 @@ import shlex
 import cv2
 import os
 import wordninja
-from skimage.io import imread
 import urllib.parse
 from werkzeug.utils import secure_filename
 from Rekognition.settings import MEDIA_ROOT
@@ -34,7 +33,6 @@ from coreapi.models import InputImage, InputVideo, InputEmbed, SimilarFaceInImag
 from logger.logging import RekogntionLogger
 import numpy as np
 import requests
-from skimage.transform import resize
 from corelib.RetinaFace.retina_net import FaceDetectionRetina
 from django.db import IntegrityError, DatabaseError
 
@@ -627,8 +625,9 @@ def nsfwclassifier(input_file, filename):
 
     handle_uploaded_file(input_file, file_path)
 
-    img = imread(file_path)
-    img = resize(img, (64, 64), anti_aliasing=True, mode='constant')
+    img = cv2.imread(file_path)[:, :, ::-1]
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    img_resized = cv2.resize(img, (64, 64))
     if (img.shape[2] == 4):
         img = img[..., :3]
 
@@ -722,7 +721,7 @@ def nsfw_video(input_file, filename):
     while(vid.isOpened()):
         ret, img = vid.read()
         if ret:
-            img = resize(img, (64, 64), anti_aliasing=True, mode='constant')
+            img = cv2.resize(img, (64, 64))
             if (img.shape[2] == 4):
                 img = img[..., :3]
 
@@ -1053,7 +1052,8 @@ def createembedding(input_file, filename):
             logger.error(msg=e)
             return {"Error": e}
 
-        img = imread(fname=input_file, mode='RGB')
+        img = cv2.imread(input_file)[:, :, ::-1]
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         if (img.shape[2] == 4):
             img = img[..., :3]
 
