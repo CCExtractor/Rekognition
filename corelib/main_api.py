@@ -944,17 +944,17 @@ def facerecogniseinvideo(input_file, filename):
 
     videofile = file_path
     
-    '''If opencv version 3+ is used: 
-    (major_ver, minor_ver, subminor_ver) = (cv2.__version__).split('.')
-    if int(major_ver)  < 3 :
-      fps = video.get(cv2.cv.CV_CAP_PROP_FPS)
-    else :
-      fps = video.get(cv2.CAP_PROP_FPS)'''
-    
     videogen = cv2.VideoCapture(videofile)
     
-    total_frame = int(videogen.get(cv2.cv.CV_CAP_PROP_FRAME_COUNT))
-    fps = videogen.get(cv2.cv.CV_CAP_PROP_FPS)
+    #For various OpenCV versions: 
+    (major_ver, minor_ver, subminor_ver) = (cv2.__version__).split('.')
+    if int(major_ver)  < 3 :
+      total_frame = int(videogen.get(cv2.cv.CV_CAP_PROP_FRAME_COUNT))
+      fps = videogen.get(cv2.cv.CV_CAP_PROP_FPS)
+    else :
+      total_frame = int(videogen.get(cv2.CAP_PROP_FRAME_COUNT))
+      fps = videogen.get(cv2.CAP_PROP_FPS)   
+    
     total_duration = float(total_frame / fps) #in seconds
 
     frame_hop = int(math.ceil(fps / 10))
@@ -965,7 +965,6 @@ def facerecogniseinvideo(input_file, filename):
     ids = []
     cache_embeddings = {}
 
-    success,curr_frame  = cv2.VideoCapture(videofile)
     success = True
     while success:
         success,curr_frame = videogen.read()
