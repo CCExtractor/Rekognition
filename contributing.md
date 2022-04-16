@@ -76,8 +76,6 @@ source myenv/bin/activate
 
 ` docker run -it -p 8500:8500 -p 8501:8501 -v  <absolute path to tfs model's parent directory>:/home/ tensorflow/serving:nightly-devel`
 
-Here, absolute path is: `.../Rekognition/corelib/model/tfs/model_volume/`
-
 #### then in docker shell, run the below command
 
 `tensorflow_model_server --port=8500 --rest_api_port=8501 --model_config_file=/home/configs/models.conf`
