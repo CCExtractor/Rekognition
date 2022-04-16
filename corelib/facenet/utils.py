@@ -7,8 +7,6 @@ from corelib.facenet.facenet import get_model_filenames
 from corelib.facenet.align import detect_face
 from corelib.facenet.facenet import load_img
 # from scipy.misc import imsave
-# from skimage.io import imsave
-# import skimage
 import cv2
 from collections import defaultdict
 import string
