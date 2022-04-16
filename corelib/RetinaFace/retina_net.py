@@ -2,7 +2,6 @@ import cv2
 import numpy as np
 import json
 # from scipy.misc import imresize
-# from skimage.transform import resize
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
