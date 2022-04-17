@@ -2,13 +2,11 @@ import os
 import math
 import uuid
 import json
-import skvideo.io
 import subprocess
 import shlex
 import cv2
 import os
 import wordninja
-from skimage.io import imread
 import urllib.parse
 from werkzeug.utils import secure_filename
 from Rekognition.settings import MEDIA_ROOT
@@ -34,7 +32,6 @@ from coreapi.models import InputImage, InputVideo, InputEmbed, SimilarFaceInImag
 from logger.logging import RekogntionLogger
 import numpy as np
 import requests
-from skimage.transform import resize
 from corelib.RetinaFace.retina_net import FaceDetectionRetina
 from django.db import IntegrityError, DatabaseError
 
@@ -627,8 +624,9 @@ def nsfwclassifier(input_file, filename):
 
     handle_uploaded_file(input_file, file_path)
 
-    img = imread(file_path)
-    img = resize(img, (64, 64), anti_aliasing=True, mode='constant')
+    img = cv2.imread(file_path)[:, :, ::-1]
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    img_resized = cv2.resize(img, (64, 64))
     if (img.shape[2] == 4):
         img = img[..., :3]
 
@@ -722,7 +720,7 @@ def nsfw_video(input_file, filename):
     while(vid.isOpened()):
         ret, img = vid.read()
         if ret:
-            img = resize(img, (64, 64), anti_aliasing=True, mode='constant')
+            img = cv2.resize(img, (64, 64))
             if (img.shape[2] == 4):
                 img = img[..., :3]
 
@@ -888,8 +886,7 @@ def facerecogniseinvideo(input_file, filename):
             *   Video file is first saved into videos which is subfolder of
                 MEDIA_ROOT directory.
             *   Information about the video is saved into database
-            *   Using skvideo meta information of the video is extracted
-            *   With the help of extracted metadata frame/sec (fps) is
+            *   Using OpenCV, frame/sec (fps) is
                 calculated and with this frame_hop is calculated.
                 Now this frame_hop is actually useful in decreasing the
                 number of frames to be processed, say for example if a video
@@ -897,7 +894,7 @@ def facerecogniseinvideo(input_file, filename):
                 processed, It reduces the computation work. Ofcourse for more
                 accuracy the frame_hop can be reduced, but It is observed that
                 this affect the output very little.
-            *   Now videofile is read using skvideo.io.vreader(), Now, each
+            *   Now videofile is read using cv2.VideoCapture(), Now, each
                 frame is read from videogen. Now timestamp of the particular
                 image or face calculated using above metadata.
             *   Now a locallist is maintained which keeps the all face ids.
@@ -946,13 +943,19 @@ def facerecogniseinvideo(input_file, filename):
         return {"Error": e}
 
     videofile = file_path
-    metadata = skvideo.io.ffprobe(videofile)
-    str_fps = metadata["video"]['@avg_frame_rate'].split('/')
-    fps = float(float(str_fps[0]) / float(str_fps[1]))
-
-    timestamps = [(float(1) / fps)]
-    total_frame = float(metadata["video"]["@nb_frames"])
-    total_duration = float(metadata["video"]["@duration"])
+    
+    videogen = cv2.VideoCapture(videofile)
+    
+    #For various OpenCV versions: 
+    (major_ver, minor_ver, subminor_ver) = (cv2.__version__).split('.')
+    if int(major_ver)  < 3 :
+      total_frame = int(videogen.get(cv2.cv.CV_CAP_PROP_FRAME_COUNT))
+      fps = videogen.get(cv2.cv.CV_CAP_PROP_FPS)
+    else :
+      total_frame = int(videogen.get(cv2.CAP_PROP_FRAME_COUNT))
+      fps = videogen.get(cv2.CAP_PROP_FPS)   
+    
+    total_duration = float(total_frame / fps) #in seconds
 
     frame_hop = int(math.ceil(fps / 10))
     gap_in_sec = (total_duration / total_frame) * frame_hop * 3 * 1000
@@ -962,8 +965,9 @@ def facerecogniseinvideo(input_file, filename):
     ids = []
     cache_embeddings = {}
 
-    videogen = skvideo.io.vreader(videofile)
-    for curr_frame in (videogen):
+    success = True
+    while success:
+        success,curr_frame = videogen.read()
         count = count + 1
         if count % frame_hop == 0:
             # multiplying to get the timestamps in milliseconds
@@ -1053,7 +1057,8 @@ def createembedding(input_file, filename):
             logger.error(msg=e)
             return {"Error": e}
 
-        img = imread(fname=input_file, mode='RGB')
+        img = cv2.imread(input_file)[:, :, ::-1]
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         if (img.shape[2] == 4):
             img = img[..., :3]
 
