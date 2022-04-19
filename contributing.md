@@ -1,4 +1,8 @@
 # Development Enironment setup
+
+
+## For MacOS
+
 ## Install python 3.6
 ```
 sudo add-apt-repository ppa:deadsnakes/ppa
