@@ -6,14 +6,29 @@ sudo apt-get update
 sudo apt-get install python3.6
 ```
 
+## For MacOS:
+```
+brew install python
+```
+
 
 ## Clone the repository and setup venv
 ```
-git clone https://github.com/pymit/Rekognition
+git clone https://github.com/CCExtractor/Rekognition
 cd Rekognition
-./setup.sh
+../setup.sh
 source myenv/bin/activate
 ```
+
+### For MacOS:
+git clone https://github.com/CCExtractor/Rekognition
+./setup.sh
+cd Rekognition
+python3 -m virtualenv myenv
+source $PWD/myenv/bin/activate
+pip install -r ../requirements.txt
+
+NOTE: Sometimes an error "permission denied" may be shown when you try to run `setup.sh`. For this, try: `chmod 755 setup.sh` in root directory to change permissions.
 ***
 ## Postgres setup
 
@@ -30,7 +45,20 @@ source myenv/bin/activate
 	ALTER USER admin CREATEDB;
 	ALTER DATABASE pmr OWNER TO admin;
 ***
+## Postgres setup for MacOS
 
+	brew update
+	brew install postgresql
+	brew services start postgresql
+	psql postgres
+	CREATE DATABASE pmr;
+	CREATE USER admin WITH PASSWORD 'admin';
+	ALTER ROLE admin SET client_encoding TO 'utf8';
+	ALTER ROLE admin SET default_transaction_isolation TO 'read committed';
+	ALTER ROLE admin SET timezone TO 'UTC';
+	ALTER USER admin CREATEDB;
+	ALTER DATABASE pmr OWNER TO admin;
+*** 
 ## ReactJS setup for frontend 
 
 	git clone https://github.com/pymit/RekoUI
