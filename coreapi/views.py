@@ -16,6 +16,8 @@ from rest_framework.parsers import MultiPartParser, FormParser
 import asyncio
 from threading import Thread
 import random
+import tracemalloc
+import time
 
 
 logger = RekogntionLogger(name="view")
@@ -37,14 +39,44 @@ class SceneText(views.APIView):
 
     def post(self, request):
 
+        tracemalloc.start()
+        start = time.time()
         logger.info(msg="POST Request for Scene Text Extraction made")
         filename = getnewuniquefilename(request)
         input_file = request.FILES['file']
         result = text_detect(input_file, filename)
         if "Error" not in result:
+            logger.info(msg="Memory Used = " + str((tracemalloc.get_traced_memory()[1] - tracemalloc.get_traced_memory()[0]) * 0.001))
+            end = time.time()
+            logger.info(msg="Time For Prediction = " + str(int(end - start)))
+            result['Time'] = int(end - start)
+            result["Memory"] = (tracemalloc.get_traced_memory()[1] - tracemalloc.get_traced_memory()[0]) * 0.001
+            tracemalloc.stop()
+
             return Response(result, status=status.HTTP_200_OK)
         else:
-            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            if (result["Error"] == 'An HTTP error occurred.'):
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            elif (result["Error"] == 'A Connection error occurred.'):
+                return Response(result, status=status.HTTP_503_SERVICE_UNAVALIABLE)
+            elif (result["Error"] == 'The request timed out.'):
+                return Response(result, status=status.HTTP_408_REQUEST_TIMEOUT)
+            elif (result["Error"] == 'Bad URL'):
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            elif (result["Error"] == 'Text Detection Not Working'):
+                return Response(result, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            elif (result["Error"]  ==  'The media format of the requested data is not supported by the server'):
+                return Response(result, status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+            elif (result["Error"]  ==  'A JSON error occurred.'):
+                return Response(result, status=status.HTTP_204_NO_CONTENT)
+            elif (result["Error"]  ==  'A proxy error occurred.'):
+                return Response(result, status=status.HTTP_407_PROXY_AUTHENTICATION_REQUIRED)
+            elif (result["Error"] == 'The header value provided was somehow invalid.'):
+                return Response(result, status=status.HTTP_411_LENGTH_REQUIRED)
+            elif (result["Error"] == 'The request timed out while trying to connect to the remote server.'):
+                return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
+            else :
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
 
 
 class SceneTextVideo(views.APIView):
@@ -62,14 +94,43 @@ class SceneTextVideo(views.APIView):
 
     def post(self, request):
 
+        tracemalloc.start()
+        start = time.time()
         logger.info(msg="POST Request for Scene Text Extraction in video made")
         filename = getnewuniquefilename(request)
         input_file = request.FILES['file']
         result = text_detect_video(input_file, filename)
         if "Error" not in result:
+            end = time.time()
+            logger.info(msg="Time For Prediction = " + str(int(end - start)))
+            result['Time'] = int(end - start)
+            result["Memory"] = (tracemalloc.get_traced_memory()[1] - tracemalloc.get_traced_memory()[0]) * 0.001
+            logger.info(msg="Memory Used = " + str((tracemalloc.get_traced_memory()[1] - tracemalloc.get_traced_memory()[0]) * 0.001))
+            tracemalloc.stop()
             return Response(result, status=status.HTTP_200_OK)
         else:
-            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            if (result["Error"] == 'An HTTP error occurred.'):
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            elif (result["Error"] == 'A Connection error occurred.'):
+                return Response(result, status=status.HTTP_503_SERVICE_UNAVALIABLE)
+            elif (result["Error"] == 'The request timed out.'):
+                return Response(result, status=status.HTTP_408_REQUEST_TIMEOUT)
+            elif (result["Error"] == 'Bad URL'):
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            elif (result["Error"] == 'Text Detect(video) Not Working'):
+                return Response(result, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            elif (result["Error"] == 'The media format of the requested data is not supported by the server'):
+                return Response(result, status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+            elif (result["Error"] == 'A JSON error occurred.'):
+                return Response(result, status=status.HTTP_204_NO_CONTENT)
+            elif (result["Error"] == 'A proxy error occurred.'):
+                return Response(result, status=status.HTTP_407_PROXY_AUTHENTICATION_REQUIRED)
+            elif (result["Error"] == 'The header value provided was somehow invalid.'):
+                return Response(result, status=status.HTTP_411_LENGTH_REQUIRED)
+            elif (result["Error"] == 'The request timed out while trying to connect to the remote server.'):
+                return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
+            else :
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
 
 
 class NsfwRecognise(views.APIView):
@@ -88,14 +149,43 @@ class NsfwRecognise(views.APIView):
 
     def post(self, request):
 
+        tracemalloc.start()
+        start = time.time()
         logger.info(msg="POST Request for NSFW Classification made")
         filename = getnewuniquefilename(request)
         input_file = request.FILES['file']
         result = nsfwclassifier(input_file, filename)
         if "Error" not in result:
+            end = time.time()
+            logger.info(msg="Time For Prediction = " + str(int(end - start)))
+            result['Time'] = int(end - start)
+            result["Memory"] = (tracemalloc.get_traced_memory()[1] - tracemalloc.get_traced_memory()[0]) * 0.001
+            logger.info(msg="Memory Used = " + str((tracemalloc.get_traced_memory()[1] - tracemalloc.get_traced_memory()[0]) * 0.001))
+            tracemalloc.stop()
             return Response(result, status=status.HTTP_200_OK)
         else:
-            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            if (result["Error"] == 'An HTTP error occurred.'):
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            elif (result["Error"] == 'A Connection error occurred.'):
+                return Response(result, status=status.HTTP_503_SERVICE_UNAVALIABLE)
+            elif (result["Error"] == 'The request timed out.'):
+                return Response(result, status=status.HTTP_408_REQUEST_TIMEOUT)
+            elif (result["Error"] == 'Bad URL'):
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            elif (result["Error"] == 'NSFW Classification Not Working'):
+                return Response(result, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            elif (result["Error"] == 'The media format of the requested data is not supported by the server'):
+                return Response(result, status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+            elif (result["Error"] == 'A JSON error occurred.'):
+                return Response(result, status=status.HTTP_204_NO_CONTENT)
+            elif (result["Error"] == 'A proxy error occurred.'):
+                return Response(result, status=status.HTTP_407_PROXY_AUTHENTICATION_REQUIRED)
+            elif (result["Error"] == 'The header value provided was somehow invalid.'):
+                return Response(result, status=status.HTTP_411_LENGTH_REQUIRED)
+            elif (result["Error"] == 'The request timed out while trying to connect to the remote server.'):
+                return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
+            else :
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
 
 
 class NsfwVideo(views.APIView):
@@ -113,14 +203,43 @@ class NsfwVideo(views.APIView):
 
     def post(self, request):
 
+        tracemalloc.start()
+        start = time.time()
         logger.info(msg="POST Request for NSFW Classification in video made")
         filename = getnewuniquefilename(request)
         input_file = request.FILES['file']
         result = nsfw_video(input_file, filename)
         if "Error" not in result:
+            end = time.time()
+            logger.info(msg="Time For Prediction = " + str(int(end - start)))
+            result['Time'] = int(end - start)
+            result["Memory"] = (tracemalloc.get_traced_memory()[1] - tracemalloc.get_traced_memory()[0]) * 0.001
+            logger.info(msg="Memory Used = " + str((tracemalloc.get_traced_memory()[1] - tracemalloc.get_traced_memory()[0]) * 0.001))
+            tracemalloc.stop()
             return Response(result, status=status.HTTP_200_OK)
         else:
-            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            if (result["Error"] == 'An HTTP error occurred.'):
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            elif (result["Error"] == 'A Connection error occurred.'):
+                return Response(result, status=status.HTTP_503_SERVICE_UNAVALIABLE)
+            elif (result["Error"] == 'The request timed out.'):
+                return Response(result, status=status.HTTP_408_REQUEST_TIMEOUT)
+            elif (result["Error"] == 'Bad URL'):
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            elif (result["Error"] == 'NSFW Classification(video) Not Working'):
+                return Response(result, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            elif (result["Error"] == 'The media format of the requested data is not supported by the server'):
+                return Response(result, status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+            elif (result["Error"] == 'A JSON error occurred.'):
+                return Response(result, status=status.HTTP_204_NO_CONTENT)
+            elif (result["Error"] == 'A proxy error occurred.'):
+                return Response(result, status=status.HTTP_407_PROXY_AUTHENTICATION_REQUIRED)
+            elif (result["Error"] == 'The header value provided was somehow invalid.'):
+                return Response(result, status=status.HTTP_411_LENGTH_REQUIRED)
+            elif (result["Error"] == 'The request timed out while trying to connect to the remote server.'):
+                return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
+            else :
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
 
 
 class SceneDetect(views.APIView):
@@ -138,14 +257,43 @@ class SceneDetect(views.APIView):
 
     def post(self, request):
 
+        tracemalloc.start()
+        start = time.time()
         logger.info(msg="POST Request for Scene Detection made")
         filename = getnewuniquefilename(request)
         input_file = request.FILES['file']
         result = scene_detect(input_file, filename)
         if "Error" not in result:
+            end = time.time()
+            logger.info(msg="Time For Prediction = " + str(int(end - start)))
+            result['Time'] = int(end - start)
+            result["Memory"] = (tracemalloc.get_traced_memory()[1] - tracemalloc.get_traced_memory()[0]) * 0.001
+            logger.info(msg="Memory Used = " + str((tracemalloc.get_traced_memory()[1] - tracemalloc.get_traced_memory()[0]) * 0.001))
+            tracemalloc.stop()
             return Response(result, status=status.HTTP_200_OK)
         else:
-            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            if (result["Error"] == 'An HTTP error occurred.'):
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            elif (result["Error"] == 'A Connection error occurred.'):
+                return Response(result, status=status.HTTP_503_SERVICE_UNAVALIABLE)
+            elif (result["Error"] == 'The request timed out.'):
+                return Response(result, status=status.HTTP_408_REQUEST_TIMEOUT)
+            elif (result["Error"] == 'Bad URL'):
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            elif (result["Error"] == 'Scene Detect Not Working'):
+                return Response(result, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            elif (result["Error"] == 'The media format of the requested data is not supported by the server'):
+                return Response(result, status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+            elif (result["Error"] == 'A JSON error occurred.'):
+                return Response(result, status=status.HTTP_204_NO_CONTENT)
+            elif (result["Error"] == 'A proxy error occurred.'):
+                return Response(result, status=status.HTTP_407_PROXY_AUTHENTICATION_REQUIRED)
+            elif (result["Error"] == 'The header value provided was somehow invalid.'):
+                return Response(result, status=status.HTTP_411_LENGTH_REQUIRED)
+            elif (result["Error"] == 'The request timed out while trying to connect to the remote server.'):
+                return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
+            else :
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
 
 
 class SceneVideo(views.APIView):
@@ -163,15 +311,43 @@ class SceneVideo(views.APIView):
 
     def post(self, request):
 
+        tracemalloc.start()
+        start = time.time()
         logger.info(msg="POST Request for Scene Classification in video made")
         filename = getnewuniquefilename(request)
         input_file = request.FILES['file']
         result = scene_video(input_file, filename)
         if "Error" not in result:
+            end = time.time()
+            logger.info(msg="Time For Prediction = " + str(int(end - start)))
+            result['Time'] = int(end - start)
+            result["Memory"] = (tracemalloc.get_traced_memory()[1] - tracemalloc.get_traced_memory()[0]) * 0.001
+            logger.info(msg="Memory Used = " + str((tracemalloc.get_traced_memory()[1] - tracemalloc.get_traced_memory()[0]) * 0.001))
+            tracemalloc.stop()
             return Response(result, status=status.HTTP_200_OK)
         else:
-            return Response(result, status=status.HTTP_400_BAD_REQUEST)
-
+            if (result["Error"] == 'An HTTP error occurred.'):
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            elif (result["Error"] == 'A Connection error occurred.'):
+                return Response(result, status=status.HTTP_503_SERVICE_UNAVALIABLE)
+            elif (result["Error"] == 'The request timed out.'):
+                return Response(result, status=status.HTTP_408_REQUEST_TIMEOUT)
+            elif (result["Error"] == 'Bad URL'):
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            elif (result["Error"] == 'Scence Video Not Working'):
+                return Response(result, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            elif (result["Error"] == 'The media format of the requested data is not supported by the server'):
+                return Response(result, status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+            elif (result["Error"] == 'A JSON error occurred.'):
+                return Response(result, status=status.HTTP_204_NO_CONTENT)
+            elif (result["Error"] == 'A proxy error occurred.'):
+                return Response(result, status=status.HTTP_407_PROXY_AUTHENTICATION_REQUIRED)
+            elif (result["Error"] == 'The header value provided was somehow invalid.'):
+                return Response(result, status=status.HTTP_411_LENGTH_REQUIRED)
+            elif (result["Error"] == 'The request timed out while trying to connect to the remote server.'):
+                return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
+            else :
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
 
 class ImageFr(views.APIView):
     """     To recognise faces in image
@@ -197,6 +373,8 @@ class ImageFr(views.APIView):
 
     def post(self, request):
 
+        tracemalloc.start()
+        start = time.time()
         logger.info(msg="POST Request for Face Recognition made")
         image_serializer = self.serializer(data=request.data)
         filename = getnewuniquefilename(request)
@@ -205,9 +383,16 @@ class ImageFr(views.APIView):
             network = image_serializer.data["network"]
             result = facerecogniseinimage(input_file, filename, network)
             if "Error" not in result:
+                end = time.time()
+                logger.info(msg="Time For Prediction = " + str(int(end - start)))
+                result['Time'] = int(end - start)
+                result["Memory"] = (tracemalloc.get_traced_memory()[1] - tracemalloc.get_traced_memory()[0]) * 0.001
+                logger.info(msg="Memory Used = " + str((tracemalloc.get_traced_memory()[1] - tracemalloc.get_traced_memory()[0]) * 0.001))
+                tracemalloc.stop()
                 return Response(result, status=status.HTTP_200_OK)
             else:
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
+                
         else:
             logger.error(msg=image_serializer.errors)
             return Response(image_serializer.errors,
@@ -230,14 +415,24 @@ class VideoFr(views.APIView):
 
     def post(self, request):
 
+        tracemalloc.start()
+        start = time.time()
         logger.info(msg="POST Request for Face Recognition in Video made")
         filename = getnewuniquefilename(request)
         input_file = request.FILES['file']
         result = facerecogniseinvideo(input_file, filename)
         if "Error" not in result:
+            end = time.time()
+            logger.info(msg="Time For Prediction = " + str(int(end - start)))
+            result['Time'] = int(end - start)
+            result["Memory"] = (tracemalloc.get_traced_memory()[1] - tracemalloc.get_traced_memory()[0]) * 0.001
+            logger.info(msg="Memory Used = " + str((tracemalloc.get_traced_memory()[1] - tracemalloc.get_traced_memory()[0]) * 0.001))
+            tracemalloc.stop()
             return Response(result, status=status.HTTP_200_OK)
         else:
+     
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            
 
 
 class EMBEDDING(views.APIView):
@@ -265,15 +460,23 @@ class EMBEDDING(views.APIView):
 
     def post(self, request):
 
+        tracemalloc.start()
+        start = time.time()
         logger.info(msg="POST Request for generating embeddings made")
         filename = request.FILES['file'].name
         input_file = request.FILES['file']
         result = createembedding(input_file, filename)
         if "Error" not in result:
+            end = time.time()
+            logger.info(msg="Time For Prediction = " + str(int(end - start)))
+            result['Time'] = int(end - start)
+            result["Memory"] = (tracemalloc.get_traced_memory()[1] - tracemalloc.get_traced_memory()[0]) * 0.001
+            logger.info(msg="Memory Used = " + str((tracemalloc.get_traced_memory()[1] - tracemalloc.get_traced_memory()[0]) * 0.001))
+            tracemalloc.stop()
             return Response(result, status=status.HTTP_200_OK)
         else:
-            return Response(result, status=status.HTTP_400_BAD_REQUEST)
-
+             return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            
 
 class FeedbackFeature(APIView):
     """     Feedback feature
@@ -357,7 +560,7 @@ class FeedbackFeature(APIView):
 
 
 def imagewebui(request):
-    if request.method == 'POST':
+    if request.method  ==  'POST':
         if 'file' not in request.FILES:
             logger.error(msg="file not found")
             return render(request, '404.html')
@@ -377,7 +580,7 @@ def imagewebui(request):
 
 
 def videowebui(request):
-    if request.method == 'POST':
+    if request.method  ==  'POST':
         if 'file' not in request.FILES:
             logger.error(msg="file not found")
             return render(request, '404.html')
@@ -428,15 +631,44 @@ class StreamVideoFr(views.APIView):
 
     def post(self, request):
 
+        tracemalloc.start()
+        start = time.time()
         logger.info(msg="POST Request for Procesing Youtube Videos made")
         streamlink = request.data["StreamLink"]
         videoid = (str(streamlink).split('/')[-1]).split('\"')[0]
         ytlink = str("https://www.youtube.com/watch?v=" + str(videoid))
         result = process_streaming_video(ytlink, (videoid))
         if "Error" not in result:
+            end = time.time()
+            logger.info(msg="Time For Prediction = " + str(int(end - start)))
+            result['Time'] = int(end - start)
+            result["Memory"] = (tracemalloc.get_traced_memory()[1] - tracemalloc.get_traced_memory()[0]) * 0.001
+            logger.info(msg="Memory Used = " + str((tracemalloc.get_traced_memory()[1] - tracemalloc.get_traced_memory()[0]) * 0.001))
+            tracemalloc.stop()
             return Response(result, status=status.HTTP_200_OK)
         else:
-            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            if (result["Error"] == 'An HTTP error occurred.'):
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            elif (result["Error"] == 'A Connection error occurred.'):
+                return Response(result, status=status.HTTP_503_SERVICE_UNAVALIABLE)
+            elif (result["Error"] == 'The request timed out.'):
+                return Response(result, status=status.HTTP_408_REQUEST_TIMEOUT)
+            elif (result["Error"] == 'Bad URL'):
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            elif (result["Error"] == 'Video Processing Not Working'):
+                return Response(result, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            elif (result["Error"] == 'The media format of the requested data is not supported by the server'):
+                return Response(result, status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+            elif (result["Error"] == 'A JSON error occurred.'):
+                return Response(result, status=status.HTTP_204_NO_CONTENT)
+            elif (result["Error"] == 'A proxy error occurred.'):
+                return Response(result, status=status.HTTP_407_PROXY_AUTHENTICATION_REQUIRED)
+            elif (result["Error"] == 'The header value provided was somehow invalid.'):
+                return Response(result, status=status.HTTP_411_LENGTH_REQUIRED)
+            elif (result["Error"] == 'The request timed out while trying to connect to the remote server.'):
+                return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
+            else :
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
 
 
 class SimilarFace(views.APIView):
@@ -461,15 +693,44 @@ class SimilarFace(views.APIView):
 
     def post(self, request):
 
+        tracemalloc.start()
+        start = time.time()
         logger.info(msg="POST Request for Similar Face Recognition made")
         filename = getnewuniquefilename(request)
         reference_img = request.FILES['file']
         compare_img = request.FILES['compareImage']
         result = similarface(reference_img, compare_img, filename)
         if "Error" not in result:
+            end = time.time()
+            logger.info(msg="Time For Prediction = " + str(int(end - start)))
+            result['Time'] = int(end - start)
+            result["Memory"] = (tracemalloc.get_traced_memory()[1] - tracemalloc.get_traced_memory()[0]) * 0.001
+            logger.info(msg="Memory Used = " + str((tracemalloc.get_traced_memory()[1] - tracemalloc.get_traced_memory()[0]) * 0.001))
+            tracemalloc.stop()
             return Response(result, status=status.HTTP_200_OK)
         else:
-            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            if (result["Error"] == 'An HTTP error occurred.'):
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            elif (result["Error"] == 'A Connection error occurred.'):
+                return Response(result, status=status.HTTP_503_SERVICE_UNAVALIABLE)
+            elif (result["Error"] == 'The request timed out.'):
+                return Response(result, status=status.HTTP_408_REQUEST_TIMEOUT)
+            elif (result["Error"] == 'Bad URL'):
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            elif (result["Error"] == 'Similar Face Not Working'):
+                return Response(result, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            elif (result["Error"] == 'The media format of the requested data is not supported by the server'):
+                return Response(result, status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+            elif (result["Error"] == 'A JSON error occurred.'):
+                return Response(result, status=status.HTTP_204_NO_CONTENT)
+            elif (result["Error"] == 'A proxy error occurred.'):
+                return Response(result, status=status.HTTP_407_PROXY_AUTHENTICATION_REQUIRED)
+            elif (result["Error"] == 'The header value provided was somehow invalid.'):
+                return Response(result, status=status.HTTP_411_LENGTH_REQUIRED)
+            elif (result["Error"] == 'The request timed out while trying to connect to the remote server.'):
+                return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
+            else :
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ObjectDetect(views.APIView):
@@ -489,14 +750,43 @@ class ObjectDetect(views.APIView):
 
     def post(self, request):
 
+        tracemalloc.start()
+        start = time.time()
         logger.info(msg="POST Request for Object Detection made")
         filename = getnewuniquefilename(request)
         input_file = request.FILES['file']
         result = object_detect(input_file, filename)
         if "Error" not in result:
+            end = time.time()
+            logger.info(msg="Time For Prediction = " + str(int(end - start)))
+            result['Time'] = int(end - start)
+            result["Memory"] = (tracemalloc.get_traced_memory()[1] - tracemalloc.get_traced_memory()[0]) * 0.001
+            logger.info(msg="Memory Used = " + str((tracemalloc.get_traced_memory()[1] - tracemalloc.get_traced_memory()[0]) * 0.001))
+            tracemalloc.stop()
             return Response(result, status=status.HTTP_200_OK)
         else:
-            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            if (result["Error"] == 'An HTTP error occurred.'):
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            elif (result["Error"] == 'A Connection error occurred.'):
+                return Response(result, status=status.HTTP_503_SERVICE_UNAVALIABLE)
+            elif (result["Error"] == 'The request timed out.'):
+                return Response(result, status=status.HTTP_408_REQUEST_TIMEOUT)
+            elif (result["Error"] == 'Bad URL'):
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            elif (result["Error"] == 'Object Detection Not Working'):
+                return Response(result, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            elif (result["Error"] == 'The media format of the requested data is not supported by the server'):
+                return Response(result, status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+            elif (result["Error"] == 'A JSON error occurred.'):
+                return Response(result, status=status.HTTP_204_NO_CONTENT)
+            elif (result["Error"] == 'A proxy error occurred.'):
+                return Response(result, status=status.HTTP_407_PROXY_AUTHENTICATION_REQUIRED)
+            elif (result["Error"] == 'The header value provided was somehow invalid.'):
+                return Response(result, status=status.HTTP_411_LENGTH_REQUIRED)
+            elif (result["Error"] == 'The request timed out while trying to connect to the remote server.'):
+                return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
+            else :
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ObjectDetectVideo(views.APIView):
@@ -516,11 +806,40 @@ class ObjectDetectVideo(views.APIView):
 
     def post(self, request):
 
+        tracemalloc.start()
+        start = time.time()
         logger.info(msg="POST Request for Object Detection in video made")
         filename = getnewuniquefilename(request)
         input_file = request.FILES['file']
         result = object_detect_video(input_file, filename)
         if "Error" not in result:
+            end = time.time()
+            logger.info(msg="Time For Prediction = " + str(int(end - start)))
+            result['Time'] = int(end - start)
+            result["Memory"] = (tracemalloc.get_traced_memory()[1] - tracemalloc.get_traced_memory()[0]) * 0.001
+            logger.info()
+            tracemalloc.stop()
             return Response(result, status=status.HTTP_200_OK)
         else:
-            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            if (result["Error"] == 'An HTTP error occurred.'):
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            elif (result["Error"] == 'A Connection error occurred.'):
+                return Response(result, status=status.HTTP_503_SERVICE_UNAVALIABLE)
+            elif (result["Error"] == 'The request timed out.'):
+                return Response(result, status=status.HTTP_408_REQUEST_TIMEOUT)
+            elif (result["Error"] == 'Bad URL'):
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            elif (result["Error"] == 'Object Detection(Video) Not Working'):
+                return Response(result, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            elif (result["Error"] == 'The media format of the requested data is not supported by the server'):
+                return Response(result, status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+            elif (result["Error"] == 'A JSON error occurred.'):
+                return Response(result, status=status.HTTP_204_NO_CONTENT)
+            elif (result["Error"] == 'A proxy error occurred.'):
+                return Response(result, status=status.HTTP_407_PROXY_AUTHENTICATION_REQUIRED)
+            elif (result["Error"] == 'The header value provided was somehow invalid.'):
+                return Response(result, status=status.HTTP_411_LENGTH_REQUIRED)
+            elif (result["Error"] == 'The request timed out while trying to connect to the remote server.'):
+                return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
+            else :
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
