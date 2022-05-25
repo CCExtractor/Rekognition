@@ -197,6 +197,9 @@ def text_detect(input_file, filename):
     except requests.exceptions.RequestException as err:
         logger.error(msg=err)
         return {"Error": "Text Detection Not Working"}
+    except Exception as e:
+        logger.error(msg=e)
+        return {"Error": e}
     
     prior_util = PriorUtil(TBPP512_dense_separable(softmax=False))
     result=np.array(json.loads(json_response.text)["outputs"])
@@ -311,7 +314,10 @@ def text_detect_video(input_file, filename):
                 return {"Error": "The header value provided was somehow invalid."}
             except requests.exceptions.RequestException as err:
                 logger.error(msg=err)
-                return {"Error": "Text Detect(video) Not Working"}
+                return {"Error": "Text Detection(video) Not Working"}
+            except Exception as e:
+                logger.error(msg=e)
+                return {"Error": e}
             prior_util = PriorUtil(TBPP512_dense_separable(softmax=False))
             result=np.array(json.loads(json_response.text)["outputs"])
     
@@ -413,7 +419,7 @@ def scene_detect(input_file, filename):
         return {"Error": "The header value provided was somehow invalid."}
     except requests.exceptions.RequestException as err:
         logger.error(msg=err)
-        return {"Error": "Scene Detect Not Working"}
+        return {"Error": "Scene Text Detect Not Working"}
     except Exception as e:
         logger.error(msg=e)
         return {"Error": e}
@@ -507,7 +513,7 @@ def scene_video(input_file, filename):
                 return {"Error": "The header value provided was somehow invalid."}
             except requests.exceptions.RequestException as err:
                 logger.error(msg=err)
-                return {"Error": "Scene Video Not Working"}
+                return {"Error": "Scene Text Detect(video) Not Working"}
             except Exception as e:
                 logger.error(msg=e)
                 return {"Error": e}
@@ -765,6 +771,9 @@ def nsfw_video(input_file, filename):
                 return {"Error": "The header value provided was somehow invalid."}
             except requests.exceptions.RequestException as err:
                 logger.error(msg=err)
+                return {"Error": "NSFW Classification(video) Not Working"}
+            except Exception as e:
+                logger.error(msg=e)
                 return {"Error": "NSFW Classification(video) Not Working"}
             data = response.json()
             outputs = data['outputs']
@@ -1382,7 +1391,7 @@ def object_detect(input_file, filename):
         return {"Error": "Object Detection Not Working"}
     except Exception as e:
         logger.error(msg=e)
-        return {"Error": "Object Detection Not Working"}
+        return {"Error": "ObjectDetection Not Working"}
        
     predictions = np.array(json.loads(json_response.text)["outputs"])
     
@@ -1480,10 +1489,10 @@ def object_detect_video(input_file, filename):
                 return {"Error": "The header value provided was somehow invalid."}
             except requests.exceptions.RequestException as err:
                 logger.error(msg=err)
-                return {"Error": "Object Detection(Video) Not Working"}
+                return {"Error": "Object Detection(video) Not Working"}
             except Exception as e:
                 logger.error(msg=e)
-                return {"Error": "Object Detection(Video) Not Working"}
+                return {"Error": "Object Detection(video) Not Working"}
             predictions = np.array(json.loads(json_response.text)["outputs"])
             boxes, scores, classes = predictions[0][:,1:5], predictions[0][:,5], predictions[0][:,6]
 
