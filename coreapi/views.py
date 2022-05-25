@@ -77,11 +77,6 @@ class SceneText(views.APIView):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
             else :
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
-<<<<<<< HEAD
-=======
-
-
->>>>>>> 545b1c874d104e65d64e09120f45bd68de51b670
 class SceneTextVideo(views.APIView):
     """     To localize and recognise text in a video
     Workflow
@@ -134,11 +129,6 @@ class SceneTextVideo(views.APIView):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
             else :
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
-<<<<<<< HEAD
-=======
-
-
->>>>>>> 545b1c874d104e65d64e09120f45bd68de51b670
 class NsfwRecognise(views.APIView):
     """     To recognise whether a image is nsfw or not
     Workflow
@@ -190,11 +180,6 @@ class NsfwRecognise(views.APIView):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
             else :
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
-<<<<<<< HEAD
-=======
-
-
->>>>>>> 545b1c874d104e65d64e09120f45bd68de51b670
 class NsfwVideo(views.APIView):
     """     To recognise which frames in a video are NSFW
     Workflow
@@ -247,11 +232,6 @@ class NsfwVideo(views.APIView):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
             else :
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
-<<<<<<< HEAD
-=======
-
-
->>>>>>> 545b1c874d104e65d64e09120f45bd68de51b670
 class SceneDetect(views.APIView):
     """     To classify scene in an image
     Workflow
@@ -304,11 +284,6 @@ class SceneDetect(views.APIView):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
             else :
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
-<<<<<<< HEAD
-=======
-
-
->>>>>>> 545b1c874d104e65d64e09120f45bd68de51b670
 class SceneVideo(views.APIView):
     """     To classify scenes video
     Workflow
@@ -361,10 +336,6 @@ class SceneVideo(views.APIView):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
             else :
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
-<<<<<<< HEAD
-=======
-
->>>>>>> 545b1c874d104e65d64e09120f45bd68de51b670
 class ImageFr(views.APIView):
     """     To recognise faces in image
     Workflow\n
@@ -439,13 +410,6 @@ class VideoFr(views.APIView):
             tracemalloc.stop()
             return Response(result, status=status.HTTP_200_OK)
         else:
-<<<<<<< HEAD
-=======
-     
-            return Response(result, status=status.HTTP_400_BAD_REQUEST)
-            
-
->>>>>>> 545b1c874d104e65d64e09120f45bd68de51b670
 
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
             
@@ -485,10 +449,6 @@ class EMBEDDING(views.APIView):
         else:
              return Response(result, status=status.HTTP_400_BAD_REQUEST)
             
-<<<<<<< HEAD
-=======
-
->>>>>>> 545b1c874d104e65d64e09120f45bd68de51b670
 class FeedbackFeature(APIView):
     """     Feedback feature
     Workflow
@@ -674,11 +634,6 @@ class StreamVideoFr(views.APIView):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
             else :
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
-<<<<<<< HEAD
-=======
-
-
->>>>>>> 545b1c874d104e65d64e09120f45bd68de51b670
 class SimilarFace(views.APIView):
     """     To recognise similar faces in two images
     Workflow
@@ -735,11 +690,6 @@ class SimilarFace(views.APIView):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
             else :
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
-<<<<<<< HEAD
-=======
-
-
->>>>>>> 545b1c874d104e65d64e09120f45bd68de51b670
 class ObjectDetect(views.APIView):
     """     To detect objects in an image
     Workflow
@@ -792,11 +742,6 @@ class ObjectDetect(views.APIView):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
             else :
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
-<<<<<<< HEAD
-=======
-
-
->>>>>>> 545b1c874d104e65d64e09120f45bd68de51b670
 class ObjectDetectVideo(views.APIView):
     """     To detect objects in a video
     Workflow
@@ -828,7 +773,6 @@ class ObjectDetectVideo(views.APIView):
             tracemalloc.stop()
             return Response(result, status=status.HTTP_200_OK)
         else:
-<<<<<<< HEAD
             if (result["Error"] == 'An HTTP error occurred.'):
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
             elif (result["Error"] == 'A Connection error occurred.'):
@@ -851,32 +795,7 @@ class ObjectDetectVideo(views.APIView):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
             else :
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
-=======
->>>>>>> 545b1c874d104e65d64e09120f45bd68de51b670
 
-          if (result["Error"] == 'An HTTP error occurred.'):
-                return Response(result, status=status.HTTP_400_BAD_REQUEST)
-            elif (result["Error"] == 'A Connection error occurred.'):
-                return Response(result, status=status.HTTP_503_SERVICE_UNAVALIABLE)
-            elif (result["Error"] == 'The request timed out.'):
-                return Response(result, status=status.HTTP_408_REQUEST_TIMEOUT)
-            elif (result["Error"] == 'Bad URL'):
-                return Response(result, status=status.HTTP_400_BAD_REQUEST)
-            elif (result["Error"] == 'Object Detection(Video) Not Working'):
-                return Response(result, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            elif (result["Error"] == 'The media format of the requested data is not supported by the server'):
-                return Response(result, status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
-            elif (result["Error"] == 'A JSON error occurred.'):
-                return Response(result, status=status.HTTP_204_NO_CONTENT)
-            elif (result["Error"] == 'A proxy error occurred.'):
-                return Response(result, status=status.HTTP_407_PROXY_AUTHENTICATION_REQUIRED)
-            elif (result["Error"] == 'The header value provided was somehow invalid.'):
-                return Response(result, status=status.HTTP_411_LENGTH_REQUIRED)
-            elif (result["Error"] == 'The request timed out while trying to connect to the remote server.'):
-                return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
-            else :
-                return Response(result, status=status.HTTP_400_BAD_REQUEST)
-              
 class ThreadWithReturnValue(Thread):
     def __init__(self, group=None, target=None, name=None,
                  args=(), kwargs={}, Verbose=None):
@@ -890,8 +809,5 @@ class ThreadWithReturnValue(Thread):
     def join(self, *args):
         Thread.join(self, *args)
         return self._return              
-<<<<<<< HEAD
 
 
-=======
->>>>>>> 545b1c874d104e65d64e09120f45bd68de51b670
