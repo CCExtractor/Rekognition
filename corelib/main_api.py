@@ -937,7 +937,7 @@ def facerecogniseinvideo(input_file, filename):
 
     logger.info(msg="facerecogniseinvideo called")
     file_path = os.path.join(MEDIA_ROOT, 'videos', filename)
-    # handle_uploaded_file(input_file, file_path)
+    handle_uploaded_file(input_file, file_path)
     try:
         file_form = InputVideo(title=filename)
         file_form.save()
@@ -1513,4 +1513,3 @@ def object_detect_video(input_file, filename):
         else:
             break
     return {"Objects": video_result}
-
