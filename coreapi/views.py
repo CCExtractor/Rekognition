@@ -24,6 +24,8 @@ import time
 
 
 logger = RekogntionLogger(name="view")
+
+
 class SceneText(views.APIView):
     """     To localize and recognise text in an image
     Workflow
@@ -65,18 +67,19 @@ class SceneText(views.APIView):
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
             elif (result["Error"] == 'Text Detection Not Working'):
                 return Response(result, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            elif (result["Error"]  ==  'The media format of the requested data is not supported by the server'):
+            elif (result["Error"] == 'The media format of the requested data is not supported by the server'):
                 return Response(result, status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
-            elif (result["Error"]  ==  'A JSON error occurred.'):
+            elif (result["Error"] == 'A JSON error occurred.'):
                 return Response(result, status=status.HTTP_204_NO_CONTENT)
-            elif (result["Error"]  ==  'A proxy error occurred.'):
+            elif (result["Error"] == 'A proxy error occurred.'):
                 return Response(result, status=status.HTTP_407_PROXY_AUTHENTICATION_REQUIRED)
             elif (result["Error"] == 'The header value provided was somehow invalid.'):
                 return Response(result, status=status.HTTP_411_LENGTH_REQUIRED)
             elif (result["Error"] == 'The request timed out while trying to connect to the remote server.'):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
-            else :
+            else:
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
 
 class SceneTextVideo(views.APIView):
     """     To localize and recognise text in a video
@@ -128,8 +131,9 @@ class SceneTextVideo(views.APIView):
                 return Response(result, status=status.HTTP_411_LENGTH_REQUIRED)
             elif (result["Error"] == 'The request timed out while trying to connect to the remote server.'):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
-            else :
+            else:
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
 
 class NsfwRecognise(views.APIView):
     """     To recognise whether a image is nsfw or not
@@ -180,8 +184,9 @@ class NsfwRecognise(views.APIView):
                 return Response(result, status=status.HTTP_411_LENGTH_REQUIRED)
             elif (result["Error"] == 'The request timed out while trying to connect to the remote server.'):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
-            else :
+            else:
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
 
 class NsfwVideo(views.APIView):
     """     To recognise which frames in a video are NSFW
@@ -233,8 +238,9 @@ class NsfwVideo(views.APIView):
                 return Response(result, status=status.HTTP_411_LENGTH_REQUIRED)
             elif (result["Error"] == 'The request timed out while trying to connect to the remote server.'):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
-            else :
+            else:
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
 
 class SceneDetect(views.APIView):
     """     To classify scene in an image
@@ -286,8 +292,9 @@ class SceneDetect(views.APIView):
                 return Response(result, status=status.HTTP_411_LENGTH_REQUIRED)
             elif (result["Error"] == 'The request timed out while trying to connect to the remote server.'):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
-            else :
+            else:
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
 
 class SceneVideo(views.APIView):
     """     To classify scenes video
@@ -339,8 +346,9 @@ class SceneVideo(views.APIView):
                 return Response(result, status=status.HTTP_411_LENGTH_REQUIRED)
             elif (result["Error"] == 'The request timed out while trying to connect to the remote server.'):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
-            else :
+            else:
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
 
 class ImageFr(views.APIView):
     """     To recognise faces in image
@@ -354,6 +362,7 @@ class ImageFr(views.APIView):
             *   output by facerecogniseinimage
     """
     serializer = ImageFrSerializers
+
     def get(self, request):
         logger.info(msg="GET Request for Face Reocgnition made")
         serializer = self.serializer()
@@ -380,11 +389,13 @@ class ImageFr(views.APIView):
                 return Response(result, status=status.HTTP_200_OK)
             else:
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
-                
+
         else:
             logger.error(msg=image_serializer.errors)
             return Response(image_serializer.errors,
                             status=status.HTTP_400_BAD_REQUEST)
+
+
 class VideoFr(views.APIView):
     """     To recognise faces in video
     Workflow
@@ -417,9 +428,8 @@ class VideoFr(views.APIView):
             return Response(result, status=status.HTTP_200_OK)
         else:
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
-            
 
-            
+
 class EMBEDDING(views.APIView):
     """     To create embedding of faces
     Workflow
@@ -431,6 +441,7 @@ class EMBEDDING(views.APIView):
             *   GET  : List the data stored in database
     """
     parser_classes = (MultiPartParser, FormParser)
+
     def get(self, request, *args, **kwargs):
         logger.info(msg="GET Request for generating embeddings made")
         embedlist = InputEmbed.objects.all()
@@ -454,8 +465,9 @@ class EMBEDDING(views.APIView):
             tracemalloc.stop()
             return Response(result, status=status.HTTP_200_OK)
         else:
-             return Response(result, status=status.HTTP_400_BAD_REQUEST)
-            
+            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+
 class FeedbackFeature(APIView):
     """     Feedback feature
     Workflow
@@ -485,6 +497,7 @@ class FeedbackFeature(APIView):
                 Primary key in this case is different than this id.
     """
     parser_classes = (MultiPartParser, FormParser)
+
     def get(self, request, *args, **kwargs):
         embedlist = InputEmbed.objects.all()
         randomfaceobject = embedlist[random.randrange(len(embedlist))]
@@ -503,6 +516,7 @@ class FeedbackFeature(APIView):
         result = {'data': serializer.data,
                   'fileurl': randomfaceobject.fileurl}
         return Response(result)
+
     def post(self, request, *args, **kwargs):
         request.data._mutable = True
         feedbackmodel = InputEmbed.objects.get(id=request.data["feedback_id"])
@@ -523,8 +537,10 @@ class FeedbackFeature(APIView):
             logger.error(msg=feedback_serializer.errors)
             return Response(feedback_serializer.errors,
                             status=status.HTTP_400_BAD_REQUEST)
+
+
 def imagewebui(request):
-    if request.method  ==  'POST':
+    if request.method == 'POST':
         if 'file' not in request.FILES:
             logger.error(msg="file not found")
             return render(request, '404.html')
@@ -540,8 +556,10 @@ def imagewebui(request):
     else:
         logger.error(msg="GET request made instead of POST")
         return "POST HTTP method required!"
+
+
 def videowebui(request):
-    if request.method  ==  'POST':
+    if request.method == 'POST':
         if 'file' not in request.FILES:
             logger.error(msg="file not found")
             return render(request, '404.html')
@@ -568,6 +586,8 @@ def asyncthread(request, filename):
     asyncio.set_event_loop(loop)
     loop.run_until_complete(async_helper(request, filename))
     loop.close()
+
+
 class AsyncVideoFr(views.APIView):
     def post(self, request):
         tracemalloc.start()
@@ -578,7 +598,7 @@ class AsyncVideoFr(views.APIView):
         handle_uploaded_file(input_file, file_path)
         thread = ThreadWithReturnValue(target=facerecogniseinvideo, args=(input_file, filename))
         thread.start()
-        result=thread.join()
+        result = thread.join()
         end = time.time()
         logger.info(msg="Time For Prediction = " + str(int(end - start)))
         result['Time'] = int(end - start)
@@ -608,9 +628,8 @@ class AsyncVideoFr(views.APIView):
                 return Response(result, status=status.HTTP_411_LENGTH_REQUIRED)
             elif (result["Error"] == 'The request timed out while trying to connect to the remote server.'):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
-            else :
+            else:
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 class StreamVideoFr(views.APIView):
@@ -661,8 +680,9 @@ class StreamVideoFr(views.APIView):
                 return Response(result, status=status.HTTP_411_LENGTH_REQUIRED)
             elif (result["Error"] == 'The request timed out while trying to connect to the remote server.'):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
-            else :
+            else:
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
 
 class SimilarFace(views.APIView):
     """     To recognise similar faces in two images
@@ -674,6 +694,7 @@ class SimilarFace(views.APIView):
     Returns:
             *   output by similarface
     """
+
     def get(self, request, *args, **kwargs):
         logger.info(msg="GET Request for Similar Face Recognition made")
         similarfacelist = SimilarFaceInImage.objects.all()
@@ -718,8 +739,9 @@ class SimilarFace(views.APIView):
                 return Response(result, status=status.HTTP_411_LENGTH_REQUIRED)
             elif (result["Error"] == 'The request timed out while trying to connect to the remote server.'):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
-            else :
+            else:
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
 
 class ObjectDetect(views.APIView):
     """     To detect objects in an image
@@ -771,7 +793,7 @@ class ObjectDetect(views.APIView):
                 return Response(result, status=status.HTTP_411_LENGTH_REQUIRED)
             elif (result["Error"] == 'The request timed out while trying to connect to the remote server.'):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
-            else :
+            else:
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -798,7 +820,7 @@ class ObjectDetectVideo(views.APIView):
         result = object_detect_video(input_file, filename)
         if "Error" not in result:
             end = time.time()
-     
+
             result['Time'] = int(end - start)
 
             logger.info(msg="Time For Prediction = " + str(int(end - start)))
@@ -828,20 +850,22 @@ class ObjectDetectVideo(views.APIView):
                 return Response(result, status=status.HTTP_411_LENGTH_REQUIRED)
             elif (result["Error"] == 'The request timed out while trying to connect to the remote server.'):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
-            else :
+            else:
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
 
 class ThreadWithReturnValue(Thread):
     def __init__(self, group=None, target=None, name=None,
                  args=(), kwargs={}, Verbose=None):
         Thread.__init__(self, group, target, name, args, kwargs)
         self._return = None
+
     def run(self):
         print(type(self._target))
         if self._target is not None:
             self._return = self._target(*self._args,
-                                                **self._kwargs)
+                                        **self._kwargs)
+
     def join(self, *args):
         Thread.join(self, *args)
-        return self._return              
-
+        return self._return
