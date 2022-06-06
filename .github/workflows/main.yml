@@ -1,13 +1,12 @@
-
 name: CI
 
 # Controls when the workflow will run
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: [ main ]
+    branches: [ master ,dev ]
   pull_request:
-    branches: [ dev,main ]
+    branches: [ dev,master ]
 
 jobs:
   build-job:
@@ -46,7 +45,7 @@ jobs:
     steps:
 
       #Installing PostgressSQL client
-        
+
       - name: Install PostgreSQL client
         run: |
           sudo apt-get update
@@ -72,11 +71,11 @@ jobs:
           POSTGRES_HOST: localhost
           POSTGRES_USER: postgres_db
           POSTGRES_PASSWORD: postgres
-      
+
           POSTGRES_PORT: 5432
           PGPASSWORD: postgres
 
-      
+
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v3.1.2
         with:
@@ -103,24 +102,44 @@ jobs:
         env:
           DJANGO_SETTINGS_MODULE: Rekognition.settings
         run: |
-          mkdir tests/testdata
-          cd tests/testdata
-          wget https://www.dropbox.com/s/1bnxg32zvgjv0pl/compareImage.jpeg
-          wget https://www.dropbox.com/s/1bnxg32zvgjv0pl/compareImage.jpeg
-          wget https://www.dropbox.com/s/x3qpga9gc4ifamn/t1.png
-          wget https://www.dropbox.com/s/l5t09lp8u4ok593/t2.jpeg
-          wget https://www.dropbox.com/s/hzlpo74tk0xwzzh/t3.jpeg
-          wget https://www.dropbox.com/s/lni50cgunua5mij/test1.mp4
-          wget https://www.dropbox.com/s/wm3llx0ydbnq8mn/test2.mp4
-          wget https://www.dropbox.com/s/ato4fie6k3lmctu/test3.mp4
-          wget https://www.dropbox.com/s/ifd7254x29oxjze/test4.mp4
-          wget https://www.dropbox.com/s/iwtgwz24eipd629/obj1.mp4
-          wget https://www.dropbox.com/s/ull2tqlou1p8l16/obj2.mp4
-          wget https://www.dropbox.com/s/3w5ghr5jj6opr58/scene1.mp4
-          wget https://www.dropbox.com/s/ij5hj4hznczvfcw/text.mp4
           cd ../..
+          cd media 
+          mkdir object
+          cd ..
+          cd corelib/model
+          mkdir facenet
+          cd facenet
+          wget https://www.dropbox.com/s/jm8grrifh5yk7is/2017.zip?dl=1 -O 2017.zip
+          unzip 2017.zip
+          rm 2017.zip
+          cd ..
+          mkdir tfs
+          cd tfs
+          wget https://www.dropbox.com/s/v0ai89jj5npowt1/tfs.zip
+          unzip tfs.zip
+          rm tfs.zip
+          cd ../../..
+          cd data
+          mkdir text_reco
+          cd text_reco
+          wget https://www.dropbox.com/s/dl/h2owqbmnrsvqo0c/ord_map_en.json
+          wget https://www.dropbox.com/s/dl/yzkijd7j5yflhli/char_dict_en.json
+          cd ../..	
           export DJANGO_SETTINGS_MODULE="Rekognition.settings"
       # Running Tests
+
+      - name: Launch Server
+        env:
+          DJANGO_SETTINGS_MODULE: Rekognition.settings
+
+        uses: docker-practice/actions-setup-docker@master
+        run: |
+            sudo apt-get update
+            sudo apt chmod 666 /var/run/docker.sock
+            docker pull tensorflow/serving:nightly-devel
+            docker run -it -p 8500:8500 -p 8501:8501 -v ./corelib/model/tfs/model_volume:/home/ tensorflow/serving:nightly-devel
+            tensorflow_model_server --port=8500 --rest_api_port=8501 --model_config_file=/home/configs/models.conf            
+
 
       - name: Run Tests
         env:
@@ -135,3 +154,8 @@ jobs:
           echo test.test_models report
           coverage report -m
           echo Test Run Sucessful
+
+
+    
+
+    
