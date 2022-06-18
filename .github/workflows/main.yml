@@ -1,5 +1,4 @@
 name: CI
-
 # Controls when the workflow will run
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
@@ -7,12 +6,11 @@ on:
     branches: [ master ,dev ]
   pull_request:
     branches: [ dev,master ]
-
 jobs:
-  build-job:
+  docker-job:
     strategy:
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04]
+        os: [ubuntu-18.04]
         version: [3.6, 3.7, 3.8]
     runs-on: ${{ matrix.os }}
 
@@ -44,6 +42,7 @@ jobs:
           --health-retries 5
     steps:
 
+
       #Installing PostgressSQL client
 
       - name: Install PostgreSQL client
@@ -64,8 +63,11 @@ jobs:
           psql -h localhost -U postgres_db -c "ALTER ROLE admin SET timezone TO 'UTC'"
           psql -h localhost -U postgres_db -c "ALTER USER admin CREATEDB"
           psql -h localhost -U postgres_db -c "ALTER DATABASE pmr OWNER TO admin"
+          echo "deb [arch=amd64] http://storage.googleapis.com/tensorflow-serving-apt stable tensorflow-model-server tensorflow-model-server-universal" | sudo tee /etc/apt/sources.list.d/tensorflow-serving.list && \
+          curl https://storage.googleapis.com/tensorflow-serving-apt/tensorflow-serving.release.pub.gpg | sudo apt-key add -
+          sudo apt-get update 
+          sudo apt-get install tensorflow-model-server
           echo postgres sttted up
-      
         env:
           # Setting up POSRGRES Enviorment
           POSTGRES_HOST: localhost
@@ -257,12 +259,12 @@ jobs:
           sudo apt-get install python3-dev
           pip3 install --upgrade pip
           pip3 install -r requirements.txt
+          pip3 install tensorflow-serving-api==2.5.2
+          pip3 install pytest
           echo installed dependencies
       # Downloading Test Files
 
       - name: Download Files
-        env:
-          DJANGO_SETTINGS_MODULE: Rekognition.settings
         run: |
           mkdir tests/testdata
           cd tests/testdata
@@ -292,9 +294,9 @@ jobs:
           cd ..
           mkdir tfs
           cd tfs
-          wget https://www.dropbox.com/s/v0ai89jj5npowt1/tfs.zip
-          unzip tfs.zip
-          rm tfs.zip
+          wget --load-cookies /tmp/cookies.txt "https://drive.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://drive.google.com/uc?export=download&id=1qO7iRlC5kkDB8onK9LJWkRLGf75xxol3' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1qO7iRlC5kkDB8onK9LJWkRLGf75xxol3" -O module.zip && rm -rf /tmp/cookies.txt
+          unzip module.zip
+          rm module.zip
           cd ../../..
           cd data
           mkdir text_reco
@@ -318,17 +320,19 @@ jobs:
       - name: Run Tests
         env:
           DJANGO_SETTINGS_MODULE: Rekognition.settings
-
-        run: |
-          flake8 --ignore=E501,F821,E265,E741 .
-          coverage run -m tests.test_views
-          echo test.test_views report 
-          coverage report -m
-          coverage run -m tests.test_models
-          echo test.test_models report
-          coverage report -m
-          echo Test Run Sucessful
-
-    
-
-    
+      - run: |
+         export DJANGO_SETTINGS_MODULE="Rekognition.settings"
+         flake8 --ignore=E501,F821,E265,E741 .
+         set -x
+         docker version
+         docker run --rm hello-world
+         docker pull tensorflow/serving:nightly-devel
+         echo $(pwd)
+         docker run -d -t -p 8500:8500 -p 8501:8501 -v /home/runner/work/Reko_Fork/Reko_Fork/corelib/model/tfs/model_volume:/home/ tensorflow/serving --model_config_file=/home/configs/models.conf
+         echo aagye
+         python manage.py flush --no-input
+         python manage.py migrate
+         python manage.py runserver 8000 &
+         sleep 10
+         echo done all
+         python -m pytest --import-mode=append /home/runner/work/Reko_Fork/Reko_Fork/tests/
