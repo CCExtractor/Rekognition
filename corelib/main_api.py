@@ -209,8 +209,8 @@ def text_detect(input_file, filename):
         boxes = boxes[:, :8].reshape((-1, 4, 2))
         #boxes[:, :, 0] /= ratio_w
         #boxes[:, :, 1] /= ratio_h
-        boxes[:, :, 0] *= img.shape[0]
-        boxes[:, :, 1] *= img.shape[1]
+        boxes[:, :, 0] *= img.shape[1]
+        boxes[:, :, 1] *= img.shape[0]
         for box in boxes:
             box = sort_poly(box.astype(np.int32))
             if np.linalg.norm(box[0] - box[1]) < 5 or np.linalg.norm(box[3] - box[0]) < 5:
@@ -324,8 +324,8 @@ def text_detect_video(input_file, filename):
                 boxes = boxes[:, :8].reshape((-1, 4, 2))
                 #boxes[:, :, 0] /= ratio_w
                 #boxes[:, :, 1] /= ratio_h
-                boxes[:, :, 0] *= img.shape[0]
-                boxes[:, :, 1] *= img.shape[1]
+                boxes[:, :, 0] *= img.shape[1]
+                boxes[:, :, 1] *= img.shape[0]
                 for box in boxes:
                     box = sort_poly(box.astype(np.int32))
                     if np.linalg.norm(box[0] - box[1]) < 5 or np.linalg.norm(box[3] - box[0]) < 5:
