@@ -318,7 +318,7 @@ def text_detect_video(input_file, filename):
             #score_map = np.array(predictions["pred_score_map/Sigmoid:0"], dtype="float64")
             #geo_map = np.array(predictions["pred_geo_map/concat:0"], dtype="float64")
             #boxes = postprocess(score_map=score_map, geo_map=geo_map)
-            boxes = predictions[:, 0:4]
+            boxes = predictions
             result_boxes = []
             if boxes is not None:
                 boxes = boxes[:, :8].reshape((-1, 4, 2))
