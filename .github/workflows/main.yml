@@ -4,7 +4,7 @@ name: CI
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: [ main ]
+    branches: [ main,dev ]
   pull_request:
     branches: [ dev,main ]
 jobs:
@@ -145,7 +145,6 @@ jobs:
           export DJANGO_SETTINGS_MODULE="Rekognition.settings"
       - run: |
          export DJANGO_SETTINGS_MODULE="Rekognition.settings"
-         flake8 --ignore=E501,F821,E265,E741 .
          set -x
          docker version
          docker run --rm hello-world
