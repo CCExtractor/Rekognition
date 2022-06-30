@@ -1,13 +1,15 @@
 import os
 import numpy as np
 import glob
+import cv2
 import tensorflow.compat.v1 as tf
 from tensorflow.python.platform import gfile
 from corelib.facenet.facenet import get_model_filenames
 from corelib.facenet.align import detect_face
 from corelib.facenet.facenet import load_img
 # from scipy.misc import imsave
-import cv2
+# from skimage.io import imsave
+# import skimage
 from collections import defaultdict
 import string
 import random
@@ -58,7 +60,7 @@ def save_image(img, filename, upload_path):
 
     logger.info(msg="save_image called")
     try:
-        cv2.imwrite(os.path.join(upload_path, filename), np.squeeze(img))
+        cv2.imwrite(os.path.join(upload_path, filename), arr=np.squeeze(img))
     except Exception as e:
         logger.error(msg=e)
 
@@ -151,7 +153,7 @@ def save_face(img, where, filename):
     logger.info(msg="save_face called")
     path = os.path.join(MEDIA_ROOT, where, str(filename) + '.jpg')
     try:
-        cv2.imwrite(path, np.squeeze(img))
+        cv2.imwrite(path, arr=np.squeeze(img))
     except Exception as e:
         logger.error(msg=e)
 
@@ -253,6 +255,7 @@ def handle_uploaded_file(file, fname):
 def getnewuniquefilename(request):
 
     logger.info(msg="getnewuniquefilename called")
+    
     file_ext = str((request.FILES['file'].name)).split('.')[-1]
     filename = id_generator() + '.' + file_ext
     return filename
