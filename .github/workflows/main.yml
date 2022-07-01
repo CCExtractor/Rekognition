@@ -155,11 +155,11 @@ jobs:
          docker run --rm hello-world
          docker pull tensorflow/serving:nightly-devel
          echo $(pwd)
-         docker run -d -t -p 8500:8500 -p 8501:8501 -v /home/runner/work/Reko_Fork/Reko_Fork/corelib/model/tfs/model_volume:/home/ tensorflow/serving --model_config_file=/home/configs/models.conf
+         docker run -d -t -p 8500:8500 -p 8501:8501 -v /home/runner/work/Rekognition/Rekognition/corelib/model/tfs/model_volume:/home/ tensorflow/serving --model_config_file=/home/configs/models.conf
          echo aagye
          python manage.py flush --no-input
          python manage.py migrate
          python manage.py runserver 8000 &
          sleep 10
-         python -m pytest --import-mode=append /home/runner/work/Reko_Fork/Reko_Fork/tests/
+         python -m pytest --import-mode=append /home/runner/work/Rekognition/Rekognition/tests/
          echo done all
