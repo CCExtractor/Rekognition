@@ -1,9 +1,10 @@
 name: CI
+
 # Controls when the workflow will run
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: [ main ]
+    branches: [ main ,dev]
   pull_request:
     branches: [ dev,main ]
 jobs:
@@ -134,16 +135,18 @@ jobs:
           cd ..
           mkdir tfs
           cd tfs
-          wget --load-cookies /tmp/cookies.txt "https://drive.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://drive.google.com/uc?export=download&id=1qO7iRlC5kkDB8onK9LJWkRLGf75xxol3' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1qO7iRlC5kkDB8onK9LJWkRLGf75xxol3" -O module.zip && rm -rf /tmp/cookies.txt
+          wget --load-cookies /tmp/cookies.txt "https://drive.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://drive.google.com/uc?export=download&id=12yE9v8dWeVidqxseUXidaDoS_VZpVOp1' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=12yE9v8dWeVidqxseUXidaDoS_VZpVOp1" -O module.zip && rm -rf /tmp/cookies.txt
           unzip module.zip
           rm module.zip
           cd ../../..
           cd data
           mkdir text_reco
           cd text_reco
-          wget https://www.dropbox.com/s/dl/h2owqbmnrsvqo0c/ord_map_en.json
-          wget https://www.dropbox.com/s/dl/yzkijd7j5yflhli/char_dict_en.json
+          wget --no-check-certificate 'https://docs.google.com/uc?export=download&id=1zmxO5NoEqTdYRGHXalaK7bn2m27egQMN' -O char_dict_en.json
+          wget --no-check-certificate 'https://docs.google.com/uc?export=download&id=1XGO2ycQcBYtwxT_KanapuoR6LeGR4s_E' -O ord_map_en.json
           cd ../..	
+          sudo apt update
+          sudo apt install ffmpeg
           export DJANGO_SETTINGS_MODULE="Rekognition.settings"
       - run: |
          export DJANGO_SETTINGS_MODULE="Rekognition.settings"
@@ -158,5 +161,5 @@ jobs:
          python manage.py migrate
          python manage.py runserver 8000 &
          sleep 10
-         echo done all
          python -m pytest --import-mode=append /home/runner/work/Reko_Fork/Reko_Fork/tests/
+         echo done all
