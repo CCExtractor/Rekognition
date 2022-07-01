@@ -98,3 +98,4 @@ wordninja==0.1.5
 ipdb
 pmrlanms
 ffmpeg-python
+tqdm
