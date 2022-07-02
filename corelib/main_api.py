@@ -1513,3 +1513,24 @@ def object_detect_video(input_file, filename):
         else:
             break
     return {"Objects": video_result}
+
+
+def recognise_action(input_file, filename):
+    ''' Action recognition 
+	Args:
+		* input_file: Contents of the input image file
+		* filename: filename of the image
+	Workflow:
+		* uploaded file is read and processed frame by frame 
+        * A numpy array of each frame is taken as an input.
+        * Input is required to be of size in multiple of 32 and hence, for preprocessing, the image is resized.
+        * processed output is further worked upon to make it into a json format and it is made compatible with tensorflow’s serving format
+        * an http post request is made at localhost:8501 which contains data and headers
+        * error handling is done in place to check for exceptions. A relevant error message/empty string is sent in case of exceptions.
+        * The output from Tensorflow serving is parsed a dictionary is defined which keeps class with their respective probabilities
+        * result of every frame is stored in a list
+        * a dictionary with result as the key and list as value is returned
+	Returns:
+		* a dictionary with result as the key and list as value is returned
+    '''
+

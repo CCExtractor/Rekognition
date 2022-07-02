@@ -843,3 +843,15 @@ class ObjectDetectVideo(views.APIView):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
             else :
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ActionRecognition(views.APIView):
+    ''' To recognize actions 
+	    Workflow:
+        
+        * if POST request is made, then initially a random filename is generated and then recognise_action method is called which processes the image and outputs the result containing the dictionary of probability of captions for the image
+		Returns
+		
+        * output dictionary of predicted captions and their probability
+	'''
+	def post():
