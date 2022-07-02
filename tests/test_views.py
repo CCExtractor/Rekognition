@@ -259,3 +259,15 @@ class TestSceneVideo(TestCase):
 
         response1 = self.client.post('/api/scenevideo/', {'file': self.uploaded_file1})
         self.assertEqual(status.HTTP_200_OK, response1.status_code)
+
+class ActionRecognise(TestCase):
+	def setUp(self):
+		super(ImageCaptionGenerate, self).setUp()
+		self.client = APIClient()
+		Testfile = File(open(FILENAME), ‘rb’)
+        self.uploaded_file1 = SimpleUploadedFile("FILENAME", FILENAME.read(), content_type='multipart/form-data')
+
+	def test_post(self):
+        response_new = self.client.post('/api/NAME_REQUIRED/', {'file': self.uploaded_file1})
+		self.assertEqual(status.HTTP_200_OK, response_new.status_code)
+
