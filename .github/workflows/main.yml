@@ -89,7 +89,6 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          flake8 --ignore=E501,F821,E265,E741 .
           # curl -LO http://archive.ubuntu.com/ubuntu/pool/main/libf/libffi/libffi6_3.2.1-8_amd64.deb
           # sudo dpkg -i libffi6_3.2.1-8_amd64.deb
           # find /usr/lib -name "libffi.so*"
@@ -102,6 +101,7 @@ jobs:
           pip3 install tensorflow-serving-api==2.5.2
           pip3 install pytest
           echo installed dependencies
+          flake8 --ignore=E501,F821,E265,E741 .
       # Downloading Test Files
 
       - name: Download Files
