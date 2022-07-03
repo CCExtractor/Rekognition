@@ -8,7 +8,7 @@ from rest_framework.test import APIClient  # noqa: E402
 class TestImageFr(TestCase):
 
     def setUp(self):
-
+        print("Testing ImageFr")
         super(TestImageFr, self).setUp()
         self.client = APIClient()
         file1 = File(open('tests/testdata/t1.png', 'rb'))
@@ -17,6 +17,7 @@ class TestImageFr(TestCase):
         self.uploaded_file2 = SimpleUploadedFile("temp2.jpeg", file2.read(), content_type='multipart/form-data')
 
     def test_post(self):
+
 
         response1 = self.client.post('/api/image/', {'file': self.uploaded_file1})
         self.assertEqual(status.HTTP_200_OK, response1.status_code)
@@ -32,6 +33,7 @@ class TestImageFr(TestCase):
 class TestVideoFr(TestCase):
 
     def setUp(self):
+        print("Testing TestVideoFr")
 
         super(TestVideoFr, self).setUp()
         self.client = APIClient()
@@ -51,7 +53,8 @@ class TestVideoFr(TestCase):
 class TestAsyncVideoFr(TestCase):
 
     def setUp(self):
-
+        
+        print("Testing TestAsyncVideoFr")
         super(TestAsyncVideoFr, self).setUp()
         self.client = APIClient()
         file1 = File(open('tests/testdata/test1.mp4', 'rb'))
@@ -70,7 +73,7 @@ class TestAsyncVideoFr(TestCase):
 class TestNsfwRecognise(TestCase):
 
     def setUp(self):
-
+        print("Testing TestNsfwRecognise")
         super(TestNsfwRecognise, self).setUp()
         self.client = APIClient()
         file1 = File(open('tests/testdata/t1.png', 'rb'))
@@ -89,7 +92,7 @@ class TestNsfwRecognise(TestCase):
 class TestNsfwVideo(TestCase):
 
     def setUp(self):
-
+        print("Testing TestNsfwVideo")
         super(TestNsfwVideo, self).setUp()
         self.client = APIClient()
         file1 = File(open('tests/testdata/test3.mp4', 'rb'))
@@ -108,7 +111,7 @@ class TestNsfwVideo(TestCase):
 class TestEmbedding(TestCase):
 
     def setUp(self):
-
+        print("Testing TestEmbedding")
         super(TestEmbedding, self).setUp()
         self.client = APIClient()
         file1 = File(open('tests/testdata/compareImage.jpeg', 'rb'))
@@ -132,7 +135,7 @@ class TestEmbedding(TestCase):
 class TestSimilarFace(TestCase):
 
     def setUp(self):
-
+        print("Testing TestSimilarFace")
         super(TestSimilarFace, self).setUp()
         self.client = APIClient()
         file1 = File(open('tests/testdata/t1.png', 'rb'))
@@ -192,7 +195,7 @@ class TestSimilarFace(TestCase):
 class TestSceneText(TestCase):
 
     def setUp(self):
-
+        print("Testing TestSceneText")
         super(TestSceneText, self).setUp()
         self.client = APIClient()
         file1 = File(open('tests/testdata/t3.jpeg', 'rb'))
@@ -207,7 +210,7 @@ class TestSceneText(TestCase):
 class TestSceneTextVideo(TestCase):
 
     def setUp(self):
-
+        print("Testing TestSceneTextVideo")
         super(TestSceneTextVideo, self).setUp()
         self.client = APIClient()
         file1 = File(open('tests/testdata/test3.mp4', 'rb'))
@@ -222,7 +225,7 @@ class TestSceneTextVideo(TestCase):
 class TestSceneDetect(TestCase):
 
     def setUp(self):
-
+        print("Testing TestSceneDetect")
         super(TestSceneDetect, self).setUp()
         self.client = APIClient()
         file1 = File(open('tests/testdata/t3.jpeg', 'rb'))
@@ -237,7 +240,7 @@ class TestSceneDetect(TestCase):
 class TestSceneVideo(TestCase):
 
     def setUp(self):
-
+        print("Testing TestSceneVideo")
         super(TestSceneVideo, self).setUp()
         self.client = APIClient()
         file1 = File(open('tests/testdata/test1.mp4', 'rb'))
