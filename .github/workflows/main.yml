@@ -11,7 +11,7 @@ jobs:
   docker-job:
     strategy:
       matrix:
-        os: [ubuntu-18.04]
+        os: [ubuntu-18.04,ubuntu-20.04]
         version: [3.6]
     runs-on: ${{ matrix.os }}
 
