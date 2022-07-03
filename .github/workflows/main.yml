@@ -84,12 +84,7 @@ jobs:
       - uses: actions/setup-python@v3.1.2
         with:
           python-version: 3.6
-
-      - uses: actions/cache@v3.0.2
-        with:
-          path: ${{ env.pythonLocation }}
-          key: ${{ env.pythonLocation }}-${{ hashFiles('setup.py') }}-${{ hashFiles('requirements.txt') }}
-
+          
       # Dependency Installation 
 
       - name: Install Dependencies
