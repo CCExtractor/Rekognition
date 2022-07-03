@@ -84,7 +84,7 @@ jobs:
       - uses: actions/setup-python@v3.1.2
         with:
           python-version: 3.6
-          
+
       # Dependency Installation 
 
       - name: Install Dependencies
@@ -92,8 +92,8 @@ jobs:
           flake8 --ignore=E501,F821,E265,E741 .
           # curl -LO http://archive.ubuntu.com/ubuntu/pool/main/libf/libffi/libffi6_3.2.1-8_amd64.deb
           # sudo dpkg -i libffi6_3.2.1-8_amd64.deb
-          find /usr/lib -name "libffi.so*"
-          sudo ln -s /usr/lib/x86_64-linux-gnu/libffi.so.7 /usr/lib/x86_64-linux-gnu/libffi.so.6
+          # find /usr/lib -name "libffi.so*"
+          # sudo ln -s /usr/lib/x86_64-linux-gnu/libffi.so.7 /usr/lib/x86_64-linux-gnu/libffi.so.6
           echo python version = 
           python --version
           sudo apt-get install python3-dev
