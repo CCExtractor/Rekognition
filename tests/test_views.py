@@ -18,7 +18,6 @@ class TestImageFr(TestCase):
 
     def test_post(self):
 
-
         response1 = self.client.post('/api/image/', {'file': self.uploaded_file1})
         self.assertEqual(status.HTTP_200_OK, response1.status_code)
         response2 = self.client.post('/api/image/', {'file': self.uploaded_file2})
@@ -53,7 +52,7 @@ class TestVideoFr(TestCase):
 class TestAsyncVideoFr(TestCase):
 
     def setUp(self):
-        
+
         print("Testing TestAsyncVideoFr")
         super(TestAsyncVideoFr, self).setUp()
         self.client = APIClient()
