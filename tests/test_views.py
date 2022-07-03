@@ -129,26 +129,26 @@ class TestEmbedding(TestCase):
         self.assertEqual(status.HTTP_200_OK, response1.status_code)
 
 
-# class TestSimilarFace(TestCase):
+class TestSimilarFace(TestCase):
 
-#     def setUp(self):
+    def setUp(self):
 
-#         super(TestSimilarFace, self).setUp()
-#         self.client = APIClient()
-#         file1 = File(open('tests/testdata/t1.png', 'rb'))
-#         self.uploaded_file1 = SimpleUploadedFile("file.png", file1.read(), content_type='multipart/form-data')
-#         file2 = File(open('tests/testdata/t2.jpeg', 'rb'))
-#         self.uploaded_file2 = SimpleUploadedFile("compareImage.jpeg", file2.read(), content_type='multipart/form-data')
+        super(TestSimilarFace, self).setUp()
+        self.client = APIClient()
+        file1 = File(open('tests/testdata/t1.png', 'rb'))
+        self.uploaded_file1 = SimpleUploadedFile("file.png", file1.read(), content_type='multipart/form-data')
+        file2 = File(open('tests/testdata/t2.jpeg', 'rb'))
+        self.uploaded_file2 = SimpleUploadedFile("compareImage.jpeg", file2.read(), content_type='multipart/form-data')
 
-#     def test_post(self):
+    def test_post(self):
 
-#         response1 = self.client.post('/api/simface/', {'file': self.uploaded_file1, 'compareImage': self.uploaded_file2})
-#         self.assertEqual(status.HTTP_200_OK, response1.status_code)
+        response1 = self.client.post('/api/simface/', {'file': self.uploaded_file1, 'compareImage': self.uploaded_file2})
+        self.assertEqual(status.HTTP_200_OK, response1.status_code)
 
-#     def test_get(self):
+    def test_get(self):
 
-#         response1 = self.client.get('/api/simface/')
-#         self.assertEqual(status.HTTP_200_OK, response1.status_code)
+        response1 = self.client.get('/api/simface/')
+        self.assertEqual(status.HTTP_200_OK, response1.status_code)
 
 
 # class TestObjectDetect(TestCase):
