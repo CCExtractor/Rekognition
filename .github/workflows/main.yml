@@ -11,7 +11,7 @@ jobs:
   docker-job:
     strategy:
       matrix:
-        os: [ubuntu-18.04,ubuntu-20.04]
+        os: [ubuntu-20.04]
         version: [3.6]
     runs-on: ${{ matrix.os }}
 
@@ -94,6 +94,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
+          flake8 --ignore=E501,F821,E265,E741 .
           curl -LO http://archive.ubuntu.com/ubuntu/pool/main/libf/libffi/libffi6_3.2.1-8_amd64.deb
           sudo dpkg -i libffi6_3.2.1-8_amd64.deb
           echo python version = 
