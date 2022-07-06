@@ -206,19 +206,19 @@ class TestSceneText(TestCase):
         self.assertEqual(status.HTTP_200_OK, response1.status_code)
 
 
-class TestSceneTextVideo(TestCase):
+# class TestSceneTextVideo(TestCase):
 
-    def setUp(self):
-        print("Testing TestSceneTextVideo")
-        super(TestSceneTextVideo, self).setUp()
-        self.client = APIClient()
-        file1 = File(open('tests/testdata/test3.mp4', 'rb'))
-        self.uploaded_file1 = SimpleUploadedFile("temp1.mp4", file1.read(), content_type='multipart/form-data')
+#     def setUp(self):
+#         print("Testing TestSceneTextVideo")
+#         super(TestSceneTextVideo, self).setUp()
+#         self.client = APIClient()
+#         file1 = File(open('tests/testdata/test3.mp4', 'rb'))
+#         self.uploaded_file1 = SimpleUploadedFile("temp1.mp4", file1.read(), content_type='multipart/form-data')
 
-    def test_post(self):
+#     def test_post(self):
 
-        response1 = self.client.post('/api/scenetextvideo/', {'file': self.uploaded_file1})
-        self.assertEqual(status.HTTP_200_OK, response1.status_code)
+#         response1 = self.client.post('/api/scenetextvideo/', {'file': self.uploaded_file1})
+#         self.assertEqual(status.HTTP_200_OK, response1.status_code)
 
 
 class TestSceneDetect(TestCase):
