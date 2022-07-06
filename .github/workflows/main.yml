@@ -157,5 +157,5 @@ jobs:
          python manage.py migrate
          python manage.py runserver 8000 &
          sleep 10
-         python -m pytest --import-mode=append /home/runner/work/Rekognition/Rekognition/tests/ --tb=long
+         python -m pytest --import-mode=append /home/runner/work/Rekognition/Rekognition/tests/ --no-header -vv
          echo done all
