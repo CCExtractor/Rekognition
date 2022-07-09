@@ -255,7 +255,7 @@ def handle_uploaded_file(file, fname):
 def getnewuniquefilename(request):
 
     logger.info(msg="getnewuniquefilename called")
-    
+
     file_ext = str((request.FILES['file'].name)).split('.')[-1]
     filename = id_generator() + '.' + file_ext
     return filename

@@ -88,11 +88,13 @@ def shuffle_examples(image_paths, labels):
     image_paths_shuff, labels_shuff = zip(*shuffle_list)
     return image_paths_shuff, labels_shuff
 
+
 def rotate_image(image, angle):
-  image_center = tuple(np.array(image.shape[1::-1]) / 2)
-  rot_mat = cv2.getRotationMatrix2D(image_center, angle, 1.0)
-  result = cv2.warpAffine(image, rot_mat, image.shape[1::-1], flags=cv2.INTER_LINEAR)
-  return result
+    image_center = tuple(np.array(image.shape[1::-1]) / 2)
+    rot_mat = cv2.getRotationMatrix2D(image_center, angle, 1.0)
+    result = cv2.warpAffine(image, rot_mat, image.shape[1::-1], flags=cv2.INTER_LINEAR)
+    return result
+
 
 def random_rotate_image(image):
 
@@ -402,9 +404,8 @@ def get_dataset(path, has_class_directories=True):
     logger.info(msg="get_dataset called")
     dataset = []
     path_exp = os.path.expanduser(path)
-    classes = [path for path in os.listdir(path_exp)
-               if os.path.isdir(os.path.join(path_exp, path))]
-    classes.sort()
+    classes = sorted([path for path in os.listdir(path_exp)
+                      if os.path.isdir(os.path.join(path_exp, path))])
     nrof_classes = len(classes)
     for i in range(nrof_classes):
         class_name = classes[i]

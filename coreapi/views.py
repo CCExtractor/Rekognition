@@ -23,6 +23,8 @@ import time
 
 
 logger = RekogntionLogger(name="view")
+
+
 class SceneText(views.APIView):
     """     To localize and recognise text in an image
     Workflow
@@ -76,6 +78,8 @@ class SceneText(views.APIView):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
             else:
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+
 class SceneTextVideo(views.APIView):
     """     To localize and recognise text in a video
     Workflow
@@ -128,6 +132,8 @@ class SceneTextVideo(views.APIView):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
             else:
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+
 class NsfwRecognise(views.APIView):
     """     To recognise whether a image is nsfw or not
     Workflow
@@ -179,6 +185,8 @@ class NsfwRecognise(views.APIView):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
             else:
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+
 class NsfwVideo(views.APIView):
     """     To recognise which frames in a video are NSFW
     Workflow
@@ -231,6 +239,8 @@ class NsfwVideo(views.APIView):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
             else:
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+
 class SceneDetect(views.APIView):
     """     To classify scene in an image
     Workflow
@@ -283,6 +293,8 @@ class SceneDetect(views.APIView):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
             else:
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+
 class SceneVideo(views.APIView):
     """     To classify scenes video
     Workflow
@@ -335,6 +347,8 @@ class SceneVideo(views.APIView):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
             else:
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+
 class ImageFr(views.APIView):
     """     To recognise faces in image
     Workflow\n
@@ -347,6 +361,7 @@ class ImageFr(views.APIView):
             *   output by facerecogniseinimage
     """
     serializer = ImageFrSerializers
+
     def get(self, request):
         logger.info(msg="GET Request for Face Reocgnition made")
         serializer = self.serializer()
@@ -378,6 +393,8 @@ class ImageFr(views.APIView):
             logger.error(msg=image_serializer.errors)
             return Response(image_serializer.errors,
                             status=status.HTTP_400_BAD_REQUEST)
+
+
 class VideoFr(views.APIView):
     """     To recognise faces in video
     Workflow
@@ -411,6 +428,8 @@ class VideoFr(views.APIView):
         else:
 
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+
 class EMBEDDING(views.APIView):
     """     To create embedding of faces
     Workflow
@@ -422,6 +441,7 @@ class EMBEDDING(views.APIView):
             *   GET  : List the data stored in database
     """
     parser_classes = (MultiPartParser, FormParser)
+
     def get(self, request, *args, **kwargs):
         logger.info(msg="GET Request for generating embeddings made")
         embedlist = InputEmbed.objects.all()
@@ -446,7 +466,9 @@ class EMBEDDING(views.APIView):
             tracemalloc.stop()
             return Response(result, status=status.HTTP_200_OK)
         else:
-             return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+
 class FeedbackFeature(APIView):
     """     Feedback feature
     Workflow
@@ -476,6 +498,7 @@ class FeedbackFeature(APIView):
                 Primary key in this case is different than this id.
     """
     parser_classes = (MultiPartParser, FormParser)
+
     def get(self, request, *args, **kwargs):
         embedlist = InputEmbed.objects.all()
         randomfaceobject = embedlist[random.randrange(len(embedlist))]
@@ -494,6 +517,7 @@ class FeedbackFeature(APIView):
         result = {'data': serializer.data,
                   'fileurl': randomfaceobject.fileurl}
         return Response(result)
+
     def post(self, request, *args, **kwargs):
         request.data._mutable = True
         feedbackmodel = InputEmbed.objects.get(id=request.data["feedback_id"])
@@ -514,6 +538,8 @@ class FeedbackFeature(APIView):
             logger.error(msg=feedback_serializer.errors)
             return Response(feedback_serializer.errors,
                             status=status.HTTP_400_BAD_REQUEST)
+
+
 def imagewebui(request):
     if request.method == 'POST':
         if 'file' not in request.FILES:
@@ -531,6 +557,8 @@ def imagewebui(request):
     else:
         logger.error(msg="GET request made instead of POST")
         return "POST HTTP method required!"
+
+
 def videowebui(request):
     if request.method == 'POST':
         if 'file' not in request.FILES:
@@ -619,6 +647,8 @@ class StreamVideoFr(views.APIView):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
             else:
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+
 class SimilarFace(views.APIView):
     """     To recognise similar faces in two images
     Workflow
@@ -629,6 +659,7 @@ class SimilarFace(views.APIView):
     Returns:
             *   output by similarface
     """
+
     def get(self, request, *args, **kwargs):
         logger.info(msg="GET Request for Similar Face Recognition made")
         similarfacelist = SimilarFaceInImage.objects.all()
@@ -675,6 +706,8 @@ class SimilarFace(views.APIView):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
             else:
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+
 class ObjectDetect(views.APIView):
     """     To detect objects in an image
     Workflow
@@ -727,6 +760,8 @@ class ObjectDetect(views.APIView):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
             else:
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+
 class ObjectDetectVideo(views.APIView):
     """     To detect objects in a video
     Workflow
@@ -750,7 +785,7 @@ class ObjectDetectVideo(views.APIView):
         result = object_detect_video(input_file, filename)
         if "Error" not in result:
             end = time.time()
-     
+
             result['Time'] = int(end - start)
 
             result["Memory"] = (tracemalloc.get_traced_memory()[1] - tracemalloc.get_traced_memory()[0]) * 0.001
@@ -780,5 +815,3 @@ class ObjectDetectVideo(views.APIView):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
             else:
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
-     
-

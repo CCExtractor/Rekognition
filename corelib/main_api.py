@@ -1,21 +1,17 @@
 import os
 import math
-from pickle import TRUE
-import ffmpeg
 import uuid
 import json
-import skvideo.io
 import subprocess
 import shlex
 import cv2
 import wordninja
-from skimage.io import imread
 import urllib.parse
 import ffmpeg
 from werkzeug.utils import secure_filename
 from Rekognition.settings import MEDIA_ROOT
 from corelib.CRNN import CRNN_utils
-from corelib.textbox import  TBPP512_dense_separable,PriorUtil
+from corelib.textbox import TBPP512_dense_separable, PriorUtil
 from corelib.facenet.utils import (get_face, embed_image, save_embedding,
                                    identify_face, allowed_file, time_dura,
                                    handle_uploaded_file, save_face,
@@ -177,7 +173,7 @@ def text_detect(input_file, filename):
         return {"Error": e}
 
     prior_util = PriorUtil(TBPP512_dense_separable(softmax=False))
-    result=np.array(json.loads(json_response.text)["outputs"])
+    result = np.array(json.loads(json_response.text)["outputs"])
     predictions = prior_util.decode(result[0], .2)
     #score_map = np.array(predictions["pred_score_map/Sigmoid:0"], dtype="float64")
     #geo_map = np.array(predictions["pred_geo_map/concat:0"], dtype="float64")
@@ -288,14 +284,14 @@ def text_detect_video(input_file, filename):
             #score_map = np.array(predictions["pred_score_map/Sigmoid:0"], dtype="float64")
             #geo_map = np.array(predictions["pred_geo_map/concat:0"], dtype="float64")
             #boxes = postprocess(score_map=score_map, geo_map=geo_map)
-            boxes=predictions
+            boxes = predictions
             result_boxes = []
             if boxes is not None:
                 boxes = boxes[:, :8].reshape((-1, 4, 2))
                 #boxes[:, :, 0] /= ratio_w
                 #boxes[:, :, 1] /= ratio_h
-                boxes[:,:,0]*=img.shape[1]
-                boxes[:,:,1]*=img.shape[0]
+                boxes[:, :, 0] *= img.shape[1]
+                boxes[:, :, 1] *= img.shape[0]
                 for box in boxes:
                     box = sort_poly(box.astype(np.int32))
                     if np.linalg.norm(box[0] - box[1]) < 5 or np.linalg.norm(box[3] - box[0]) < 5:
@@ -726,7 +722,7 @@ def facerecogniseinimage(input_file, filename, network):
             return {"Error": e}
 
         img = cv2.imread(file_path)
-        img=cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         # img = imread(fname=input_file, pilmode='RGB')
         if (img.shape[2] == 4):
             img = img[..., :3]
@@ -844,7 +840,6 @@ def facerecogniseinvideo(input_file, filename):
         logger.error(msg=e)
         return {"Error": e}
 
-
     videofile = file_path
     # metadata = skvideo.io.ffprobe(videofile)
     # print("************METEDATE ***************+++  \n",metadata)
@@ -858,11 +853,11 @@ def facerecogniseinvideo(input_file, filename):
 
     metadata = ffmpeg.probe(videofile)["streams"]
     str_fps = metadata[1]['avg_frame_rate'].split('/')
-    fps="30/1"
+    fps = "30/1"
     try:
         fps = float(float(str_fps[0]) / float(str_fps[1]))
-    except :
-        fps=30.0
+    except BaseException:
+        fps = 30.0
 
     timestamps = [(float(1) / fps)]
     total_frame = float(metadata[1]["nb_frames"])
@@ -880,15 +875,15 @@ def facerecogniseinvideo(input_file, filename):
     cap = cv2.VideoCapture(videofile)
     while(cap.isOpened()):
         ret, curr_frame = cap.read()
-        if ret==True :
+        if ret:
             count = count + 1
             if count % frame_hop == 0:
                 # multiplying to get the timestamps in milliseconds
                 timestamps = (float(count) / fps) * 1000
                 try:
                     all_faces, all_bb = get_face(img=curr_frame,
-                                                pnet=pnet, rnet=rnet,
-                                                onet=onet, image_size=image_size)
+                                                 pnet=pnet, rnet=rnet,
+                                                 onet=onet, image_size=image_size)
                     if all_faces is not None:
                         cele_id = []
                         for face, bb in zip(all_faces, all_bb):
@@ -925,7 +920,7 @@ def facerecogniseinvideo(input_file, filename):
                     logger.error(msg=e)
                     return {"Error": e}
 
-        else :
+        else:
             break
 
     cap.release()
@@ -975,8 +970,8 @@ def createembedding(input_file, filename):
         except Exception as e:
             logger.error(msg=e)
             return {"Error": e}
-        img=cv2.imread(file_path)
-        img=cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+        img = cv2.imread(file_path)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         if (img.shape[2] == 4):
             img = img[..., :3]
 
