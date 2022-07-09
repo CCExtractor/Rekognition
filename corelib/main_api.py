@@ -1111,7 +1111,17 @@ def stream_video_download(url, filename):
 
 
 def process_streaming_video(url, filename):
-
+    """      To process the streaming video
+    Args:
+            *   url: the url of the video streaming
+            *   filename: filename of the video
+    Workflow
+            *   First it calls the stream_video_download function that downloads the video
+            *   the file's new directory name is created 
+            *   A post request is made
+    Returns:
+            *   success flag
+    """
     logger.info(msg="process_streaming_video called")
     output_dir = "{}/{}/".format(MEDIA_ROOT, 'videos')
     try:
