@@ -1,23 +1,24 @@
 import os
 import math
+import ffmpeg
 import uuid
 import json
+import skvideo.io
 import subprocess
 import shlex
 import cv2
-import os
 import wordninja
+from skimage.io import imread
 import urllib.parse
 from werkzeug.utils import secure_filename
 from Rekognition.settings import MEDIA_ROOT
 from corelib.CRNN import CRNN_utils
-from corelib.textbox import  TBPP512_dense_separable, rbox3_to_polygon, PriorUtil
+from corelib.textbox import TBPP512_dense_separable, PriorUtil
 from corelib.facenet.utils import (get_face, embed_image, save_embedding,
                                    identify_face, allowed_file, time_dura,
                                    handle_uploaded_file, save_face,
                                    img_standardize)
-from corelib.EAST.EAST_utils import (preprocess, sort_poly,
-                                     postprocess)
+from corelib.EAST.EAST_utils import (sort_poly)
 from corelib.constant import (pnet, rnet, onet, facenet_persistent_session,
                               phase_train_placeholder, embeddings,
                               images_placeholder, image_size, allowed_set,
@@ -32,6 +33,7 @@ from coreapi.models import InputImage, InputVideo, InputEmbed, SimilarFaceInImag
 from logger.logging import RekogntionLogger
 import numpy as np
 import requests
+from skimage.transform import resize
 from corelib.RetinaFace.retina_net import FaceDetectionRetina
 from django.db import IntegrityError, DatabaseError
 
@@ -59,6 +61,7 @@ def text_reco(image):
     Returns:
             *   Dictionary having text as Key and processed output as value.
     """
+
     logger.info(msg="text_reco called")
     image = cv2.resize(image, tuple((100, 32)), interpolation=cv2.INTER_LINEAR)
     image = np.array(image, np.float32) / 127.5 - 1.0
@@ -68,49 +71,37 @@ def text_reco(image):
         url = urllib.parse.urljoin(base_url, text_reco_url)
         json_response = requests.post(url, data=data, headers=headers)
         logger.info(msg=url)
-        
+
     except requests.exceptions.HTTPError as errh:
         logger.error(msg=errh)
         return {"Error": "An HTTP error occurred."}
-    except requests.exceptions.ConnectTimeout as err:
-        logger.error(msg=err)
-        return {"Error": "The request timed out while trying to connect to the remote server."}
-    except requests.exceptions.ProxyError as err:
-        logger.error(msg=err)
-        return {"Error": "Text Detection Not Working"}
     except requests.exceptions.ConnectionError as errc:
         logger.error(msg=errc)
         return {"Error": "A Connection error occurred."}
     except requests.exceptions.Timeout as errt:
         logger.error(msg=errt)
         return {"Error": "The request timed out."}
-    except requests.exceptions.InvalidURL as errm:
+    except requests.exceptions.TooManyRedirects as errm:
         logger.error(msg=errm)
         return {"Error": "Bad URL"}
-    except requests.exceptions.ContentDecodingError as err:
-        logger.error(msg=err)
-        return {"Error": "The media format of the requested data is not supported by the server"}
-    except requests.exceptions.InvalidJSONError as err:
-        logger.error(msg=err)
-        return {"Error": "A JSON error occurred."}
-    except requests.exceptions.InvalidHeader as err:
-        logger.error(msg=err)
-        return {"Error": "The header value provided was somehow invalid."}
     except requests.exceptions.RequestException as err:
         logger.error(msg=err)
-        return {"Error": "Text Recognition Not Working"}
-    predictions = json.loads(json_response.text).get("outputs")
+        return {"Error": "Facial Expression Recognition Not Working"}
+    except Exception as e:
+        logger.error(msg=e)
+        return {"Error": "Facial Expression Recognition Not Working"}
+    predictions = json.loads(json_response.text).get("outputs", "Bad request made.")
     codec = CRNN_utils._FeatureIO(
         char_dict_path=char_dict_path,
         ord_map_dict_path=ord_map_dict_path,
     )
+
     preds = codec.sparse_tensor_to_str_for_tf_serving(
         decode_indices=predictions['decodes_indices'],
         decode_values=predictions['decodes_values'],
         decode_dense_shape=predictions['decodes_dense_shape'],
     )[0]
     preds = ' '.join(wordninja.split(preds))
-    
     return {"Text": preds}
 
 
@@ -145,85 +136,79 @@ def text_detect(input_file, filename):
                 as keys and coordinates of bounding boxes and recognized
                 text of that box as the respective value
     """
-    
+
     logger.info(msg="text_detect called")
     file_path = os.path.join(MEDIA_ROOT, 'text', filename)
     handle_uploaded_file(input_file, file_path)
-    
+
     img = cv2.imread(file_path)[:, :, ::-1]
-    img=cv2.resize(img,(512,512))
-    img=cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    img_resized=img.copy()
-    #img=cv2.resize(img,tuple(img_sh))
-    #img_resized, (ratio_h, ratio_w) = preprocess(img)
-    #img_resized = (img_resized / 127.5) - 1
-    
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    img_resized = cv2.resize(img, (512, 512))
+
+    # img_resized, (ratio_h, ratio_w) = preprocess(img)
+    # img_resized = (img_resized / 127.5) - 1
+    print("For input image of shape = ", img.shape, " returned shape is ", img_resized.shape)
+
     data = json.dumps({"signature_name": "serving_default",
                        "inputs": [img_resized.tolist()]})
     try:
         headers = {"content-type": "application/json"}
         url = urllib.parse.urljoin(base_url, text_detect_url)
+
         json_response = requests.post(url, data=data, headers=headers)
     except requests.exceptions.HTTPError as errh:
         logger.error(msg=errh)
         return {"Error": "An HTTP error occurred."}
-    except requests.exceptions.ConnectTimeout as err:
-        logger.error(msg=err)
-        return {"Error": "The request timed out while trying to connect to the remote server."}
-    except requests.exceptions.ProxyError as err:
-        logger.error(msg=err)
-        return {"Error": "Text Detection Not Working"}
     except requests.exceptions.ConnectionError as errc:
         logger.error(msg=errc)
         return {"Error": "A Connection error occurred."}
     except requests.exceptions.Timeout as errt:
         logger.error(msg=errt)
         return {"Error": "The request timed out."}
-    except requests.exceptions.InvalidURL as errm:
+    except requests.exceptions.TooManyRedirects as errm:
         logger.error(msg=errm)
         return {"Error": "Bad URL"}
-    except requests.exceptions.ContentDecodingError as err:
-        logger.error(msg=err)
-        return {"Error": "The media format of the requested data is not supported by the server"}
-    except requests.exceptions.InvalidJSONError as err:
-        logger.error(msg=err)
-        return {"Error": "A JSON error occurred."}
-    except requests.exceptions.InvalidHeader as err:
-        logger.error(msg=err)
-        return {"Error": "The header value provided was somehow invalid."}
     except requests.exceptions.RequestException as err:
         logger.error(msg=err)
         return {"Error": "Text Detection Not Working"}
     except Exception as e:
         logger.error(msg=e)
         return {"Error": e}
-    
+
     prior_util = PriorUtil(TBPP512_dense_separable(softmax=False))
-    result=np.array(json.loads(json_response.text)["outputs"])
-    
+
+    result = np.array(json.loads(json_response.text)["outputs"])
+
     predictions = prior_util.decode(result[0], .2)
     #score_map = np.array(predictions["pred_score_map/Sigmoid:0"], dtype="float64")
     #geo_map = np.array(predictions["pred_geo_map/concat:0"], dtype="float64")
     #boxes = postprocess(score_map=score_map, geo_map=geo_map)
-    boxes=predictions[:,0:4]
+    boxes = predictions
+    print("Shape of prediction = ", predictions.shape)
     result_boxes = []
     if boxes is not None:
+        print("Shape of boxes = ", boxes.shape)
+        print("Type of box = ", type(boxes))
         boxes = boxes[:, :8].reshape((-1, 4, 2))
-        #boxes[:, :, 0] /= ratio_w
-        #boxes[:, :, 1] /= ratio_h
-        boxes[:,:,0]*=img.shape[0]
-        boxes[:,:,1]*=img.shape[1]
+        print("Shape of boxes after change = ", boxes.shape)
+        print("Boxs are= ", boxes)
+        # boxes[:, :, 0] /= ratio_w
+        # boxes[:, :, 1] /= ratio_h
+        boxes[:, :, 0] *= img.shape[1]
+        boxes[:, :, 1] *= img.shape[0]
         for box in boxes:
             box = sort_poly(box.astype(np.int32))
+            print("Shape of single box = ", box.shape)
+            print("Box after sort = ", box)
             if np.linalg.norm(box[0] - box[1]) < 5 or np.linalg.norm(box[3] - box[0]) < 5:
                 continue
             result_boxes.append(box)
-    
-    
+
     result = []
     for box in result_boxes:
         top_left_x, top_left_y, bot_right_x, bot_right_y = bb_to_cv(box)
-        text=text_reco(img[top_left_y :bot_right_y,top_left_x :bot_right_x ]).get("Text")
+        print("BOX : corners ", top_left_x, top_left_y, bot_right_x, bot_right_y)
+        text = text_reco(img[top_left_y:bot_right_y, top_left_x:bot_right_x]).get("Text")
         result.append({"Boxes": box, "Text": text})
     return {"Texts": result}
 
@@ -271,8 +256,8 @@ def text_detect_video(input_file, filename):
         ret, img = vid.read()
         if ret:
             img = img[:, :, ::-1]
-            img=cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-            img_resized=cv2.resize(img, (512, 512))
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+            img_resized = cv2.resize(img, (512, 512))
             #img_resized, (ratio_h, ratio_w) = preprocess(img)
             #img_resized = (img_resized / 127.5) - 1
             data = json.dumps({"signature_name": "serving_default",
@@ -280,34 +265,20 @@ def text_detect_video(input_file, filename):
             try:
                 headers = {"content-type": "application/json"}
                 url = urllib.parse.urljoin(base_url, text_detect_url)
+
                 json_response = requests.post(url, data=data, headers=headers)
             except requests.exceptions.HTTPError as errh:
                 logger.error(msg=errh)
                 return {"Error": "An HTTP error occurred."}
-            except requests.exceptions.ConnectTimeout as err:
-                logger.error(msg=err)
-                return {"Error": "The request timed out while trying to connect to the remote server."}
-            except requests.exceptions.ProxyError as err:
-                logger.error(msg=err)
-                return {"Error": "Text Detect(video) Not Working"}
             except requests.exceptions.ConnectionError as errc:
                 logger.error(msg=errc)
                 return {"Error": "A Connection error occurred."}
             except requests.exceptions.Timeout as errt:
                 logger.error(msg=errt)
                 return {"Error": "The request timed out."}
-            except requests.exceptions.InvalidURL as errm:
+            except requests.exceptions.TooManyRedirects as errm:
                 logger.error(msg=errm)
                 return {"Error": "Bad URL"}
-            except requests.exceptions.ContentDecodingError as err:
-                logger.error(msg=err)
-                return {"Error": "The media format of the requested data is not supported by the server"}
-            except requests.exceptions.InvalidJSONError as err:
-                logger.error(msg=err)
-                return {"Error": "A JSON error occurred."}
-            except requests.exceptions.InvalidHeader as err:
-                logger.error(msg=err)
-                return {"Error": "The header value provided was somehow invalid."}
             except requests.exceptions.RequestException as err:
                 logger.error(msg=err)
                 return {"Error": "Text Detection(video) Not Working"}
@@ -315,20 +286,20 @@ def text_detect_video(input_file, filename):
                 logger.error(msg=e)
                 return {"Error": e}
             prior_util = PriorUtil(TBPP512_dense_separable(softmax=False))
-            result=np.array(json.loads(json_response.text)["outputs"])
-    
+            result = np.array(json.loads(json_response.text)["outputs"])
+
             predictions = prior_util.decode(result[0], .2)
             #score_map = np.array(predictions["pred_score_map/Sigmoid:0"], dtype="float64")
             #geo_map = np.array(predictions["pred_geo_map/concat:0"], dtype="float64")
             #boxes = postprocess(score_map=score_map, geo_map=geo_map)
-            boxes=predictions[:,0:4]
+            boxes = predictions
             result_boxes = []
             if boxes is not None:
                 boxes = boxes[:, :8].reshape((-1, 4, 2))
                 #boxes[:, :, 0] /= ratio_w
                 #boxes[:, :, 1] /= ratio_h
-                boxes[:,:,0]*=img.shape[0]
-                boxes[:,:,1]*=img.shape[1]
+                boxes[:, :, 0] *= img.shape[1]
+                boxes[:, :, 1] *= img.shape[0]
                 for box in boxes:
                     box = sort_poly(box.astype(np.int32))
                     if np.linalg.norm(box[0] - box[1]) < 5 or np.linalg.norm(box[3] - box[0]) < 5:
@@ -389,30 +360,15 @@ def scene_detect(input_file, filename):
     except requests.exceptions.HTTPError as errh:
         logger.error(msg=errh)
         return {"Error": "An HTTP error occurred."}
-    except requests.exceptions.ConnectTimeout as err:
-        logger.error(msg=err)
-        return {"Error": "The request timed out while trying to connect to the remote server."}
-    except requests.exceptions.ProxyError as err:
-        logger.error(msg=err)
-        return {"Error": "Scene Detect Not Working"}
     except requests.exceptions.ConnectionError as errc:
         logger.error(msg=errc)
         return {"Error": "A Connection error occurred."}
     except requests.exceptions.Timeout as errt:
         logger.error(msg=errt)
         return {"Error": "The request timed out."}
-    except requests.exceptions.InvalidURL as errm:
+    except requests.exceptions.TooManyRedirects as errm:
         logger.error(msg=errm)
         return {"Error": "Bad URL"}
-    except requests.exceptions.ContentDecodingError as err:
-        logger.error(msg=err)
-        return {"Error": "The media format of the requested data is not supported by the server"}
-    except requests.exceptions.InvalidJSONError as err:
-        logger.error(msg=err)
-        return {"Error": "A JSON error occurred."}
-    except requests.exceptions.InvalidHeader as err:
-        logger.error(msg=err)
-        return {"Error": "The header value provided was somehow invalid."}
     except requests.exceptions.RequestException as err:
         logger.error(msg=err)
         return {"Error": "Scene Text Detect Not Working"}
@@ -483,30 +439,15 @@ def scene_video(input_file, filename):
             except requests.exceptions.HTTPError as errh:
                 logger.error(msg=errh)
                 return {"Error": "An HTTP error occurred."}
-            except requests.exceptions.ConnectTimeout as err:
-                logger.error(msg=err)
-                return {"Error": "The request timed out while trying to connect to the remote server."}
-            except requests.exceptions.ProxyError as err:
-                logger.error(msg=err)
-                return {"Error": "Scence Video Not Working"}
             except requests.exceptions.ConnectionError as errc:
                 logger.error(msg=errc)
                 return {"Error": "A Connection error occurred."}
             except requests.exceptions.Timeout as errt:
                 logger.error(msg=errt)
                 return {"Error": "The request timed out."}
-            except requests.exceptions.InvalidURL as errm:
+            except requests.exceptions.TooManyRedirects as errm:
                 logger.error(msg=errm)
                 return {"Error": "Bad URL"}
-            except requests.exceptions.ContentDecodingError as err:
-                logger.error(msg=err)
-                return {"Error": "The media format of the requested data is not supported by the server"}
-            except requests.exceptions.InvalidJSONError as err:
-                logger.error(msg=err)
-                return {"Error": "A JSON error occurred."}
-            except requests.exceptions.InvalidHeader as err:
-                logger.error(msg=err)
-                return {"Error": "The header value provided was somehow invalid."}
             except requests.exceptions.RequestException as err:
                 logger.error(msg=err)
                 return {"Error": "Scene Text Detect(video) Not Working"}
@@ -550,6 +491,7 @@ def faceexp(cropped_face):
             *   Dictionary having all the faces and corresponding facial
                 expression and it's values.
     """
+
     logger.info(msg="faceexp called")
     img = cv2.resize(cropped_face, (100, 100), interpolation=cv2.INTER_AREA)
     img = np.array(img).reshape((1, 100, 100, 3))
@@ -563,12 +505,6 @@ def faceexp(cropped_face):
     except requests.exceptions.HTTPError as errh:
         logger.error(msg=errh)
         return {"Error": "An HTTP error occurred."}
-    except requests.exceptions.ConnectTimeout as err:
-        logger.error(msg=err)
-        return {"Error": "The request timed out while trying to connect to the remote server."}
-    except requests.exceptions.ProxyError as err:
-        logger.error(msg=err)
-        return {"Error": "Facial Expression Recognition Not Working"}
     except requests.exceptions.ConnectionError as errc:
         logger.error(msg=errc)
         return {"Error": "A Connection error occurred."}
@@ -578,21 +514,12 @@ def faceexp(cropped_face):
     except requests.exceptions.TooManyRedirects as errm:
         logger.error(msg=errm)
         return {"Error": "Bad URL"}
-    except requests.exceptions.ContentDecodingError as err:
-        logger.error(msg=err)
-        return {"Error": "The media format of the requested data is not supported by the server"}
-    except requests.exceptions.InvalidJSONError as err:
-        logger.error(msg=err)
-        return {"Error": "A JSON error occurred."}
-    except requests.exceptions.InvalidHeader as err:
-        logger.error(msg=err)
-        return {"Error": "The header value provided was somehow invalid."}
     except requests.exceptions.RequestException as err:
         logger.error(msg=err)
         return {"Error": "Facial Expression Recognition Not Working"}
     except Exception as e:
         logger.error(msg=e)
-        return {"Error": e}
+        return {"Error": "Facial Expression Recognition Not Working"}
     predictions = json.loads(json_response.text).get("predictions", "Bad request made.")
     final_result = {}
     for key, value in zip(Facial_expression_class_names, predictions[0]):
@@ -630,9 +557,8 @@ def nsfwclassifier(input_file, filename):
 
     handle_uploaded_file(input_file, file_path)
 
-    img = cv2.imread(file_path)[:, :, ::-1]
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    img_resized = cv2.resize(img, (64, 64))
+    img = imread(file_path)
+    img = resize(img, (64, 64), anti_aliasing=True, mode='constant')
     if (img.shape[2] == 4):
         img = img[..., :3]
 
@@ -646,12 +572,6 @@ def nsfwclassifier(input_file, filename):
     except requests.exceptions.HTTPError as errh:
         logger.error(msg=errh)
         return {"Error": "An HTTP error occurred."}
-    except requests.exceptions.ConnectTimeout as err:
-        logger.error(msg=err)
-        return {"Error": "The request timed out while trying to connect to the remote server."}
-    except requests.exceptions.ProxyError as err:
-        logger.error(msg=err)
-        return {"Error": "NSFW Classifier Not Working"}
     except requests.exceptions.ConnectionError as errc:
         logger.error(msg=errc)
         return {"Error": "A Connection error occurred."}
@@ -661,21 +581,12 @@ def nsfwclassifier(input_file, filename):
     except requests.exceptions.TooManyRedirects as errm:
         logger.error(msg=errm)
         return {"Error": "Bad URL"}
-    except requests.exceptions.ContentDecodingError as err:
-        logger.error(msg=err)
-        return {"Error": "The media format of the requested data is not supported by the server"}
-    except requests.exceptions.InvalidJSONError as err:
-        logger.error(msg=err)
-        return {"Error": "A JSON error occurred."}
-    except requests.exceptions.InvalidHeader as err:
-        logger.error(msg=err)
-        return {"Error": "The header value provided was somehow invalid."}
     except requests.exceptions.RequestException as err:
         logger.error(msg=err)
-        return {"Error": "NSFW Classifier Not Working"}
+        return {"Error": "NSFW Classification Not Working"}
     except Exception as e:
         logger.error(msg=e)
-        return {"Error": e}
+        return {"Error": "NSFW Classification Not Working"}
     data = response.json()
     outputs = data['outputs']
     predict_result = {"classes": nsfw_class_names.get(outputs['classes'][0])}
@@ -726,7 +637,7 @@ def nsfw_video(input_file, filename):
     while(vid.isOpened()):
         ret, img = vid.read()
         if ret:
-            img = cv2.resize(img, (64, 64))
+            img = resize(img, (64, 64), anti_aliasing=True, mode='constant')
             if (img.shape[2] == 4):
                 img = img[..., :3]
 
@@ -740,30 +651,15 @@ def nsfw_video(input_file, filename):
             except requests.exceptions.HTTPError as errh:
                 logger.error(msg=errh)
                 return {"Error": "An HTTP error occurred."}
-            except requests.exceptions.ConnectTimeout as err:
-                logger.error(msg=err)
-                return {"Error": "The request timed out while trying to connect to the remote server."}
-            except requests.exceptions.ProxyError as err:
-                logger.error(msg=err)
-                return {"Error": "NSFW Classification(video) Not Working"}
             except requests.exceptions.ConnectionError as errc:
                 logger.error(msg=errc)
                 return {"Error": "A Connection error occurred."}
             except requests.exceptions.Timeout as errt:
                 logger.error(msg=errt)
                 return {"Error": "The request timed out."}
-            except requests.exceptions.InvalidURL as errm:
+            except requests.exceptions.TooManyRedirects as errm:
                 logger.error(msg=errm)
                 return {"Error": "Bad URL"}
-            except requests.exceptions.ContentDecodingError as err:
-                logger.error(msg=err)
-                return {"Error": "The media format of the requested data is not supported by the server"}
-            except requests.exceptions.InvalidJSONError as err:
-                logger.error(msg=err)
-                return {"Error": "A JSON error occurred."}
-            except requests.exceptions.InvalidHeader as err:
-                logger.error(msg=err)
-                return {"Error": "The header value provided was somehow invalid."}
             except requests.exceptions.RequestException as err:
                 logger.error(msg=err)
                 return {"Error": "NSFW Classification(video) Not Working"}
@@ -895,7 +791,8 @@ def facerecogniseinvideo(input_file, filename):
             *   Video file is first saved into videos which is subfolder of
                 MEDIA_ROOT directory.
             *   Information about the video is saved into database
-            *   Using OpenCV, frame/sec (fps) is
+            *   Using skvideo meta information of the video is extracted
+            *   With the help of extracted metadata frame/sec (fps) is
                 calculated and with this frame_hop is calculated.
                 Now this frame_hop is actually useful in decreasing the
                 number of frames to be processed, say for example if a video
@@ -903,7 +800,7 @@ def facerecogniseinvideo(input_file, filename):
                 processed, It reduces the computation work. Ofcourse for more
                 accuracy the frame_hop can be reduced, but It is observed that
                 this affect the output very little.
-            *   Now videofile is read using cv2.VideoCapture(), Now, each
+            *   Now videofile is read using skvideo.io.vreader(), Now, each
                 frame is read from videogen. Now timestamp of the particular
                 image or face calculated using above metadata.
             *   Now a locallist is maintained which keeps the all face ids.
@@ -937,7 +834,7 @@ def facerecogniseinvideo(input_file, filename):
 
     logger.info(msg="facerecogniseinvideo called")
     file_path = os.path.join(MEDIA_ROOT, 'videos', filename)
-    handle_uploaded_file(input_file, file_path)
+    # handle_uploaded_file(input_file, file_path)
     try:
         file_form = InputVideo(title=filename)
         file_form.save()
@@ -952,19 +849,17 @@ def facerecogniseinvideo(input_file, filename):
         return {"Error": e}
 
     videofile = file_path
-    
-    videogen = cv2.VideoCapture(videofile)
-    
-    #For various OpenCV versions: 
-    (major_ver, minor_ver, subminor_ver) = (cv2.__version__).split('.')
-    if int(major_ver)  < 3 :
-      total_frame = int(videogen.get(cv2.cv.CV_CAP_PROP_FRAME_COUNT))
-      fps = videogen.get(cv2.cv.CV_CAP_PROP_FPS)
-    else :
-      total_frame = int(videogen.get(cv2.CAP_PROP_FRAME_COUNT))
-      fps = videogen.get(cv2.CAP_PROP_FPS)   
-    
-    total_duration = float(total_frame / fps) #in seconds
+    metadata = ffmpeg.probe(videofile)["streams"]
+    str_fps = metadata[1]['avg_frame_rate'].split('/')
+    fps = 30.0
+    try:
+        fps = float(float(str_fps[0]) / float(str_fps[1]))
+    except BaseException:
+        fps = 30.0
+
+    timestamps = [(float(1) / fps)]
+    total_frame = float(metadata[1]["nb_frames"])
+    total_duration = float(metadata[1]["duration"])
 
     frame_hop = int(math.ceil(fps / 10))
     gap_in_sec = (total_duration / total_frame) * frame_hop * 3 * 1000
@@ -974,9 +869,8 @@ def facerecogniseinvideo(input_file, filename):
     ids = []
     cache_embeddings = {}
 
-    success = True
-    while success:
-        success,curr_frame = videogen.read()
+    videogen = skvideo.io.vreader(videofile)
+    for curr_frame in (videogen):
         count = count + 1
         if count % frame_hop == 0:
             # multiplying to get the timestamps in milliseconds
@@ -1066,8 +960,7 @@ def createembedding(input_file, filename):
             logger.error(msg=e)
             return {"Error": e}
 
-        img = cv2.imread(input_file)[:, :, ::-1]
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        img = imread(fname=input_file, mode='RGB')
         if (img.shape[2] == 4):
             img = img[..., :3]
 
@@ -1135,32 +1028,17 @@ def process_streaming_video(url, filename):
         result = requests.post('http://localhost:8000/api/old_video/',
                                files=files)
     except requests.exceptions.HTTPError as errh:
-                logger.error(msg=errh)
-                return {"Error": "An HTTP error occurred."}
-    except requests.exceptions.ConnectTimeout as err:
-        logger.error(msg=err)
-        return {"Error": "The request timed out while trying to connect to the remote server."}
-    except requests.exceptions.ProxyError as err:
-        logger.error(msg=err)
-        return {"Error": "Video Processing Not Working"}
+        logger.error(msg=errh)
+        return {"Error": "An HTTP error occurred."}
     except requests.exceptions.ConnectionError as errc:
         logger.error(msg=errc)
         return {"Error": "A Connection error occurred."}
     except requests.exceptions.Timeout as errt:
         logger.error(msg=errt)
         return {"Error": "The request timed out."}
-    except requests.exceptions.InvalidURL as errm:
+    except requests.exceptions.TooManyRedirects as errm:
         logger.error(msg=errm)
         return {"Error": "Bad URL"}
-    except requests.exceptions.ContentDecodingError as err:
-        logger.error(msg=err)
-        return {"Error": "The media format of the requested data is not supported by the server"}
-    except requests.exceptions.InvalidJSONError as err:
-        logger.error(msg=err)
-        return {"Error": "A JSON error occurred."}
-    except requests.exceptions.InvalidHeader as err:
-        logger.error(msg=err)
-        return {"Error": "The header value provided was somehow invalid."}
     except requests.exceptions.RequestException as err:
         logger.error(msg=err)
         return {"Error": "Video Processing Not Working"}
@@ -1277,39 +1155,9 @@ def similarface(reference_img, compare_img, filename):
             file_form.save()
             return {"result": [str(filename.split('.')[0]), "None"]}
 
-    except requests.exceptions.HTTPError as errh:
-                logger.error(msg=errh)
-                return {"Error": "An HTTP error occurred."}
-    except requests.exceptions.ConnectTimeout as err:
-        logger.error(msg=err)
-        return {"Error": "The request timed out while trying to connect to the remote server."}
-    except requests.exceptions.ProxyError as err:
-        logger.error(msg=err)
-        return {"Error": "Similar Face Not Working"}
-    except requests.exceptions.ConnectionError as errc:
-        logger.error(msg=errc)
-        return {"Error": "A Connection error occurred."}
-    except requests.exceptions.Timeout as errt:
-        logger.error(msg=errt)
-        return {"Error": "The request timed out."}
-    except requests.exceptions.InvalidURL as errm:
-        logger.error(msg=errm)
-        return {"Error": "Bad URL"}
-    except requests.exceptions.ContentDecodingError as err:
-        logger.error(msg=err)
-        return {"Error": "The media format of the requested data is not supported by the server"}
-    except requests.exceptions.InvalidJSONError as err:
-        logger.error(msg=err)
-        return {"Error": "A JSON error occurred."}
-    except requests.exceptions.InvalidHeader as err:
-        logger.error(msg=err)
-        return {"Error": "The header value provided was somehow invalid."}
-    except requests.exceptions.RequestException as err:
-        logger.error(msg=err)
-        return {"Error": "Similar Face Not Working"}
     except Exception as e:
         logger.error(msg=e)
-        return {"Error": "Similar Face Not Working"}
+        return {"Error": e}
 
 
 def object_detect(input_file, filename):
@@ -1339,18 +1187,15 @@ def object_detect(input_file, filename):
                 and Box as the keys and the name of the object, it's
                 confidence score and it's bounding box coordinates as the
                 respective values of these keys.
-
     """
-
-
 
     logger.info(msg="object_detect called")
     file_path = os.path.join(MEDIA_ROOT, 'object', filename)
     handle_uploaded_file(input_file, file_path)
     image = cv2.imread(file_path)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    imgh,imgw,_=image.shape
-    image = cv2.resize(image, (640, 640)) 
+    imgh, imgw, _ = image.shape
+    image = cv2.resize(image, (640, 640))
     #LINEAR = np.array(image, np.float32) / 255
     data = json.dumps({"inputs": [image.tolist()]})
     try:
@@ -1358,47 +1203,32 @@ def object_detect(input_file, filename):
         url = urllib.parse.urljoin(base_url, object_detect_url)
         json_response = requests.post(url, data=data, headers=headers)
     except requests.exceptions.HTTPError as errh:
-                logger.error(msg=errh)
-                return {"Error": "An HTTP error occurred."}
-    except requests.exceptions.ConnectTimeout as err:
-        logger.error(msg=err)
-        return {"Error": "The request timed out while trying to connect to the remote server."}
-    except requests.exceptions.ProxyError as err:
-        logger.error(msg=err)
-        return {"Error": "Object Detection Not Working"}
+        logger.error(msg=errh)
+        return {"Error": "An HTTP error occurred."}
     except requests.exceptions.ConnectionError as errc:
         logger.error(msg=errc)
         return {"Error": "A Connection error occurred."}
     except requests.exceptions.Timeout as errt:
         logger.error(msg=errt)
         return {"Error": "The request timed out."}
-    except requests.exceptions.InvalidURL as errm:
+    except requests.exceptions.TooManyRedirects as errm:
         logger.error(msg=errm)
         return {"Error": "Bad URL"}
-    except requests.exceptions.ContentDecodingError as err:
-        logger.error(msg=err)
-        return {"Error": "The media format of the requested data is not supported by the server"}
-    except requests.exceptions.InvalidJSONError as err:
-        logger.error(msg=err)
-        return {"Error": "A JSON error occurred."}
-    except requests.exceptions.InvalidHeader as err:
-        logger.error(msg=err)
-        return {"Error": "The header value provided was somehow invalid."}
     except requests.exceptions.RequestException as err:
         logger.error(msg=err)
         return {"Error": "Object Detection Not Working"}
     except Exception as e:
         logger.error(msg=e)
+
         return {"Error": "ObjectDetection Not Working"}
-       
+
     predictions = np.array(json.loads(json_response.text)["outputs"])
-    
-    boxes, scores, classes = predictions[0][:,1:5], predictions[0][:,5], predictions[0][:,6]
-    nums=100
-    boxes[:,0]*=(imgh/640)
-    boxes[:,2]*=(imgh/640)
-    boxes[:,1]*=(imgw/640)
-    boxes[:,3]*=(imgw/640)
+
+    boxes, scores, classes = predictions[0][:, 1:5], predictions[0][:, 5], predictions[0][:, 6]
+    boxes[:, 0] *= (imgh / 640)
+    boxes[:, 2] *= (imgh / 640)
+    boxes[:, 1] *= (imgw / 640)
+    boxes[:, 3] *= (imgw / 640)
 
 #         return {"Error": "ObjectDetection Not Working"}
 #     predictions = json.loads(json_response.text).get("outputs", "Bad request made.")
@@ -1408,7 +1238,6 @@ def object_detect(input_file, filename):
     class_names = get_class_names(coco_names_path)
     for num in range(100):
         result.append([{"Box": boxes[num]}, {"Score": scores[num]}, {"Label": class_names[int(classes[num])]}])
-
     return {"Objects": result}
 
 
@@ -1452,8 +1281,8 @@ def object_detect_video(input_file, filename):
         ret, image = vid.read()
         if ret:
             image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-            imgh,imgw,_=image.shape
-            image = cv2.resize(image, (640, 640)) 
+            imgh, imgw, _ = image.shape
+            image = cv2.resize(image, (640, 640))
             data = json.dumps({"inputs": [image.tolist()]})
             try:
                 headers = {"content-type": "application/json"}
@@ -1462,38 +1291,24 @@ def object_detect_video(input_file, filename):
             except requests.exceptions.HTTPError as errh:
                 logger.error(msg=errh)
                 return {"Error": "An HTTP error occurred."}
-            except requests.exceptions.ConnectTimeout as err:
-                logger.error(msg=err)
-                return {"Error": "The request timed out while trying to connect to the remote server."}
-            except requests.exceptions.ProxyError as err:
-                logger.error(msg=err)
-                return {"Error": "Object Detection(Video) Not Working"}
             except requests.exceptions.ConnectionError as errc:
                 logger.error(msg=errc)
                 return {"Error": "A Connection error occurred."}
             except requests.exceptions.Timeout as errt:
                 logger.error(msg=errt)
                 return {"Error": "The request timed out."}
-            except requests.exceptions.InvalidURL as errm:
+            except requests.exceptions.TooManyRedirects as errm:
                 logger.error(msg=errm)
                 return {"Error": "Bad URL"}
-            except requests.exceptions.ContentDecodingError as err:
-                logger.error(msg=err)
-                return {"Error": "The media format of the requested data is not supported by the server"}
-            except requests.exceptions.InvalidJSONError as err:
-                logger.error(msg=err)
-                return {"Error": "A JSON error occurred."}
-            except requests.exceptions.InvalidHeader as err:
-                logger.error(msg=err)
-                return {"Error": "The header value provided was somehow invalid."}
             except requests.exceptions.RequestException as err:
                 logger.error(msg=err)
                 return {"Error": "Object Detection(video) Not Working"}
             except Exception as e:
                 logger.error(msg=e)
+
                 return {"Error": "Object Detection(video) Not Working"}
             predictions = np.array(json.loads(json_response.text)["outputs"])
-            boxes, scores, classes = predictions[0][:,1:5], predictions[0][:,5], predictions[0][:,6]
+            boxes, scores, classes = predictions[0][:, 1:5], predictions[0][:, 5], predictions[0][:, 6]
 
 #                 return {"Error": "Object Detection(video) Not Working"}
 #             predictions = json.loads(json_response.text).get("outputs", "Bad request made.")
@@ -1501,11 +1316,11 @@ def object_detect_video(input_file, filename):
 #                 "yolo_nms_1"][0], predictions["yolo_nms_2"][0], predictions["yolo_nms_3"][0]
 
             result = []
-            nums=100
-            boxes[:,0]*=(imgh/640)
-            boxes[:,2]*=(imgh/640)
-            boxes[:,1]*=(imgw/640)
-            boxes[:,3]*=(imgw/640)
+            nums = 100
+            boxes[:, 0] *= (imgh / 640)
+            boxes[:, 2] *= (imgh / 640)
+            boxes[:, 1] *= (imgw / 640)
+            boxes[:, 3] *= (imgw / 640)
             class_names = get_class_names(coco_names_path)
             for num in range(nums):
                 result.append([{"Box": boxes[num]}, {"Score": scores[num]}, {"Label": class_names[int(classes[num])]}])
