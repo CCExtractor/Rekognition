@@ -132,7 +132,8 @@ def get_face(img, pnet, rnet, onet, image_size):
 
 
 def embed_image(img, session, images_placeholder, phase_train_placeholder, embeddings, image_size):
-
+    """ Function to create embedding 
+    """
     logger.info(msg="embed_image called")
     if img is not None:
         image = load_img(img=img, do_random_crop=False,
@@ -147,7 +148,15 @@ def embed_image(img, session, images_placeholder, phase_train_placeholder, embed
 
 
 def save_face(img, where, filename):
+    """ to save the face received
+    Args:
+        img: source image
+        where: part of the path with existing data points saved
+        filename: name of the source file
 
+    Returns:
+        none
+    """
     logger.info(msg="save_face called")
     path = os.path.join(MEDIA_ROOT, where, str(filename) + '.jpg')
     try:
@@ -157,7 +166,13 @@ def save_face(img, where, filename):
 
 
 def save_embedding(embedding, filename, embeddings_path):
+    """ Saves the embedding generated
 
+    Args:
+        embedding: the embedding created in the functioning of the model
+        filename: name of the file
+        embeddings_path: desired embedding path
+    """
     logger.info(msg="save_embedding called")
     path = os.path.join(embeddings_path, str(filename))
     try:
@@ -167,7 +182,13 @@ def save_embedding(embedding, filename, embeddings_path):
 
 
 def load_embeddings(embeddings_path):
+    """ Loading embeddings
 
+    Args:
+        embeddings_path: path of the saved embeddings 
+    Returns:
+        dictionary of embedding names and embeddings
+    """
     logger.info(msg="load_embeddings called")
     embedding_dict = defaultdict()
     pathname = embeddings_path
@@ -181,7 +202,14 @@ def load_embeddings(embeddings_path):
 
 
 def identify_face(embedding, embedding_dict):
+    """ Function to identify face in an image post conversion to embedding
 
+    Args:
+        embedding: embedding of the image
+        embedding_dict: dictionary of embedding name and embeddings
+    Returns:
+        the result i.e. name of the embedding that was matched as result
+    """
     logger.info(msg="identify_face called")
     min_dis = 100
     identity = ''
@@ -201,7 +229,14 @@ def identify_face(embedding, embedding_dict):
 
 
 def id_generator(size=30, chars=string.ascii_lowercase + string.digits):
+    """generates unique ID
+    Args:
+        size: size of the id set to 30
+        chars: allowed characters in the id including lowercase alphabets and digits
 
+    Returns:
+        the ID
+    """
     logger.info(msg="id_generator called")
     return ''.join(random.choice(chars) for _ in range(size))
 
@@ -243,7 +278,13 @@ def time_dura(dict_data, gap):
 
 
 def handle_uploaded_file(file, fname):
-
+    """ Handling the uploaded file by writing its chunks in the defined destination
+    Args:
+        file: the file which was uploaded
+        fname: name of the file
+    Returns:
+        none
+    """
     logger.info(msg="handle_uploaded_file called")
     with open(fname, 'wb+') as destination:
         for chunk in file.chunks():
@@ -251,7 +292,12 @@ def handle_uploaded_file(file, fname):
 
 
 def getnewuniquefilename(request):
-
+    """ create a unique filename, different name from the one uploaded
+    Args:
+        request: the file for which request was made
+    Returns:
+        filename generated with random ID and relevant extension
+    """
     logger.info(msg="getnewuniquefilename called")
     file_ext = str((request.FILES['file'].name)).split('.')[-1]
     filename = id_generator() + '.' + file_ext
@@ -265,7 +311,12 @@ def saveimageinfotodb(request, filename):
 
 
 def img_standardize(img):
-
+    """ Standardization of the image for perfect fitting
+    Args:
+        img: the image to be processed
+    Returns: 
+        image after standardization
+    """
     logger.info(msg="img_standardize called")
     mean = np.mean(img)
     std = np.std(img)
