@@ -1,12 +1,15 @@
 import os
 import math
 from pickle import TRUE
+import ffmpeg
 import uuid
 import json
+import skvideo.io
 import subprocess
 import shlex
 import cv2
 import wordninja
+from skimage.io import imread
 import urllib.parse
 import ffmpeg
 from werkzeug.utils import secure_filename
@@ -32,6 +35,7 @@ from coreapi.models import InputImage, InputVideo, InputEmbed, SimilarFaceInImag
 from logger.logging import RekogntionLogger
 import numpy as np
 import requests
+from skimage.transform import resize
 from corelib.RetinaFace.retina_net import FaceDetectionRetina
 from django.db import IntegrityError, DatabaseError
 
@@ -69,7 +73,7 @@ def text_reco(image):
         url = urllib.parse.urljoin(base_url, text_reco_url)
         json_response = requests.post(url, data=data, headers=headers)
         logger.info(msg=url)
-        
+
     except requests.exceptions.HTTPError as errh:
         logger.error(msg=errh)
         return {"Error": "An HTTP error occurred."}
@@ -134,20 +138,18 @@ def text_detect(input_file, filename):
                 as keys and coordinates of bounding boxes and recognized
                 text of that box as the respective value
     """
-    
+
     logger.info(msg="text_detect called")
     file_path = os.path.join(MEDIA_ROOT, 'text', filename)
     handle_uploaded_file(input_file, file_path)
-    
+
     img = cv2.imread(file_path)[:, :, ::-1]
-    img=cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    img_resized=cv2.resize(img, (512, 512))
-    ratio_h=img.shape[0]/512
-    ratio_w=img.shape[1]/512
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    img_resized = cv2.resize(img, (512, 512))
+
     # img_resized, (ratio_h, ratio_w) = preprocess(img)
     # img_resized = (img_resized / 127.5) - 1
-    print("For input image of shape = ",img.shape," returned shape is ",img_resized.shape)
-    
+    print("For input image of shape = ", img.shape, " returned shape is ", img_resized.shape)
     data = json.dumps({"signature_name": "serving_default",
                        "inputs": [img_resized.tolist()]})
     try:
@@ -173,42 +175,36 @@ def text_detect(input_file, filename):
     except Exception as e:
         logger.error(msg=e)
         return {"Error": e}
-    
+
     prior_util = PriorUtil(TBPP512_dense_separable(softmax=False))
-    
     result=np.array(json.loads(json_response.text)["outputs"])
-    
     predictions = prior_util.decode(result[0], .2)
     #score_map = np.array(predictions["pred_score_map/Sigmoid:0"], dtype="float64")
     #geo_map = np.array(predictions["pred_geo_map/concat:0"], dtype="float64")
     #boxes = postprocess(score_map=score_map, geo_map=geo_map)
-    boxes=predictions
-    print("Shape of prediction = ",predictions.shape)
+    boxes = predictions
+    print("Shape of prediction = ", predictions.shape)
     result_boxes = []
     if boxes is not None:
-        print("Shape of boxes = ",boxes.shape)
-        print("Type of box = ",type(boxes))
+        print("Shape of boxes = ", boxes.shape)
+        print("Type of box = ", type(boxes))
         boxes = boxes[:, :8].reshape((-1, 4, 2))
-        print("Shape of boxes after change = ",boxes.shape)
-        print("Boxs are= ",boxes)
         # boxes[:, :, 0] /= ratio_w
         # boxes[:, :, 1] /= ratio_h
-        boxes[:,:,0]*=img.shape[1]
-        boxes[:,:,1]*=img.shape[0]
+        boxes[:, :, 0] *= img.shape[1]
+        boxes[:, :, 1] *= img.shape[0]
         for box in boxes:
             box = sort_poly(box.astype(np.int32))
-            print("Shape of single box = ",box.shape)
-            print("Box after sort = ",box)
+            print("Shape of single box = ", box.shape)
+            print("Box after sort = ", box)
             if np.linalg.norm(box[0] - box[1]) < 5 or np.linalg.norm(box[3] - box[0]) < 5:
                 continue
             result_boxes.append(box)
-    
-    
+
     result = []
     for box in result_boxes:
         top_left_x, top_left_y, bot_right_x, bot_right_y = bb_to_cv(box)
-        print("BOX : corners ",top_left_x, top_left_y, bot_right_x, bot_right_y)
-        text=text_reco(img[top_left_y :bot_right_y,top_left_x :bot_right_x ]).get("Text")
+        text = text_reco(img[top_left_y:bot_right_y, top_left_x:bot_right_x]).get("Text")
         result.append({"Boxes": box, "Text": text})
     return {"Texts": result}
 
@@ -256,8 +252,8 @@ def text_detect_video(input_file, filename):
         ret, img = vid.read()
         if ret:
             img = img[:, :, ::-1]
-            img=cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-            img_resized=cv2.resize(img, (512, 512))
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+            img_resized = cv2.resize(img, (512, 512))
             #img_resized, (ratio_h, ratio_w) = preprocess(img)
             #img_resized = (img_resized / 127.5) - 1
             data = json.dumps({"signature_name": "serving_default",
@@ -286,8 +282,8 @@ def text_detect_video(input_file, filename):
                 logger.error(msg=e)
                 return {"Error": e}
             prior_util = PriorUtil(TBPP512_dense_separable(softmax=False))
-            result=np.array(json.loads(json_response.text)["outputs"])
-    
+            result = np.array(json.loads(json_response.text)["outputs"])
+
             predictions = prior_util.decode(result[0], .2)
             #score_map = np.array(predictions["pred_score_map/Sigmoid:0"], dtype="float64")
             #geo_map = np.array(predictions["pred_geo_map/concat:0"], dtype="float64")
@@ -556,7 +552,6 @@ def nsfwclassifier(input_file, filename):
     file_path = os.path.join(MEDIA_ROOT, 'images', filename)
 
     handle_uploaded_file(input_file, file_path)
-
     img = cv2.imread(file_path)
     img = cv2.resize(img, (64, 64))
     if (img.shape[2] == 4):
@@ -637,7 +632,7 @@ def nsfw_video(input_file, filename):
     while(vid.isOpened()):
         ret, img = vid.read()
         if ret:
-            img = cv2.resize(img, (64, 64))
+            img = resize(img, (64, 64), anti_aliasing=True, mode='constant')
             if (img.shape[2] == 4):
                 img = img[..., :3]
 
@@ -980,7 +975,6 @@ def createembedding(input_file, filename):
         except Exception as e:
             logger.error(msg=e)
             return {"Error": e}
-
         img=cv2.imread(file_path)
         img=cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
         if (img.shape[2] == 4):
@@ -1216,8 +1210,8 @@ def object_detect(input_file, filename):
     handle_uploaded_file(input_file, file_path)
     image = cv2.imread(file_path)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    imgh,imgw,_=image.shape
-    image = cv2.resize(image, (640, 640)) 
+    imgh, imgw, _ = image.shape
+    image = cv2.resize(image, (640, 640))
     #LINEAR = np.array(image, np.float32) / 255
     data = json.dumps({"inputs": [image.tolist()]})
     try:
@@ -1244,17 +1238,13 @@ def object_detect(input_file, filename):
 
         return {"Error": "ObjectDetection Not Working"}
 
-    
-    print("predictions are ",json.loads(json_response.text))
     predictions = np.array(json.loads(json_response.text)["outputs"])
-    
 
-    boxes, scores, classes = predictions[0][:,1:5], predictions[0][:,5], predictions[0][:,6]
-    nums=100
-    boxes[:,0]*=(imgh/640)
-    boxes[:,2]*=(imgh/640)
-    boxes[:,1]*=(imgw/640)
-    boxes[:,3]*=(imgw/640)
+    boxes, scores, classes = predictions[0][:, 1:5], predictions[0][:, 5], predictions[0][:, 6]
+    boxes[:, 0] *= (imgh / 640)
+    boxes[:, 2] *= (imgh / 640)
+    boxes[:, 1] *= (imgw / 640)
+    boxes[:, 3] *= (imgw / 640)
 
 #         return {"Error": "ObjectDetection Not Working"}
 #     predictions = json.loads(json_response.text).get("outputs", "Bad request made.")
@@ -1307,8 +1297,8 @@ def object_detect_video(input_file, filename):
         ret, image = vid.read()
         if ret:
             image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-            imgh,imgw,_=image.shape
-            image = cv2.resize(image, (640, 640)) 
+            imgh, imgw, _ = image.shape
+            image = cv2.resize(image, (640, 640))
             data = json.dumps({"inputs": [image.tolist()]})
             try:
                 headers = {"content-type": "application/json"}
@@ -1334,7 +1324,7 @@ def object_detect_video(input_file, filename):
 
                 return {"Error": "Object Detection(video) Not Working"}
             predictions = np.array(json.loads(json_response.text)["outputs"])
-            boxes, scores, classes = predictions[0][:,1:5], predictions[0][:,5], predictions[0][:,6]
+            boxes, scores, classes = predictions[0][:, 1:5], predictions[0][:, 5], predictions[0][:, 6]
 
 #                 return {"Error": "Object Detection(video) Not Working"}
 #             predictions = json.loads(json_response.text).get("outputs", "Bad request made.")
@@ -1342,11 +1332,11 @@ def object_detect_video(input_file, filename):
 #                 "yolo_nms_1"][0], predictions["yolo_nms_2"][0], predictions["yolo_nms_3"][0]
 
             result = []
-            nums=100
-            boxes[:,0]*=(imgh/640)
-            boxes[:,2]*=(imgh/640)
-            boxes[:,1]*=(imgw/640)
-            boxes[:,3]*=(imgw/640)
+            nums = 100
+            boxes[:, 0] *= (imgh / 640)
+            boxes[:, 2] *= (imgh / 640)
+            boxes[:, 1] *= (imgw / 640)
+            boxes[:, 3] *= (imgw / 640)
             class_names = get_class_names(coco_names_path)
             for num in range(nums):
                 result.append([{"Box": boxes[num]}, {"Score": scores[num]}, {"Label": class_names[int(classes[num])]}])

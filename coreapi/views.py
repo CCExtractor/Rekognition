@@ -64,17 +64,17 @@ class SceneText(views.APIView):
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
             elif (result["Error"] == 'Text Detection Not Working'):
                 return Response(result, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            elif (result["Error"]  ==  'The media format of the requested data is not supported by the server'):
+            elif (result["Error"] == 'The media format of the requested data is not supported by the server'):
                 return Response(result, status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
-            elif (result["Error"]  ==  'A JSON error occurred.'):
+            elif (result["Error"] == 'A JSON error occurred.'):
                 return Response(result, status=status.HTTP_204_NO_CONTENT)
-            elif (result["Error"]  ==  'A proxy error occurred.'):
+            elif (result["Error"] == 'A proxy error occurred.'):
                 return Response(result, status=status.HTTP_407_PROXY_AUTHENTICATION_REQUIRED)
             elif (result["Error"] == 'The header value provided was somehow invalid.'):
                 return Response(result, status=status.HTTP_411_LENGTH_REQUIRED)
             elif (result["Error"] == 'The request timed out while trying to connect to the remote server.'):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
-            else :
+            else:
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
 class SceneTextVideo(views.APIView):
     """     To localize and recognise text in a video
@@ -126,7 +126,7 @@ class SceneTextVideo(views.APIView):
                 return Response(result, status=status.HTTP_411_LENGTH_REQUIRED)
             elif (result["Error"] == 'The request timed out while trying to connect to the remote server.'):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
-            else :
+            else:
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
 class NsfwRecognise(views.APIView):
     """     To recognise whether a image is nsfw or not
@@ -177,7 +177,7 @@ class NsfwRecognise(views.APIView):
                 return Response(result, status=status.HTTP_411_LENGTH_REQUIRED)
             elif (result["Error"] == 'The request timed out while trying to connect to the remote server.'):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
-            else :
+            else:
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
 class NsfwVideo(views.APIView):
     """     To recognise which frames in a video are NSFW
@@ -229,7 +229,7 @@ class NsfwVideo(views.APIView):
                 return Response(result, status=status.HTTP_411_LENGTH_REQUIRED)
             elif (result["Error"] == 'The request timed out while trying to connect to the remote server.'):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
-            else :
+            else:
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
 class SceneDetect(views.APIView):
     """     To classify scene in an image
@@ -281,7 +281,7 @@ class SceneDetect(views.APIView):
                 return Response(result, status=status.HTTP_411_LENGTH_REQUIRED)
             elif (result["Error"] == 'The request timed out while trying to connect to the remote server.'):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
-            else :
+            else:
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
 class SceneVideo(views.APIView):
     """     To classify scenes video
@@ -333,7 +333,7 @@ class SceneVideo(views.APIView):
                 return Response(result, status=status.HTTP_411_LENGTH_REQUIRED)
             elif (result["Error"] == 'The request timed out while trying to connect to the remote server.'):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
-            else :
+            else:
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
 class ImageFr(views.APIView):
     """     To recognise faces in image
@@ -373,7 +373,7 @@ class ImageFr(views.APIView):
                 return Response(result, status=status.HTTP_200_OK)
             else:
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
-                
+
         else:
             logger.error(msg=image_serializer.errors)
             return Response(image_serializer.errors,
@@ -411,7 +411,6 @@ class VideoFr(views.APIView):
         else:
 
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
-            
 class EMBEDDING(views.APIView):
     """     To create embedding of faces
     Workflow
@@ -448,7 +447,6 @@ class EMBEDDING(views.APIView):
             return Response(result, status=status.HTTP_200_OK)
         else:
              return Response(result, status=status.HTTP_400_BAD_REQUEST)
-            
 class FeedbackFeature(APIView):
     """     Feedback feature
     Workflow
@@ -517,7 +515,7 @@ class FeedbackFeature(APIView):
             return Response(feedback_serializer.errors,
                             status=status.HTTP_400_BAD_REQUEST)
 def imagewebui(request):
-    if request.method  ==  'POST':
+    if request.method == 'POST':
         if 'file' not in request.FILES:
             logger.error(msg="file not found")
             return render(request, '404.html')
@@ -534,7 +532,7 @@ def imagewebui(request):
         logger.error(msg="GET request made instead of POST")
         return "POST HTTP method required!"
 def videowebui(request):
-    if request.method  ==  'POST':
+    if request.method == 'POST':
         if 'file' not in request.FILES:
             logger.error(msg="file not found")
             return render(request, '404.html')
@@ -619,7 +617,7 @@ class StreamVideoFr(views.APIView):
                 return Response(result, status=status.HTTP_411_LENGTH_REQUIRED)
             elif (result["Error"] == 'The request timed out while trying to connect to the remote server.'):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
-            else :
+            else:
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
 class SimilarFace(views.APIView):
     """     To recognise similar faces in two images
@@ -675,7 +673,7 @@ class SimilarFace(views.APIView):
                 return Response(result, status=status.HTTP_411_LENGTH_REQUIRED)
             elif (result["Error"] == 'The request timed out while trying to connect to the remote server.'):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
-            else :
+            else:
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
 class ObjectDetect(views.APIView):
     """     To detect objects in an image
@@ -727,7 +725,7 @@ class ObjectDetect(views.APIView):
                 return Response(result, status=status.HTTP_411_LENGTH_REQUIRED)
             elif (result["Error"] == 'The request timed out while trying to connect to the remote server.'):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
-            else :
+            else:
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
 class ObjectDetectVideo(views.APIView):
     """     To detect objects in a video
@@ -780,7 +778,7 @@ class ObjectDetectVideo(views.APIView):
                 return Response(result, status=status.HTTP_411_LENGTH_REQUIRED)
             elif (result["Error"] == 'The request timed out while trying to connect to the remote server.'):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
-            else :
+            else:
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
      
 
