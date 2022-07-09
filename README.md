@@ -8,8 +8,7 @@ Google Summer Of Code Project under CCExtractor Development
 [![GPLv3 license](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/ccextractor/Rekognition/blob/master/LICENSE)
 
 ---
-This project aims at providing a free alternative to Amazon Rekognition services.
-
+This project aims at providing a free alternative to Amazon Rekognition services. 
 
 ## Setup
 ### For End-User
@@ -41,10 +40,18 @@ Face Recognition with RetinaNet  |`curl -i -X POST -H "Content-Type: multipart/f
 
 Details on documentation can be found [here](https://github.com/pymit/Rekognition/wiki/API-Documentation).
 
+Currently, some features are under development which are:
+- Caption generation 
+- Action recognition
 
 ## Communication
 Real-time communication for this project happens on slack channel of CCExtractor Development, channel [link](https://rhccgsoc15.slack.com/). You may join this channel via this [link](https://ccextractor.org/public:general:support)
 
+## Recent GSoC archives
+- ![GSoC 2021](https://summerofcode.withgoogle.com/archive/2021/organizations/5102272740065280)
+- ![GSoC 2020](https://summerofcode.withgoogle.com/archive/2020/organizations/5987859833552896)
+- ![GSoC 2019](https://summerofcode.withgoogle.com/archive/2019/organizations/6733668347805696)
+- ![GSoC 2018](https://summerofcode.withgoogle.com/archive/2018/organizations/5152211763986432)
 
 ## References
 This project uses the following.
