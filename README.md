@@ -1,6 +1,9 @@
 ## Poor Man's Rekognition
 ---
 ![](https://www.ccextractor.org/_media/public:gsoc:gsoc-cc.png)
+
+![](https://gifyu.com/image/SK0Bv)
+
 Google Summer Of Code Project under CCExtractor Development
 
 [![Build Status](https://travis-ci.org/ccextractor/Rekognition.svg?branch=master)](https://travis-ci.org/CCExtractor/Rekognition)
