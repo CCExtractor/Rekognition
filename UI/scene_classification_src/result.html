@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+
+<head>
+        <title>Object detection</title>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"> -->
+</head>
+
+<body>
+
+        <div>
+                <nav class="navbar navbar-light bg-light shadow-sm ounded">
+                        <a class="navbar-brand" href="#"> Object detection API </a>
+                </nav>
+        </div>
+
+        <div class="container text-center">
+                <br><br><br><br><br><br><br>
+                <h3>Result of prediction:</h3>
+                <img src="{{ MEDIA_URL }}images/{{ imagefile }}" alt="" height='400'>
+                <br><br>
+                <!-- object_detect function in main_api returns a dictionary with key as "objects" and result array-->
+                {% comment %} <p>NSFW content detection: {{ Objects }}</p> {% endcomment %}
+
+                <ul>
+                        All the objects: <br>
+
+                        <div>
+
+                            {% for value in result['Objects'] %}
+                            <pre>
+            {   <b> {{ value }} </b> :  {% for key_1, value_1 in result.items %}
+            }{% endfor %}
+}
+                        </div>
+                </ul>
+                <br>
+                <a href="{% url 'index_page' %}" class="btn btn-outline-secondary">Back</a>
+
+                <br>
+
+        </div>
+        <!-- <pre>{{ bytes }} </pre> -->
+</body>
+
+</html>

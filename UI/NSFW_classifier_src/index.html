@@ -9,6 +9,7 @@
    </head>
    <body>
     <div class="container text-center">
+        <!-- the form when called with POST method, calles for nsfw url taking it to  -->
         <form method=POST enctype=multipart/form-data action="{% url 'nsfw' %}">
             <input type=file name=file class="btn btn-outline-secondary">
             <input type="submit" class="btn btn-outline-secondary">
