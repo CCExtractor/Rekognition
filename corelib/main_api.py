@@ -1,15 +1,13 @@
 import os
 import math
-import ffmpeg
 import uuid
 import json
-import skvideo.io
 import subprocess
 import shlex
 import cv2
 import wordninja
-from skimage.io import imread
 import urllib.parse
+import ffmpeg
 from werkzeug.utils import secure_filename
 from Rekognition.settings import MEDIA_ROOT
 from corelib.CRNN import CRNN_utils
@@ -148,7 +146,6 @@ def text_detect(input_file, filename):
     # img_resized, (ratio_h, ratio_w) = preprocess(img)
     # img_resized = (img_resized / 127.5) - 1
     print("For input image of shape = ", img.shape, " returned shape is ", img_resized.shape)
-
     data = json.dumps({"signature_name": "serving_default",
                        "inputs": [img_resized.tolist()]})
     try:
@@ -176,9 +173,7 @@ def text_detect(input_file, filename):
         return {"Error": e}
 
     prior_util = PriorUtil(TBPP512_dense_separable(softmax=False))
-
     result = np.array(json.loads(json_response.text)["outputs"])
-
     predictions = prior_util.decode(result[0], .2)
     #score_map = np.array(predictions["pred_score_map/Sigmoid:0"], dtype="float64")
     #geo_map = np.array(predictions["pred_geo_map/concat:0"], dtype="float64")
@@ -190,8 +185,6 @@ def text_detect(input_file, filename):
         print("Shape of boxes = ", boxes.shape)
         print("Type of box = ", type(boxes))
         boxes = boxes[:, :8].reshape((-1, 4, 2))
-        print("Shape of boxes after change = ", boxes.shape)
-        print("Boxs are= ", boxes)
         # boxes[:, :, 0] /= ratio_w
         # boxes[:, :, 1] /= ratio_h
         boxes[:, :, 0] *= img.shape[1]
@@ -207,7 +200,6 @@ def text_detect(input_file, filename):
     result = []
     for box in result_boxes:
         top_left_x, top_left_y, bot_right_x, bot_right_y = bb_to_cv(box)
-        print("BOX : corners ", top_left_x, top_left_y, bot_right_x, bot_right_y)
         text = text_reco(img[top_left_y:bot_right_y, top_left_x:bot_right_x]).get("Text")
         result.append({"Boxes": box, "Text": text})
     return {"Texts": result}
@@ -556,9 +548,8 @@ def nsfwclassifier(input_file, filename):
     file_path = os.path.join(MEDIA_ROOT, 'images', filename)
 
     handle_uploaded_file(input_file, file_path)
-
-    img = imread(file_path)
-    img = resize(img, (64, 64), anti_aliasing=True, mode='constant')
+    img = cv2.imread(file_path)
+    img = cv2.resize(img, (64, 64))
     if (img.shape[2] == 4):
         img = img[..., :3]
 
@@ -731,6 +722,7 @@ def facerecogniseinimage(input_file, filename, network):
             return {"Error": e}
 
         img = cv2.imread(file_path)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         # img = imread(fname=input_file, pilmode='RGB')
         if (img.shape[2] == 4):
             img = img[..., :3]
@@ -849,9 +841,19 @@ def facerecogniseinvideo(input_file, filename):
         return {"Error": e}
 
     videofile = file_path
+    # metadata = skvideo.io.ffprobe(videofile)
+    # print("************METEDATE ***************+++  \n",metadata)
+    # str_fps = metadata["video"]['@avg_frame_rate'].split('/')
+    # print("FPS = **************** = \n",str_fps)
+    # fps = float(float(str_fps[0]) / float(str_fps[1]))
+
+    # timestamps = [(float(1) / fps)]
+    # total_frame = float(metadata["video"]["@nb_frames"])
+    # total_duration = float(metadata["video"]["@duration"])
+
     metadata = ffmpeg.probe(videofile)["streams"]
     str_fps = metadata[1]['avg_frame_rate'].split('/')
-    fps = 30.0
+    fps = "30/1"
     try:
         fps = float(float(str_fps[0]) / float(str_fps[1]))
     except BaseException:
@@ -860,7 +862,6 @@ def facerecogniseinvideo(input_file, filename):
     timestamps = [(float(1) / fps)]
     total_frame = float(metadata[1]["nb_frames"])
     total_duration = float(metadata[1]["duration"])
-
     frame_hop = int(math.ceil(fps / 10))
     gap_in_sec = (total_duration / total_frame) * frame_hop * 3 * 1000
 
@@ -868,53 +869,61 @@ def facerecogniseinvideo(input_file, filename):
     cele = {}
     ids = []
     cache_embeddings = {}
+    cap = cv2.VideoCapture(videofile)
 
-    videogen = skvideo.io.vreader(videofile)
-    for curr_frame in (videogen):
-        count = count + 1
-        if count % frame_hop == 0:
-            # multiplying to get the timestamps in milliseconds
-            timestamps = (float(count) / fps) * 1000
-            try:
-                all_faces, all_bb = get_face(img=curr_frame,
-                                             pnet=pnet, rnet=rnet,
-                                             onet=onet, image_size=image_size)
-                if all_faces is not None:
-                    cele_id = []
-                    for face, bb in zip(all_faces, all_bb):
-                        embedding = embed_image(img=face,
-                                                session=facenet_persistent_session,
-                                                images_placeholder=images_placeholder,
-                                                embeddings=embeddings,
-                                                phase_train_placeholder=phase_train_placeholder,
-                                                image_size=image_size)
-                        id_name = ''
-                        if embedding_dict:
-                            if cache_embeddings:
-                                id_name = identify_face(embedding=embedding,
-                                                        embedding_dict=cache_embeddings)
-                                if id_name == "Unknown":
+    # videogen = skvideo.io.vreader(videofile)
+    cap = cv2.VideoCapture(videofile)
+    while(cap.isOpened()):
+        ret, curr_frame = cap.read()
+        if ret:
+            count = count + 1
+            if count % frame_hop == 0:
+                # multiplying to get the timestamps in milliseconds
+                timestamps = (float(count) / fps) * 1000
+                try:
+                    all_faces, all_bb = get_face(img=curr_frame,
+                                                 pnet=pnet, rnet=rnet,
+                                                 onet=onet, image_size=image_size)
+                    if all_faces is not None:
+                        cele_id = []
+                        for face, bb in zip(all_faces, all_bb):
+                            embedding = embed_image(img=face,
+                                                    session=facenet_persistent_session,
+                                                    images_placeholder=images_placeholder,
+                                                    embeddings=embeddings,
+                                                    phase_train_placeholder=phase_train_placeholder,
+                                                    image_size=image_size)
+                            id_name = ''
+                            if embedding_dict:
+                                if cache_embeddings:
+                                    id_name = identify_face(embedding=embedding,
+                                                            embedding_dict=cache_embeddings)
+                                    if id_name == "Unknown":
+                                        id_name = identify_face(embedding=embedding,
+                                                                embedding_dict=embedding_dict)
+                                        if id_name != "Unknown":
+                                            cache_embeddings[id_name] = embedding
+                                else:
                                     id_name = identify_face(embedding=embedding,
                                                             embedding_dict=embedding_dict)
-                                    if id_name != "Unknown":
-                                        cache_embeddings[id_name] = embedding
-                            else:
-                                id_name = identify_face(embedding=embedding,
-                                                        embedding_dict=embedding_dict)
-                                cache_embeddings[id_name] = embedding
+                                    cache_embeddings[id_name] = embedding
 
-                            if(str(id_name) not in ids):
-                                ids.append(str(id_name))
-                                cele[str(id_name)] = []
-                            cele_id.append(id_name)
-                            cele[str(id_name)].append(timestamps)
-                else:
-                    logger.error(msg="No Faces")
-                    return {"Error": 'No Faces'}
-            except Exception as e:
-                logger.error(msg=e)
-                return {"Error": e}
+                                if(str(id_name) not in ids):
+                                    ids.append(str(id_name))
+                                    cele[str(id_name)] = []
+                                cele_id.append(id_name)
+                                cele[str(id_name)].append(timestamps)
+                    else:
+                        logger.error(msg="No Faces")
+                        return {"Error": 'No Faces'}
+                except Exception as e:
+                    logger.error(msg=e)
+                    return {"Error": e}
 
+        else:
+            break
+
+    cap.release()
     output_dur = time_dura(cele, gap_in_sec)
     try:
         with open(os.path.join(MEDIA_ROOT, 'output/video', filename.split('.')[0] + '.json'), 'w') as fp:
@@ -950,6 +959,8 @@ def createembedding(input_file, filename):
             filepath = "/media/face/" + str(unid) + '.jpg'
             file_form = InputEmbed(id=unid, title=filename, fileurl=filepath)
             file_form.save()
+            file_path = os.path.join(MEDIA_ROOT, 'images', filename)
+            handle_uploaded_file(input_file, file_path)
         except IntegrityError as eri:
             logger.error(msg=eri)
             return {"Error": "Integrity Error"}
@@ -959,8 +970,8 @@ def createembedding(input_file, filename):
         except Exception as e:
             logger.error(msg=e)
             return {"Error": e}
-
-        img = imread(fname=input_file, mode='RGB')
+        img = cv2.imread(file_path)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         if (img.shape[2] == 4):
             img = img[..., :3]
 
