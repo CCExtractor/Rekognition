@@ -489,6 +489,50 @@ class EMBEDDING(views.APIView):
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
 
 
+class AsyncVideoFr(views.APIView):
+    def post(self, request):
+        tracemalloc.start()
+        start = time.time()
+        filename = getnewuniquefilename(request)
+        file_path = os.path.join(MEDIA_ROOT, 'videos', filename)
+        input_file = request.FILES['file']
+        handle_uploaded_file(input_file, file_path)
+        thread = ThreadWithReturnValue(target=facerecogniseinvideo, args=(input_file, filename))
+        thread.start()
+        result = thread.join()
+        end = time.time()
+        logger.info(msg="Time For Prediction = " + str(int(end - start)))
+        result['Time'] = int(end - start)
+        result["Memory"] = (tracemalloc.get_traced_memory()[1] - tracemalloc.get_traced_memory()[0]) * 0.001
+        logger.info(msg="Memory Used = " + str((tracemalloc.get_traced_memory()[1] - tracemalloc.get_traced_memory()[0]) * 0.001))
+        tracemalloc.stop()
+        if "Error" not in result:
+            return Response(result, status=status.HTTP_200_OK)
+        else:
+            if (result["Error"] == 'An HTTP error occurred.'):
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            elif (result["Error"] == 'A Connection error occurred.'):
+                return Response(result, status=status.HTTP_503_SERVICE_UNAVALIABLE)
+            elif (result["Error"] == 'The request timed out.'):
+                return Response(result, status=status.HTTP_408_REQUEST_TIMEOUT)
+            elif (result["Error"] == 'Bad URL'):
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            elif (result["Error"] == 'Face Recongiton(Video) Not Working'):
+                return Response(result, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            elif (result["Error"] == 'The media format of the requested data is not supported by the server'):
+                return Response(result, status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+            elif (result["Error"] == 'A JSON error occurred.'):
+                return Response(result, status=status.HTTP_204_NO_CONTENT)
+            elif (result["Error"] == 'A proxy error occurred.'):
+                return Response(result, status=status.HTTP_407_PROXY_AUTHENTICATION_REQUIRED)
+            elif (result["Error"] == 'The header value provided was somehow invalid.'):
+                return Response(result, status=status.HTTP_411_LENGTH_REQUIRED)
+            elif (result["Error"] == 'The request timed out while trying to connect to the remote server.'):
+                return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
+            else:
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+
 class FeedbackFeature(APIView):
     """     Feedback feature
     Workflow
