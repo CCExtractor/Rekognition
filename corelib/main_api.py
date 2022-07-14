@@ -150,7 +150,6 @@ def text_detect(input_file, filename):
     handle_uploaded_file(input_file, file_path)
 
     img = cv2.imread(file_path)[:, :, ::-1]
-    img = cv2.resize(img, (512, 512))
     img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     img_resized = cv2.resize(img, (512, 512))
 
@@ -162,34 +161,20 @@ def text_detect(input_file, filename):
     try:
         headers = {"content-type": "application/json"}
         url = urllib.parse.urljoin(base_url, text_detect_url)
+
         json_response = requests.post(url, data=data, headers=headers)
     except requests.exceptions.HTTPError as errh:
         logger.error(msg=errh)
         return {"Error": "An HTTP error occurred."}
-    except requests.exceptions.ConnectTimeout as err:
-        logger.error(msg=err)
-        return {"Error": "The request timed out while trying to connect to the remote server."}
-    except requests.exceptions.ProxyError as err:
-        logger.error(msg=err)
-        return {"Error": "Text Detection Not Working"}
     except requests.exceptions.ConnectionError as errc:
         logger.error(msg=errc)
         return {"Error": "A Connection error occurred."}
     except requests.exceptions.Timeout as errt:
         logger.error(msg=errt)
         return {"Error": "The request timed out."}
-    except requests.exceptions.InvalidURL as errm:
+    except requests.exceptions.TooManyRedirects as errm:
         logger.error(msg=errm)
         return {"Error": "Bad URL"}
-    except requests.exceptions.ContentDecodingError as err:
-        logger.error(msg=err)
-        return {"Error": "The media format of the requested data is not supported by the server"}
-    except requests.exceptions.InvalidJSONError as err:
-        logger.error(msg=err)
-        return {"Error": "A JSON error occurred."}
-    except requests.exceptions.InvalidHeader as err:
-        logger.error(msg=err)
-        return {"Error": "The header value provided was somehow invalid."}
     except requests.exceptions.RequestException as err:
         logger.error(msg=err)
         return {"Error": "Text Detection Not Working"}
@@ -203,9 +188,12 @@ def text_detect(input_file, filename):
     #score_map = np.array(predictions["pred_score_map/Sigmoid:0"], dtype="float64")
     #geo_map = np.array(predictions["pred_geo_map/concat:0"], dtype="float64")
     #boxes = postprocess(score_map=score_map, geo_map=geo_map)
-    boxes = predictions[:, 0:4]
+    boxes = predictions
+    print("Shape of prediction = ", predictions.shape)
     result_boxes = []
     if boxes is not None:
+        print("Shape of boxes = ", boxes.shape)
+        print("Type of box = ", type(boxes))
         boxes = boxes[:, :8].reshape((-1, 4, 2))
         # boxes[:, :, 0] /= ratio_w
         # boxes[:, :, 1] /= ratio_h
@@ -213,6 +201,8 @@ def text_detect(input_file, filename):
         boxes[:, :, 1] *= img.shape[0]
         for box in boxes:
             box = sort_poly(box.astype(np.int32))
+            print("Shape of single box = ", box.shape)
+            print("Box after sort = ", box)
             if np.linalg.norm(box[0] - box[1]) < 5 or np.linalg.norm(box[3] - box[0]) < 5:
                 continue
             result_boxes.append(box)
@@ -813,7 +803,7 @@ def facerecogniseinimage(input_file, filename, network):
 
     logger.info(msg="facerecogniseinimage called")
     file_path = os.path.join(MEDIA_ROOT, 'images', filename)
-    #handle_uploaded_file(input_file, file_path)
+    handle_uploaded_file(input_file, file_path)
 
     if input_file and allowed_file(filename=filename, allowed_set=allowed_set):
         try:
