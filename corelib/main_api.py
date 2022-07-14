@@ -166,15 +166,30 @@ def text_detect(input_file, filename):
     except requests.exceptions.HTTPError as errh:
         logger.error(msg=errh)
         return {"Error": "An HTTP error occurred."}
+    except requests.exceptions.ConnectTimeout as err:
+        logger.error(msg=err)
+        return {"Error": "The request timed out while trying to connect to the remote server."}
+    except requests.exceptions.ProxyError as err:
+        logger.error(msg=err)
+        return {"Error": "Text Detection Not Working"}
     except requests.exceptions.ConnectionError as errc:
         logger.error(msg=errc)
         return {"Error": "A Connection error occurred."}
     except requests.exceptions.Timeout as errt:
         logger.error(msg=errt)
         return {"Error": "The request timed out."}
-    except requests.exceptions.TooManyRedirects as errm:
+    except requests.exceptions.InvalidURL as errm:
         logger.error(msg=errm)
         return {"Error": "Bad URL"}
+    except requests.exceptions.ContentDecodingError as err:
+        logger.error(msg=err)
+        return {"Error": "The media format of the requested data is not supported by the server"}
+    except requests.exceptions.InvalidJSONError as err:
+        logger.error(msg=err)
+        return {"Error": "A JSON error occurred."}
+    except requests.exceptions.InvalidHeader as err:
+        logger.error(msg=err)
+        return {"Error": "The header value provided was somehow invalid."}
     except requests.exceptions.RequestException as err:
         logger.error(msg=err)
         return {"Error": "Text Detection Not Working"}
