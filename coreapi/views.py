@@ -16,7 +16,6 @@ from .models import InputEmbed, NameSuggested, SimilarFaceInImage
 from logger.logging import RekogntionLogger
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
-import asyncio
 from threading import Thread
 import random
 import tracemalloc
@@ -275,6 +274,7 @@ class EMBEDDING(views.APIView):
         logger.info(msg="POST Request for generating embeddings made")
         filename = request.FILES['file'].name
         input_file = request.FILES['file']
+        # filename = getnewuniquefilename(request)
         result = createembedding(input_file, filename)
         if "Error" not in result:
             return Response(result, status=status.HTTP_200_OK)
@@ -400,17 +400,6 @@ def videowebui(request):
     else:
         logger.error(msg="GET request made instead of POST")
         return "POST HTTP method required!"
-
-
-async def async_helper(request, filename):
-    return (facerecogniseinvideo(request, filename))
-
-
-def asyncthread(request, filename):
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(async_helper(request, filename))
-    loop.close()
 
 
 class AsyncVideoFr(views.APIView):
@@ -561,12 +550,41 @@ class ObjectDetectVideo(views.APIView):
 
         logger.info(msg="POST Request for Object Detection in video made")
         filename = getnewuniquefilename(request)
+        start = time.time()
         input_file = request.FILES['file']
         result = object_detect_video(input_file, filename)
         if "Error" not in result:
+            end = time.time()
+
+            result['Time'] = int(end - start)
+
+            result["Memory"] = (tracemalloc.get_traced_memory()[1] - tracemalloc.get_traced_memory()[0]) * 0.001
+            logger.info()
+            tracemalloc.stop()
             return Response(result, status=status.HTTP_200_OK)
         else:
-            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            if (result["Error"] == 'An HTTP error occurred.'):
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            elif (result["Error"] == 'A Connection error occurred.'):
+                return Response(result, status=status.HTTP_503_SERVICE_UNAVALIABLE)
+            elif (result["Error"] == 'The request timed out.'):
+                return Response(result, status=status.HTTP_408_REQUEST_TIMEOUT)
+            elif (result["Error"] == 'Bad URL'):
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            elif (result["Error"] == 'Object Detection(Video) Not Working'):
+                return Response(result, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            elif (result["Error"] == 'The media format of the requested data is not supported by the server'):
+                return Response(result, status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+            elif (result["Error"] == 'A JSON error occurred.'):
+                return Response(result, status=status.HTTP_204_NO_CONTENT)
+            elif (result["Error"] == 'A proxy error occurred.'):
+                return Response(result, status=status.HTTP_407_PROXY_AUTHENTICATION_REQUIRED)
+            elif (result["Error"] == 'The header value provided was somehow invalid.'):
+                return Response(result, status=status.HTTP_411_LENGTH_REQUIRED)
+            elif (result["Error"] == 'The request timed out while trying to connect to the remote server.'):
+                return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
+            else:
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ThreadWithReturnValue(Thread):
