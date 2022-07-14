@@ -8,9 +8,11 @@ from __future__ import print_function
 
 import os
 from subprocess import Popen, PIPE
+import cv2
+import numpy
 import tensorflow as tf
 import numpy as np
-from scipy import misc
+# from scipy import misc
 from sklearn.model_selection import KFold
 from scipy import interpolate
 from tensorflow.python.training import training
@@ -87,11 +89,18 @@ def shuffle_examples(image_paths, labels):
     return image_paths_shuff, labels_shuff
 
 
+def rotate_image(image, angle):
+    image_center = tuple(np.array(image.shape[1::-1]) / 2)
+    rot_mat = cv2.getRotationMatrix2D(image_center, angle, 1.0)
+    result = cv2.warpAffine(image, rot_mat, image.shape[1::-1], flags=cv2.INTER_LINEAR)
+    return result
+
+
 def random_rotate_image(image):
 
     logger.info(msg="random_rotate_image called")
     angle = np.random.uniform(low=-10.0, high=10.0)
-    return misc.imrotate(image, angle, 'bicubic')
+    return rotate_image(image, angle)
 
 
 # 1: Random rotate
@@ -285,8 +294,8 @@ def load_img(img, do_random_crop, do_random_flip, image_size, do_prewhiten=True)
     # nrof_samples = len(image_paths)
     images = np.zeros((1, image_size, image_size, 3))
     # for i in range(nrof_samples):
-    # img = misc.imread(image_path)
-    # img = misc.imresize(img,(160,160,3))
+    # img = cv2.imread(image_path)
+    # img = cv2.imresize(img,(160,160,3))
     if img.ndim == 2:
         img = to_rgb(img)
     if do_prewhiten:
@@ -303,14 +312,14 @@ def load_data(image_paths, do_random_crop, do_random_flip, image_size, do_prewhi
     nrof_samples = len(image_paths)
     images = np.zeros((nrof_samples, image_size, image_size, 3))
     for i in range(nrof_samples):
-        img = misc.imread(image_paths[i])
+        img = cv2.imread(image_paths[i])
         if img.ndim == 2:
             img = to_rgb(img)
         if do_prewhiten:
             img = prewhiten(img)
         img = crop(img, do_random_crop, image_size)
         img = flip(img, do_random_flip)
-        img = misc.imresize(img, (160, 160, 3))
+        img = cv2.imresize(img, (160, 160, 3))
         # print(image_paths[i].split('/')[6],img.shape,images.shape)
         images[i, :, :, :] = img
     return images
@@ -395,9 +404,8 @@ def get_dataset(path, has_class_directories=True):
     logger.info(msg="get_dataset called")
     dataset = []
     path_exp = os.path.expanduser(path)
-    classes = [path for path in os.listdir(path_exp)
-               if os.path.isdir(os.path.join(path_exp, path))]
-    classes.sort()
+    classes = sorted([path for path in os.listdir(path_exp)
+                      if os.path.isdir(os.path.join(path_exp, path))])
     nrof_classes = len(classes)
     for i in range(nrof_classes):
         class_name = classes[i]
@@ -612,6 +620,7 @@ def calculate_val(thresholds, embeddings1, embeddings2, actual_issame, far_targe
                                                             dist[train_set],
                                                             actual_issame[train_set])
         if np.max(far_train) >= far_target:
+            # f = cv2.resize(img,None, fx = far_train, fy = thresholds, interpolation = cv2.INTER_LINEAR)
             f = interpolate.interp1d(far_train, thresholds, kind='slinear')
             threshold = f(far_target)
         else:

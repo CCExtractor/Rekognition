@@ -1,10 +1,10 @@
+import os
 import math
 import uuid
 import json
 import subprocess
 import shlex
 import cv2
-import os
 import wordninja
 import urllib.parse
 from werkzeug.utils import secure_filename
@@ -933,7 +933,7 @@ def facerecogniseinvideo(input_file, filename):
 
     logger.info(msg="facerecogniseinvideo called")
     file_path = os.path.join(MEDIA_ROOT, 'videos', filename)
-    # handle_uploaded_file(input_file, file_path)
+    #handle_uploaded_file(input_file, file_path)
     try:
         file_form = InputVideo(title=filename)
         file_form.save()
