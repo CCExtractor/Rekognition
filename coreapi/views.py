@@ -238,6 +238,7 @@ class VideoFr(views.APIView):
         logger.info(msg="POST Request for Face Recognition in Video made")
         filename = getnewuniquefilename(request)
         input_file = request.FILES['file']
+        file_path = os.path.join(MEDIA_ROOT, 'videos', filename)
         handle_uploaded_file(input_file, file_path)
         result = facerecogniseinvideo(input_file, filename)
         if "Error" not in result:
@@ -456,7 +457,6 @@ class AsyncVideoFr(views.APIView):
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
 
 
-
 class StreamVideoFr(views.APIView):
     """     To recognise faces in YouTube video
 
@@ -568,6 +568,7 @@ class ObjectDetectVideo(views.APIView):
         else:
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
 
+
 class ThreadWithReturnValue(Thread):
     def __init__(self, group=None, target=None, name=None,
                  args=(), kwargs={}, Verbose=None):
@@ -582,5 +583,4 @@ class ThreadWithReturnValue(Thread):
 
     def join(self, *args):
         Thread.join(self, *args)
-        return self._return          
-          
+        return self._return
