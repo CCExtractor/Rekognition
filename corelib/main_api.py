@@ -5,19 +5,18 @@ import json
 import subprocess
 import shlex
 import cv2
-import os
 import wordninja
 import urllib.parse
+import ffmpeg
 from werkzeug.utils import secure_filename
 from Rekognition.settings import MEDIA_ROOT
 from corelib.CRNN import CRNN_utils
-from corelib.textbox import  TBPP512_dense_separable, rbox3_to_polygon, PriorUtil
+from corelib.textbox import TBPP512_dense_separable, PriorUtil
 from corelib.facenet.utils import (get_face, embed_image, save_embedding,
                                    identify_face, allowed_file, time_dura,
                                    handle_uploaded_file, save_face,
                                    img_standardize)
-from corelib.EAST.EAST_utils import (preprocess, sort_poly,
-                                     postprocess)
+from corelib.EAST.EAST_utils import (sort_poly)
 from corelib.constant import (pnet, rnet, onet, facenet_persistent_session,
                               phase_train_placeholder, embeddings,
                               images_placeholder, image_size, allowed_set,
@@ -68,7 +67,7 @@ def text_reco(image):
         url = urllib.parse.urljoin(base_url, text_reco_url)
         json_response = requests.post(url, data=data, headers=headers)
         logger.info(msg=url)
-        
+
     except requests.exceptions.HTTPError as errh:
         logger.error(msg=errh)
         return {"Error": "An HTTP error occurred."}
@@ -110,7 +109,7 @@ def text_reco(image):
         decode_dense_shape=predictions['decodes_dense_shape'],
     )[0]
     preds = ' '.join(wordninja.split(preds))
-    
+
     return {"Text": preds}
 
 
@@ -145,24 +144,24 @@ def text_detect(input_file, filename):
                 as keys and coordinates of bounding boxes and recognized
                 text of that box as the respective value
     """
-    
+
     logger.info(msg="text_detect called")
     file_path = os.path.join(MEDIA_ROOT, 'text', filename)
     handle_uploaded_file(input_file, file_path)
-    
+
     img = cv2.imread(file_path)[:, :, ::-1]
-    img=cv2.resize(img,(512,512))
-    img=cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    img_resized=img.copy()
-    #img=cv2.resize(img,tuple(img_sh))
-    #img_resized, (ratio_h, ratio_w) = preprocess(img)
-    #img_resized = (img_resized / 127.5) - 1
-    
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    img_resized = cv2.resize(img, (512, 512))
+
+    # img_resized, (ratio_h, ratio_w) = preprocess(img)
+    # img_resized = (img_resized / 127.5) - 1
+    print("For input image of shape = ", img.shape, " returned shape is ", img_resized.shape)
     data = json.dumps({"signature_name": "serving_default",
                        "inputs": [img_resized.tolist()]})
     try:
         headers = {"content-type": "application/json"}
         url = urllib.parse.urljoin(base_url, text_detect_url)
+
         json_response = requests.post(url, data=data, headers=headers)
     except requests.exceptions.HTTPError as errh:
         logger.error(msg=errh)
@@ -197,33 +196,36 @@ def text_detect(input_file, filename):
     except Exception as e:
         logger.error(msg=e)
         return {"Error": e}
-    
+
     prior_util = PriorUtil(TBPP512_dense_separable(softmax=False))
-    result=np.array(json.loads(json_response.text)["outputs"])
-    
+    result = np.array(json.loads(json_response.text)["outputs"])
     predictions = prior_util.decode(result[0], .2)
     #score_map = np.array(predictions["pred_score_map/Sigmoid:0"], dtype="float64")
     #geo_map = np.array(predictions["pred_geo_map/concat:0"], dtype="float64")
     #boxes = postprocess(score_map=score_map, geo_map=geo_map)
-    boxes=predictions[:,0:4]
+    boxes = predictions
+    print("Shape of prediction = ", predictions.shape)
     result_boxes = []
     if boxes is not None:
+        print("Shape of boxes = ", boxes.shape)
+        print("Type of box = ", type(boxes))
         boxes = boxes[:, :8].reshape((-1, 4, 2))
-        #boxes[:, :, 0] /= ratio_w
-        #boxes[:, :, 1] /= ratio_h
-        boxes[:,:,0]*=img.shape[0]
-        boxes[:,:,1]*=img.shape[1]
+        # boxes[:, :, 0] /= ratio_w
+        # boxes[:, :, 1] /= ratio_h
+        boxes[:, :, 0] *= img.shape[1]
+        boxes[:, :, 1] *= img.shape[0]
         for box in boxes:
             box = sort_poly(box.astype(np.int32))
+            print("Shape of single box = ", box.shape)
+            print("Box after sort = ", box)
             if np.linalg.norm(box[0] - box[1]) < 5 or np.linalg.norm(box[3] - box[0]) < 5:
                 continue
             result_boxes.append(box)
-    
-    
+
     result = []
     for box in result_boxes:
         top_left_x, top_left_y, bot_right_x, bot_right_y = bb_to_cv(box)
-        text=text_reco(img[top_left_y :bot_right_y,top_left_x :bot_right_x ]).get("Text")
+        text = text_reco(img[top_left_y:bot_right_y, top_left_x:bot_right_x]).get("Text")
         result.append({"Boxes": box, "Text": text})
     return {"Texts": result}
 
@@ -271,8 +273,8 @@ def text_detect_video(input_file, filename):
         ret, img = vid.read()
         if ret:
             img = img[:, :, ::-1]
-            img=cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-            img_resized=cv2.resize(img, (512, 512))
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+            img_resized = cv2.resize(img, (512, 512))
             #img_resized, (ratio_h, ratio_w) = preprocess(img)
             #img_resized = (img_resized / 127.5) - 1
             data = json.dumps({"signature_name": "serving_default",
@@ -315,20 +317,20 @@ def text_detect_video(input_file, filename):
                 logger.error(msg=e)
                 return {"Error": e}
             prior_util = PriorUtil(TBPP512_dense_separable(softmax=False))
-            result=np.array(json.loads(json_response.text)["outputs"])
-    
+            result = np.array(json.loads(json_response.text)["outputs"])
+
             predictions = prior_util.decode(result[0], .2)
             #score_map = np.array(predictions["pred_score_map/Sigmoid:0"], dtype="float64")
             #geo_map = np.array(predictions["pred_geo_map/concat:0"], dtype="float64")
             #boxes = postprocess(score_map=score_map, geo_map=geo_map)
-            boxes=predictions[:,0:4]
+            boxes = predictions[:, 0:4]
             result_boxes = []
             if boxes is not None:
                 boxes = boxes[:, :8].reshape((-1, 4, 2))
                 #boxes[:, :, 0] /= ratio_w
                 #boxes[:, :, 1] /= ratio_h
-                boxes[:,:,0]*=img.shape[0]
-                boxes[:,:,1]*=img.shape[1]
+                boxes[:, :, 0] *= img.shape[0]
+                boxes[:, :, 1] *= img.shape[1]
                 for box in boxes:
                     box = sort_poly(box.astype(np.int32))
                     if np.linalg.norm(box[0] - box[1]) < 5 or np.linalg.norm(box[3] - box[0]) < 5:
@@ -629,10 +631,8 @@ def nsfwclassifier(input_file, filename):
     file_path = os.path.join(MEDIA_ROOT, 'images', filename)
 
     handle_uploaded_file(input_file, file_path)
-
-    img = cv2.imread(file_path)[:, :, ::-1]
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    img_resized = cv2.resize(img, (64, 64))
+    img = cv2.imread(file_path)
+    img = cv2.resize(img, (64, 64))
     if (img.shape[2] == 4):
         img = img[..., :3]
 
@@ -835,6 +835,7 @@ def facerecogniseinimage(input_file, filename, network):
             return {"Error": e}
 
         img = cv2.imread(file_path)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         # img = imread(fname=input_file, pilmode='RGB')
         if (img.shape[2] == 4):
             img = img[..., :3]
@@ -937,7 +938,7 @@ def facerecogniseinvideo(input_file, filename):
 
     logger.info(msg="facerecogniseinvideo called")
     file_path = os.path.join(MEDIA_ROOT, 'videos', filename)
-    handle_uploaded_file(input_file, file_path)
+    #handle_uploaded_file(input_file, file_path)
     try:
         file_form = InputVideo(title=filename)
         file_form.save()
@@ -952,20 +953,27 @@ def facerecogniseinvideo(input_file, filename):
         return {"Error": e}
 
     videofile = file_path
-    
-    videogen = cv2.VideoCapture(videofile)
-    
-    #For various OpenCV versions: 
-    (major_ver, minor_ver, subminor_ver) = (cv2.__version__).split('.')
-    if int(major_ver)  < 3 :
-      total_frame = int(videogen.get(cv2.cv.CV_CAP_PROP_FRAME_COUNT))
-      fps = videogen.get(cv2.cv.CV_CAP_PROP_FPS)
-    else :
-      total_frame = int(videogen.get(cv2.CAP_PROP_FRAME_COUNT))
-      fps = videogen.get(cv2.CAP_PROP_FPS)   
-    
-    total_duration = float(total_frame / fps) #in seconds
+    # metadata = skvideo.io.ffprobe(videofile)
+    # print("************METEDATE ***************+++  \n",metadata)
+    # str_fps = metadata["video"]['@avg_frame_rate'].split('/')
+    # print("FPS = **************** = \n",str_fps)
+    # fps = float(float(str_fps[0]) / float(str_fps[1]))
 
+    # timestamps = [(float(1) / fps)]
+    # total_frame = float(metadata["video"]["@nb_frames"])
+    # total_duration = float(metadata["video"]["@duration"])
+
+    metadata = ffmpeg.probe(videofile)["streams"]
+    str_fps = metadata[1]['avg_frame_rate'].split('/')
+    fps = "30/1"
+    try:
+        fps = float(float(str_fps[0]) / float(str_fps[1]))
+    except BaseException:
+        fps = 30.0
+
+    timestamps = [(float(1) / fps)]
+    total_frame = float(metadata[1]["nb_frames"])
+    total_duration = float(metadata[1]["duration"])
     frame_hop = int(math.ceil(fps / 10))
     gap_in_sec = (total_duration / total_frame) * frame_hop * 3 * 1000
 
@@ -973,54 +981,61 @@ def facerecogniseinvideo(input_file, filename):
     cele = {}
     ids = []
     cache_embeddings = {}
+    cap = cv2.VideoCapture(videofile)
 
-    success = True
-    while success:
-        success,curr_frame = videogen.read()
-        count = count + 1
-        if count % frame_hop == 0:
-            # multiplying to get the timestamps in milliseconds
-            timestamps = (float(count) / fps) * 1000
-            try:
-                all_faces, all_bb = get_face(img=curr_frame,
-                                             pnet=pnet, rnet=rnet,
-                                             onet=onet, image_size=image_size)
-                if all_faces is not None:
-                    cele_id = []
-                    for face, bb in zip(all_faces, all_bb):
-                        embedding = embed_image(img=face,
-                                                session=facenet_persistent_session,
-                                                images_placeholder=images_placeholder,
-                                                embeddings=embeddings,
-                                                phase_train_placeholder=phase_train_placeholder,
-                                                image_size=image_size)
-                        id_name = ''
-                        if embedding_dict:
-                            if cache_embeddings:
-                                id_name = identify_face(embedding=embedding,
-                                                        embedding_dict=cache_embeddings)
-                                if id_name == "Unknown":
+    # videogen = skvideo.io.vreader(videofile)
+    cap = cv2.VideoCapture(videofile)
+    while(cap.isOpened()):
+        ret, curr_frame = cap.read()
+        if ret:
+            count = count + 1
+            if count % frame_hop == 0:
+                # multiplying to get the timestamps in milliseconds
+                timestamps = (float(count) / fps) * 1000
+                try:
+                    all_faces, all_bb = get_face(img=curr_frame,
+                                                 pnet=pnet, rnet=rnet,
+                                                 onet=onet, image_size=image_size)
+                    if all_faces is not None:
+                        cele_id = []
+                        for face, bb in zip(all_faces, all_bb):
+                            embedding = embed_image(img=face,
+                                                    session=facenet_persistent_session,
+                                                    images_placeholder=images_placeholder,
+                                                    embeddings=embeddings,
+                                                    phase_train_placeholder=phase_train_placeholder,
+                                                    image_size=image_size)
+                            id_name = ''
+                            if embedding_dict:
+                                if cache_embeddings:
+                                    id_name = identify_face(embedding=embedding,
+                                                            embedding_dict=cache_embeddings)
+                                    if id_name == "Unknown":
+                                        id_name = identify_face(embedding=embedding,
+                                                                embedding_dict=embedding_dict)
+                                        if id_name != "Unknown":
+                                            cache_embeddings[id_name] = embedding
+                                else:
                                     id_name = identify_face(embedding=embedding,
                                                             embedding_dict=embedding_dict)
-                                    if id_name != "Unknown":
-                                        cache_embeddings[id_name] = embedding
-                            else:
-                                id_name = identify_face(embedding=embedding,
-                                                        embedding_dict=embedding_dict)
-                                cache_embeddings[id_name] = embedding
+                                    cache_embeddings[id_name] = embedding
 
-                            if(str(id_name) not in ids):
-                                ids.append(str(id_name))
-                                cele[str(id_name)] = []
-                            cele_id.append(id_name)
-                            cele[str(id_name)].append(timestamps)
-                else:
-                    logger.error(msg="No Faces")
-                    return {"Error": 'No Faces'}
-            except Exception as e:
-                logger.error(msg=e)
-                return {"Error": e}
+                                if(str(id_name) not in ids):
+                                    ids.append(str(id_name))
+                                    cele[str(id_name)] = []
+                                cele_id.append(id_name)
+                                cele[str(id_name)].append(timestamps)
+                    else:
+                        logger.error(msg="No Faces")
+                        return {"Error": 'No Faces'}
+                except Exception as e:
+                    logger.error(msg=e)
+                    return {"Error": e}
 
+        else:
+            break
+
+    cap.release()
     output_dur = time_dura(cele, gap_in_sec)
     try:
         with open(os.path.join(MEDIA_ROOT, 'output/video', filename.split('.')[0] + '.json'), 'w') as fp:
@@ -1056,6 +1071,8 @@ def createembedding(input_file, filename):
             filepath = "/media/face/" + str(unid) + '.jpg'
             file_form = InputEmbed(id=unid, title=filename, fileurl=filepath)
             file_form.save()
+            file_path = os.path.join(MEDIA_ROOT, 'images', filename)
+            handle_uploaded_file(input_file, file_path)
         except IntegrityError as eri:
             logger.error(msg=eri)
             return {"Error": "Integrity Error"}
@@ -1065,8 +1082,7 @@ def createembedding(input_file, filename):
         except Exception as e:
             logger.error(msg=e)
             return {"Error": e}
-
-        img = cv2.imread(input_file)[:, :, ::-1]
+        img = cv2.imread(file_path)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         if (img.shape[2] == 4):
             img = img[..., :3]
@@ -1135,8 +1151,8 @@ def process_streaming_video(url, filename):
         result = requests.post('http://localhost:8000/api/old_video/',
                                files=files)
     except requests.exceptions.HTTPError as errh:
-                logger.error(msg=errh)
-                return {"Error": "An HTTP error occurred."}
+        logger.error(msg=errh)
+        return {"Error": "An HTTP error occurred."}
     except requests.exceptions.ConnectTimeout as err:
         logger.error(msg=err)
         return {"Error": "The request timed out while trying to connect to the remote server."}
@@ -1278,8 +1294,8 @@ def similarface(reference_img, compare_img, filename):
             return {"result": [str(filename.split('.')[0]), "None"]}
 
     except requests.exceptions.HTTPError as errh:
-                logger.error(msg=errh)
-                return {"Error": "An HTTP error occurred."}
+        logger.error(msg=errh)
+        return {"Error": "An HTTP error occurred."}
     except requests.exceptions.ConnectTimeout as err:
         logger.error(msg=err)
         return {"Error": "The request timed out while trying to connect to the remote server."}
@@ -1342,15 +1358,13 @@ def object_detect(input_file, filename):
 
     """
 
-
-
     logger.info(msg="object_detect called")
     file_path = os.path.join(MEDIA_ROOT, 'object', filename)
     handle_uploaded_file(input_file, file_path)
     image = cv2.imread(file_path)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    imgh,imgw,_=image.shape
-    image = cv2.resize(image, (640, 640)) 
+    imgh, imgw, _ = image.shape
+    image = cv2.resize(image, (640, 640))
     #LINEAR = np.array(image, np.float32) / 255
     data = json.dumps({"inputs": [image.tolist()]})
     try:
@@ -1358,8 +1372,8 @@ def object_detect(input_file, filename):
         url = urllib.parse.urljoin(base_url, object_detect_url)
         json_response = requests.post(url, data=data, headers=headers)
     except requests.exceptions.HTTPError as errh:
-                logger.error(msg=errh)
-                return {"Error": "An HTTP error occurred."}
+        logger.error(msg=errh)
+        return {"Error": "An HTTP error occurred."}
     except requests.exceptions.ConnectTimeout as err:
         logger.error(msg=err)
         return {"Error": "The request timed out while trying to connect to the remote server."}
@@ -1390,15 +1404,14 @@ def object_detect(input_file, filename):
     except Exception as e:
         logger.error(msg=e)
         return {"Error": "ObjectDetection Not Working"}
-       
+
     predictions = np.array(json.loads(json_response.text)["outputs"])
-    
-    boxes, scores, classes = predictions[0][:,1:5], predictions[0][:,5], predictions[0][:,6]
-    nums=100
-    boxes[:,0]*=(imgh/640)
-    boxes[:,2]*=(imgh/640)
-    boxes[:,1]*=(imgw/640)
-    boxes[:,3]*=(imgw/640)
+
+    boxes, scores, classes = predictions[0][:, 1:5], predictions[0][:, 5], predictions[0][:, 6]
+    boxes[:, 0] *= (imgh / 640)
+    boxes[:, 2] *= (imgh / 640)
+    boxes[:, 1] *= (imgw / 640)
+    boxes[:, 3] *= (imgw / 640)
 
 #         return {"Error": "ObjectDetection Not Working"}
 #     predictions = json.loads(json_response.text).get("outputs", "Bad request made.")
@@ -1452,8 +1465,8 @@ def object_detect_video(input_file, filename):
         ret, image = vid.read()
         if ret:
             image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-            imgh,imgw,_=image.shape
-            image = cv2.resize(image, (640, 640)) 
+            imgh, imgw, _ = image.shape
+            image = cv2.resize(image, (640, 640))
             data = json.dumps({"inputs": [image.tolist()]})
             try:
                 headers = {"content-type": "application/json"}
@@ -1493,7 +1506,7 @@ def object_detect_video(input_file, filename):
                 logger.error(msg=e)
                 return {"Error": "Object Detection(video) Not Working"}
             predictions = np.array(json.loads(json_response.text)["outputs"])
-            boxes, scores, classes = predictions[0][:,1:5], predictions[0][:,5], predictions[0][:,6]
+            boxes, scores, classes = predictions[0][:, 1:5], predictions[0][:, 5], predictions[0][:, 6]
 
 #                 return {"Error": "Object Detection(video) Not Working"}
 #             predictions = json.loads(json_response.text).get("outputs", "Bad request made.")
@@ -1501,11 +1514,11 @@ def object_detect_video(input_file, filename):
 #                 "yolo_nms_1"][0], predictions["yolo_nms_2"][0], predictions["yolo_nms_3"][0]
 
             result = []
-            nums=100
-            boxes[:,0]*=(imgh/640)
-            boxes[:,2]*=(imgh/640)
-            boxes[:,1]*=(imgw/640)
-            boxes[:,3]*=(imgw/640)
+            nums = 100
+            boxes[:, 0] *= (imgh / 640)
+            boxes[:, 2] *= (imgh / 640)
+            boxes[:, 1] *= (imgw / 640)
+            boxes[:, 3] *= (imgw / 640)
             class_names = get_class_names(coco_names_path)
             for num in range(nums):
                 result.append([{"Box": boxes[num]}, {"Score": scores[num]}, {"Label": class_names[int(classes[num])]}])

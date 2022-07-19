@@ -8,6 +8,7 @@ Google Summer Of Code Project under CCExtractor Development
 [![GPLv3 license](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/ccextractor/Rekognition/blob/master/LICENSE)
 
 ---
+![bannerimage](https://github.com/CCExtractor/Rekognition/banner.png)
 This project aims at providing a free alternative to Amazon Rekognition services.
 
 

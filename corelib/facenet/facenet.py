@@ -1,4 +1,6 @@
 """Functions for building the face recognition network.
+    Reference:
+    https://github.com/davidsandberg/facenet/blob/master/src/facenet.py
 """
 
 
@@ -68,7 +70,13 @@ def center_loss(features, label, alfa, nrof_classes):
 
 
 def get_image_paths_and_labels(dataset):
-
+    """ Gets image paths and labels from the dataset sent as input
+    Args:
+        dataset: the data of images
+    Returns:
+        image paths and labels
+    
+    """
     logger.info(msg="get_image_paths_and_labels called")
     image_paths_flat = []
     labels_flat = []
@@ -79,7 +87,15 @@ def get_image_paths_and_labels(dataset):
 
 
 def shuffle_examples(image_paths, labels):
+    """Takes inputs as image paths and labels and shuffles them to create a dynamic sample
+    Args:
+        image_paths: path of images generated previously
+        labels: labels of images generated previously
 
+    Returns: 
+        image paths and labels post shuffling
+    
+    """
     logger.info(msg="shuffle_examples called")
     shuffle_list = list(zip(image_paths, labels))
     random.shuffle(shuffle_list)
@@ -88,7 +104,12 @@ def shuffle_examples(image_paths, labels):
 
 
 def random_rotate_image(image):
-
+    """Rotates the given image using random angle generated in the function
+    Args:
+        image: the input image to perform the function on
+    Returns:
+        the rotated array of image
+    """
     logger.info(msg="random_rotate_image called")
     angle = np.random.uniform(low=-10.0, high=10.0)
     return misc.imrotate(image, angle, 'bicubic')
@@ -184,7 +205,19 @@ def _add_loss_summaries(total_loss):
 
 
 def train(total_loss, global_step, optimizer, learning_rate, moving_average_decay, update_gradient_vars, log_histograms=True):
+    """ Extensive function to train the model
+    Args:
+        total_loss: total loss incurred
+        global_step: the number of batches seen by the graph
+        optimizer: defines the type of optimizer
+        learning_rate:  a hyperparameter controlling how much to change the model in response to the estimated 
+        error each time the model weights are updated. For every optimizer, we keep learning_rate constant.
+        moving_average_decay:
+        update_gradient_vars:
+        log_histogram: set to true to create histograms for gradients
+    Returns:
 
+    """
     logger.info(msg="train called")
     # Generate moving averages of all losses and associated summaries.
     loss_averages_op = _add_loss_summaries(total_loss)
@@ -237,7 +270,7 @@ def train(total_loss, global_step, optimizer, learning_rate, moving_average_deca
 
 
 def prewhiten(x):
-
+    """ormalizes the range of the pixel values of input images to make training easier"""
     logger.info(msg="prewhiten called")
     mean = np.mean(x)
     std = np.std(x)
@@ -247,7 +280,14 @@ def prewhiten(x):
 
 
 def crop(image, random_crop, image_size):
-
+    """Crops the input image
+    Args:
+        image: input image
+        random_crop: turned true or false for randomly cropping and vice versa
+        image_size: size of the image
+    Returns:
+        cropped image
+    """
     logger.info(msg="crop called")
     if image.shape[1] > image_size:
         sz1 = int(image.shape[1] // 2)
@@ -263,7 +303,16 @@ def crop(image, random_crop, image_size):
 
 
 def flip(image, random_flip):
+    """ flips the entries in each row in the left/right direction. 
+    Columns are preserved, but appear in a different order than before if random_flip is on
+    
+    Args:
+        image: input image
+        random_flip: parameter deciding the randomness of flip
 
+    Returns:
+        image after being flipped
+    """
     logger.info(msg="flip called")
     if random_flip and np.random.choice([True, False]):
         image = np.fliplr(image)
@@ -271,7 +320,6 @@ def flip(image, random_flip):
 
 
 def to_rgb(img):
-
     logger.info(msg="to_rgb called")
     w, h = img.shape
     ret = np.empty((w, h, 3), dtype=np.uint8)

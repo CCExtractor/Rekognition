@@ -1,3 +1,33 @@
+Table of contents:
+- [Contributing to Rekognition](#Contributing-to-Rekognition)
+- [Making a PR](#making-a-pr)
+- [Asking for help](#asking-for-help)
+- [Development environment setup](#Development-environment-setup)
+
+As beginners, navigating the codebase and finding your way out of the documentation can become difficult. This page will help you understand everything about contributing to howdoi and the best practices in open source as well. 
+
+## Contributing to Rekognition
+- Follow the page Setting up the development environment for setting up the development environment for Rekognition.
+- Finding your first issue
+- Go to issues in the Rekognition repo.
+- Find the issues which you might be interested to work on. Or, you can also come up with your own ideas of improving the code.
+- After finding the issue you are interested in : If the issue is an existing one, comment on the issue and ask for it to be assigned to you. Or, if the issue is unlisted and new , create a new issue and fill every information needed in the issues template provided by howdoi and ask for it to be assigned to you.
+- After receiving confirmation, start working on the issue and whenever and wherever help is needed, comment on the issue itself describing your query in detail.
+- A good guide on how to collaborate efficiently can be found here.
+
+## Making a PR
+- After you have worked on the issue and fixed it, we need to merge it from your forked repository into the Rekognition repository by making a PR.
+- Each PR made should pass all the tests. We have new Github Actions in place for CI/CD.
+- Once your commit passes all the tests, make a PR and wait for it to be reviewed and merged.
+
+
+## Asking for help
+- At times, help is needed while solving the issue. We recommend the following step for asking for help when you get stuck:
+- Read from our documentation to see if your question has already been answered.
+- Comment on the issue you are working on describing in detail what problems you are facing.
+- Make sure to write your query in detail and if it is a bug, include steps to reproduce it.
+- If you are not working on any issue and have a question to be answered, open a new issue on Github and wait for a reply.
+
 # Development Environment setup
 ## Install python 3.6
 ```
@@ -6,14 +36,29 @@ sudo apt-get update
 sudo apt-get install python3.6
 ```
 
+## For MacOS:
+```
+brew install python
+```
+
 
 ## Clone the repository and setup venv
 ```
-git clone https://github.com/pymit/Rekognition
+git clone https://github.com/CCExtractor/Rekognition
 cd Rekognition
-./setup.sh
+../setup.sh
 source myenv/bin/activate
 ```
+
+### For MacOS:
+git clone https://github.com/CCExtractor/Rekognition
+./setup.sh
+cd Rekognition
+python3 -m virtualenv myenv
+source $PWD/myenv/bin/activate
+pip install -r ../requirements.txt
+
+NOTE: Sometimes an error "permission denied" may be shown when you try to run `setup.sh`. For this, try: `chmod 755 setup.sh` in root directory to change permissions.
 ***
 ## Postgres setup
 
@@ -30,16 +75,20 @@ source myenv/bin/activate
 	ALTER USER admin CREATEDB;
 	ALTER DATABASE pmr OWNER TO admin;
 ***
+## Postgres setup for MacOS
 
-## ReactJS setup for frontend 
-
-	git clone https://github.com/pymit/RekoUI
-	cd RekoUI
-	sudo apt install npm
-	sudo npm install -g npm@latest
-	npm install
-	npm start
-***
+	brew update
+	brew install postgresql
+	brew services start postgresql
+	psql postgres
+	CREATE DATABASE pmr;
+	CREATE USER admin WITH PASSWORD 'admin';
+	ALTER ROLE admin SET client_encoding TO 'utf8';
+	ALTER ROLE admin SET default_transaction_isolation TO 'read committed';
+	ALTER ROLE admin SET timezone TO 'UTC';
+	ALTER USER admin CREATEDB;
+	ALTER DATABASE pmr OWNER TO admin;
+*** 
 
 ## Downloading the models
 ##### current directory  Rekognition
@@ -107,3 +156,7 @@ python manage.py runserver 8000
 Django app can be accessed at http://localhost:8000
 
 ReactJS app can be accessed at http://localhost:3000
+
+
+
+
