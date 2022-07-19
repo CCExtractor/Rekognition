@@ -13,7 +13,16 @@ logger = RekogntionLogger(name="retina_net")
 
 
 def retry_request(retries=3, backoff_factor=0.3, status_forcelist=(500, 502, 504), session=None):
+    """ to retry requests made again
 
+        Args:
+            retries: number of retries
+            backoff_factor: to configure the length of delay after each failed login attempt
+            status_forcelist: HTTP/HTTPS status codes for retrying
+        Returns:
+            current session of the request
+
+    """
     logger.info(msg="retry_request called")
     session = session or requests.Session()
     retry = Retry(
