@@ -117,6 +117,8 @@ jobs:
           wget https://www.dropbox.com/s/ull2tqlou1p8l16/obj2.mp4
           wget https://www.dropbox.com/s/3w5ghr5jj6opr58/scene1.mp4
           wget https://www.dropbox.com/s/ij5hj4hznczvfcw/text.mp4
+          wget --no-check-certificate 'https://docs.google.com/uc?export=download&id=1eLw4D4E9PNpbwdc6oH-IbW_wXCH9zElT' -O caption1.jpg
+          wget --no-check-certificate 'https://docs.google.com/uc?export=download&id=1B-goSqkAqyq2dssvvpNy8vRhfxaZEMf5' -O caption2.jpg
           cd ../..
           cd media 
           mkdir object

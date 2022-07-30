@@ -39,3 +39,9 @@ scene_labels_path = str(os.getcwd()) + '/data/scene_detect/places365.txt'
 #object_detect_url = 'models/yolov3:predict'
 object_detect_url = 'models/efficientdet:predict'
 scene_detect_url = 'models/places:predict'
+#caption generation url
+caption_generation_url='models/lstm:predict'
+image_vectorization_url='models/xception:predict'
+dict_wordtoix_path='corelib/Caption Generator/wordtoix.pkl'
+dict_ixtoword_path='corelib/Caption Generator/ixtoword.pkl'
+
