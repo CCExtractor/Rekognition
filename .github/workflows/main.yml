@@ -150,7 +150,6 @@ jobs:
          export DJANGO_SETTINGS_MODULE="Rekognition.settings"
          set -x
          docker version
-         docker run --rm hello-world
          docker pull tensorflow/serving:nightly-devel
          echo $(pwd)
          docker run -d -t -p 8500:8500 -p 8501:8501 -v /home/runner/work/Rekognition/Rekognition/corelib/model/tfs/model_volume:/home/ tensorflow/serving --model_config_file=/home/configs/models.conf
