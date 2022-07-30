@@ -4,9 +4,9 @@ name: CI
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: [ main ,dev]
+    branches: [ main , dev , image_captioning]
   pull_request:
-    branches: [ dev,main ]
+    branches: [ dev, main , image_captioning]
 jobs:
   docker-job:
     strategy:
