@@ -35,9 +35,7 @@ import numpy as np
 import requests
 from corelib.RetinaFace.retina_net import FaceDetectionRetina
 from django.db import IntegrityError, DatabaseError
-from CaptionGenerator.caption_generator_utils import greedyCaptionSearch, beam_search_predictions
-
-
+from corelib.CaptionGenerator.caption_generator_utils import greedyCaptionSearch, beam_search_predictions
 logger = RekogntionLogger(name="main_api")
 
 
