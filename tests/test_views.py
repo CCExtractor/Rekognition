@@ -63,10 +63,11 @@ class TestCaptioning(TestCase):
 
     def test_post(self):
 
-        response1 = self.client.post('/api/caption/', {'file': self.uploaded_file1})
+        response1 = self.client.post('/api/caption/', {'file': self.uploaded_file1, 'method': 'greedy'})
         self.assertEqual(status.HTTP_200_OK, response1.status_code)
-        response2 = self.client.post('/api/caption/', {'file': self.uploaded_file2})
+        response2 = self.client.post('/api/caption/', {'file': self.uploaded_file2, 'method': 'greedy'})
         self.assertEqual(status.HTTP_200_OK, response2.status_code)
+
 
 class TestAsyncVideoFr(TestCase):
 

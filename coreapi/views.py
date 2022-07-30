@@ -9,7 +9,7 @@ from corelib.main_api import (facerecogniseinimage, facerecogniseinvideo,
                               createembedding, process_streaming_video,
                               nsfwclassifier, similarface, object_detect,
                               text_detect, object_detect_video, scene_detect,
-                              text_detect_video, scene_video, nsfw_video,generate_caption)
+                              text_detect_video, scene_video, nsfw_video, generate_caption)
 from .serializers import (EmbedSerializer, NameSuggestedSerializer,
                           SimilarFaceSerializer, ImageFrSerializers)
 from .models import InputEmbed, NameSuggested, SimilarFaceInImage
@@ -153,12 +153,12 @@ class CaptionDetect(views.APIView):
         logger.info(msg="POST Request for Caption Generation made")
         filename = getnewuniquefilename(request)
         input_file = request.FILES['file']
-        method='greedy'
+        method = 'greedy'
         try:
-            method=request.FILES['method']
-        except:
+            method = request.FILES['method']
+        except BaseException:
             pass
-        result = generate_caption(input_file, filename,method)
+        result = generate_caption(input_file, filename, method)
         if "Error" not in result:
             logger.info(msg="Memory Used = " + str((tracemalloc.get_traced_memory()[1] - tracemalloc.get_traced_memory()[0]) * 0.001))
             end = time.time()
@@ -191,7 +191,8 @@ class CaptionDetect(views.APIView):
                 return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
             else:
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
-            
+
+
 class NsfwRecognise(views.APIView):
     """     To recognise whether a image is nsfw or not
     Workflow

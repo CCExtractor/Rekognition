@@ -12,11 +12,10 @@ from werkzeug.utils import secure_filename
 import pickle
 from Rekognition.settings import MEDIA_ROOT
 from corelib.CRNN import CRNN_utils
-from tensorflow.keras.models import load_model
 from tensorflow.keras.applications.inception_v3 import preprocess_input
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.preprocessing import sequence
-from keras.preprocessing.image import load_img,img_to_array
+from keras.preprocessing.image import load_img, img_to_array
 from corelib.textbox import TBPP512_dense_separable, PriorUtil
 from corelib.facenet.utils import (get_face, embed_image, save_embedding,
                                    identify_face, allowed_file, time_dura,
@@ -31,8 +30,8 @@ from corelib.constant import (pnet, rnet, onet, facenet_persistent_session,
                               base_url, face_exp_url, nsfw_url, text_reco_url,
                               char_dict_path, ord_map_dict_path, text_detect_url,
                               coco_names_path, object_detect_url, scene_detect_url,
-                              scene_labels_path,dict_ixtoword_path,dict_wordtoix_path,
-                              caption_generation_url,image_vectorization_url)
+                              scene_labels_path, dict_ixtoword_path, dict_wordtoix_path,
+                              caption_generation_url, image_vectorization_url)
 from corelib.utils import ImageFrNetworkChoices, get_class_names, bb_to_cv, get_classes
 from coreapi.models import InputImage, InputVideo, InputEmbed, SimilarFaceInImage
 from logger.logging import RekogntionLogger
@@ -119,6 +118,7 @@ def text_reco(image):
 
     return {"Text": preds}
 
+
 def greedyCaptionSearch(photo):
     """     Caption Generation
     Args:
@@ -126,10 +126,10 @@ def greedyCaptionSearch(photo):
     Workflow:
             *   The inputted imgage together with a sequence is fed to the function
                 predict_caption
-            *   The sequence variable keeps on getting updated with 
+            *   The sequence variable keeps on getting updated with
                 new predicted words from the predict_caption
-                
-            *   The predict_caption function is called multiple times to 
+
+            *   The predict_caption function is called multiple times to
                 generate the whole caption
             *   A string is returned containing generated caption
     Returns:
@@ -142,11 +142,11 @@ def greedyCaptionSearch(photo):
     b_file = open(dict_wordtoix_path, "rb")
     wordtoix = pickle.load(b_file)
     b_file.close()
-    max_length=51
+    max_length = 51
     for i in range(max_length):
         sequence = [wordtoix[w] for w in in_text.split() if w in wordtoix]
         sequence = pad_sequences([sequence], maxlen=max_length)
-        preds=predict_captions(photo,sequence)        
+        preds = predict_captions(photo, sequence)
         yhat = np.argmax(preds)
         word = ixtoword[yhat]
         in_text += ' ' + word
@@ -158,7 +158,8 @@ def greedyCaptionSearch(photo):
     final = ' '.join(final)
     return final
 
-def beam_search_predictions(image, beam_index = 3):
+
+def beam_search_predictions(image, beam_index=3):
     """     Caption Generation
     Args:
             *   image: A feature vector of size 2048,1)
@@ -167,10 +168,10 @@ def beam_search_predictions(image, beam_index = 3):
     Workflow:
             *   The inputted imgage together with the par_caps is fed to the function
                 predict_caption
-            *   The par_caps variable keeps on getting updated with 
+            *   The par_caps variable keeps on getting updated with
                 new predicted words from the predict_caption
-                
-            *   The predict_caption function is called multiple times to 
+
+            *   The predict_caption function is called multiple times to
                 generate the whole caption
             *   A string is returned containing generated caption
     Returns:
@@ -183,17 +184,17 @@ def beam_search_predictions(image, beam_index = 3):
     b_file = open(dict_wordtoix_path, "rb")
     wordtoix = pickle.load(b_file)
     b_file.close()
-    max_length=51
+    max_length = 51
     start = [wordtoix["startseq"]]
     start_word = [[start, 0.0]]
     while len(start_word[0][0]) < max_length:
         temp = []
         for s in start_word:
             par_caps = sequence.pad_sequences([s[0]], maxlen=max_length, padding='post')
-            preds=predict_captions(image,par_caps)
+            preds = predict_captions(image, par_caps)
             # preds = model.predict([image,par_caps], verbose=0)
             word_preds = np.argsort(preds[0])[-beam_index:]
-            # Getting the top <beam_index>(n) predictions and creating a 
+            # Getting the top <beam_index>(n) predictions and creating a
             # new list so as to put them via the model again
             for w in word_preds:
                 next_cap, prob = s[0][:], s[1]
@@ -220,7 +221,8 @@ def beam_search_predictions(image, beam_index = 3):
     final_caption = ' '.join(final_caption[1:])
     return final_caption
 
-def generate_caption(input_file, filename,method):
+
+def generate_caption(input_file, filename, method):
     """     Caption Generation
     Args:
             *   input_file: Contents of the input image file
@@ -246,13 +248,12 @@ def generate_caption(input_file, filename,method):
     logger.info(msg="generate caption called")
     file_path = os.path.join(MEDIA_ROOT, 'text', filename)
     handle_uploaded_file(input_file, file_path)
-    img = cv2.imread(file_path)[:, :, ::-1]
-    img=cv2.resize(img,(299,299))
+    img = load_img(file_path, target_size=(299, 299))
     image = img_to_array(img)
     image = np.expand_dims(image, axis=0)
     image = preprocess_input(image)
-    data = json.dumps({"signature_name": "serving_default", 
-                        "instances": image.tolist()})
+    data = json.dumps({"signature_name": "serving_default",
+                       "instances": image.tolist()})
     try:
         headers = {"content-type": "application/json"}
         url = urllib.parse.urljoin(base_url, image_vectorization_url)
@@ -276,22 +277,22 @@ def generate_caption(input_file, filename,method):
         logger.error(msg=e)
         return {"Error": e}
     predictions = json.loads(json_response.text)
-    fea_vec=np.array(predictions["predictions"])
+    fea_vec = np.array(predictions["predictions"])
     fea_vec = np.reshape(fea_vec, fea_vec.shape[1])
     fea_vec = fea_vec.reshape((1, 2048))
-    res="none"
-    if(method.lower()=='greedy'):
+    res = "none"
+    if(method.lower() == 'greedy'):
         logger.info(msg="predict_caption (Greedy Search) called")
-        res=greedyCaptionSearch(fea_vec)
-    else :
+        res = greedyCaptionSearch(fea_vec)
+    else:
         logger.info(msg="predict_caption (Beam Search) called")
-        res=beam_search_predictions(fea_vec, beam_index = 7)
-    res={"Caption":res}
+        res = beam_search_predictions(fea_vec, beam_index=7)
+    res = {"Caption": res}
 
     return {"Texts": res}
 
 
-def predict_captions(image,sequence):
+def predict_captions(image, sequence):
     """     Image Vectorzation
     Args:
             *   image: ndarray of dimension (2048,1)
@@ -313,10 +314,10 @@ def predict_captions(image,sequence):
             *   Generated word for a caption .
     """
     #logger.info(msg="predict_caption called")
-    in1=image.tolist()
-    in2=sequence.tolist()
+    in1 = image.tolist()
+    in2 = sequence.tolist()
     headers = {"content-type": "application/json"}
-    data = json.dumps({"signature_name":"serving_default","inputs": {'input_2':in1,'input_3':in2}})
+    data = json.dumps({"signature_name": "serving_default", "inputs": {'input_2': in1, 'input_3': in2}})
     try:
         headers = {"content-type": "application/json"}
         url = urllib.parse.urljoin(base_url, caption_generation_url)
@@ -342,9 +343,10 @@ def predict_captions(image,sequence):
         return {"Error": "Caption Predicition Not Working"}
     predictions = json.loads(json_response.text)
     # print("Predicitons are ",predictions)
-    res=predictions['outputs']
-    preds=np.array(res)
+    res = predictions['outputs']
+    preds = np.array(res)
     return preds
+
 
 def text_detect(input_file, filename):
     """     Scene Text Detection
