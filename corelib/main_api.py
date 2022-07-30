@@ -15,7 +15,7 @@ from corelib.CRNN import CRNN_utils
 from tensorflow.keras.applications.inception_v3 import preprocess_input
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.preprocessing import sequence
-from keras.preprocessing.image import load_img, img_to_array
+from keras.preprocessing.image import img_to_array
 from corelib.textbox import TBPP512_dense_separable, PriorUtil
 from corelib.facenet.utils import (get_face, embed_image, save_embedding,
                                    identify_face, allowed_file, time_dura,
@@ -248,7 +248,8 @@ def generate_caption(input_file, filename, method):
     logger.info(msg="generate caption called")
     file_path = os.path.join(MEDIA_ROOT, 'text', filename)
     handle_uploaded_file(input_file, file_path)
-    img = load_img(file_path, target_size=(299, 299))
+    img = cv2.imread(file_path)[:, :, ::-1]
+    img = cv2.resize(img, (299, 299))
     image = img_to_array(img)
     image = np.expand_dims(image, axis=0)
     image = preprocess_input(image)
