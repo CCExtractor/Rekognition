@@ -42,5 +42,5 @@ scene_detect_url = 'models/places:predict'
 # caption generation url
 caption_generation_url = 'models/lstm:predict'
 image_vectorization_url = 'models/xception:predict'
-dict_wordtoix_path = 'corelib/Caption Generator/wordtoix.pkl'
-dict_ixtoword_path = 'corelib/Caption Generator/ixtoword.pkl'
+dict_wordtoix_path = 'corelib/Caption Generator/wordtoix.pickle'
+dict_ixtoword_path = 'corelib/Caption Generator/ixtoword.pickle'
