@@ -134,7 +134,7 @@ class SceneTextVideo(views.APIView):
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
 
 
-class CaptionDetect(views.APIView):
+class CaptionGenerate(views.APIView):
     """     To generate caption from an image
     Workflow
             *   if  POST method request is made, then initially a random
