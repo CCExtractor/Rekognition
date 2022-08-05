@@ -1,4 +1,6 @@
 """Functions for building the face recognition network.
+    Reference:
+    https://github.com/davidsandberg/facenet/blob/master/src/facenet.py
 """
 
 
@@ -8,11 +10,9 @@ from __future__ import print_function
 
 import os
 from subprocess import Popen, PIPE
-import cv2
-import numpy
 import tensorflow as tf
 import numpy as np
-# from scipy import misc
+from scipy import misc
 from sklearn.model_selection import KFold
 from scipy import interpolate
 from tensorflow.python.training import training
@@ -70,7 +70,13 @@ def center_loss(features, label, alfa, nrof_classes):
 
 
 def get_image_paths_and_labels(dataset):
-
+    """ Gets image paths and labels from the dataset sent as input
+    Args:
+        dataset: the data of images
+    Returns:
+        image paths and labels
+    
+    """
     logger.info(msg="get_image_paths_and_labels called")
     image_paths_flat = []
     labels_flat = []
@@ -81,7 +87,15 @@ def get_image_paths_and_labels(dataset):
 
 
 def shuffle_examples(image_paths, labels):
+    """Takes inputs as image paths and labels and shuffles them to create a dynamic sample
+    Args:
+        image_paths: path of images generated previously
+        labels: labels of images generated previously
 
+    Returns: 
+        image paths and labels post shuffling
+    
+    """
     logger.info(msg="shuffle_examples called")
     shuffle_list = list(zip(image_paths, labels))
     random.shuffle(shuffle_list)
@@ -89,18 +103,16 @@ def shuffle_examples(image_paths, labels):
     return image_paths_shuff, labels_shuff
 
 
-def rotate_image(image, angle):
-    image_center = tuple(np.array(image.shape[1::-1]) / 2)
-    rot_mat = cv2.getRotationMatrix2D(image_center, angle, 1.0)
-    result = cv2.warpAffine(image, rot_mat, image.shape[1::-1], flags=cv2.INTER_LINEAR)
-    return result
-
-
 def random_rotate_image(image):
-
+    """Rotates the given image using random angle generated in the function
+    Args:
+        image: the input image to perform the function on
+    Returns:
+        the rotated array of image
+    """
     logger.info(msg="random_rotate_image called")
     angle = np.random.uniform(low=-10.0, high=10.0)
-    return rotate_image(image, angle)
+    return misc.imrotate(image, angle, 'bicubic')
 
 
 # 1: Random rotate
@@ -193,7 +205,19 @@ def _add_loss_summaries(total_loss):
 
 
 def train(total_loss, global_step, optimizer, learning_rate, moving_average_decay, update_gradient_vars, log_histograms=True):
+    """ Extensive function to train the model
+    Args:
+        total_loss: total loss incurred
+        global_step: the number of batches seen by the graph
+        optimizer: defines the type of optimizer
+        learning_rate:  a hyperparameter controlling how much to change the model in response to the estimated 
+        error each time the model weights are updated. For every optimizer, we keep learning_rate constant.
+        moving_average_decay:
+        update_gradient_vars:
+        log_histogram: set to true to create histograms for gradients
+    Returns:
 
+    """
     logger.info(msg="train called")
     # Generate moving averages of all losses and associated summaries.
     loss_averages_op = _add_loss_summaries(total_loss)
@@ -246,7 +270,7 @@ def train(total_loss, global_step, optimizer, learning_rate, moving_average_deca
 
 
 def prewhiten(x):
-
+    """ormalizes the range of the pixel values of input images to make training easier"""
     logger.info(msg="prewhiten called")
     mean = np.mean(x)
     std = np.std(x)
@@ -256,7 +280,14 @@ def prewhiten(x):
 
 
 def crop(image, random_crop, image_size):
-
+    """Crops the input image
+    Args:
+        image: input image
+        random_crop: turned true or false for randomly cropping and vice versa
+        image_size: size of the image
+    Returns:
+        cropped image
+    """
     logger.info(msg="crop called")
     if image.shape[1] > image_size:
         sz1 = int(image.shape[1] // 2)
@@ -272,7 +303,16 @@ def crop(image, random_crop, image_size):
 
 
 def flip(image, random_flip):
+    """ flips the entries in each row in the left/right direction. 
+    Columns are preserved, but appear in a different order than before if random_flip is on
+    
+    Args:
+        image: input image
+        random_flip: parameter deciding the randomness of flip
 
+    Returns:
+        image after being flipped
+    """
     logger.info(msg="flip called")
     if random_flip and np.random.choice([True, False]):
         image = np.fliplr(image)
@@ -280,7 +320,6 @@ def flip(image, random_flip):
 
 
 def to_rgb(img):
-
     logger.info(msg="to_rgb called")
     w, h = img.shape
     ret = np.empty((w, h, 3), dtype=np.uint8)
@@ -294,8 +333,8 @@ def load_img(img, do_random_crop, do_random_flip, image_size, do_prewhiten=True)
     # nrof_samples = len(image_paths)
     images = np.zeros((1, image_size, image_size, 3))
     # for i in range(nrof_samples):
-    # img = cv2.imread(image_path)
-    # img = cv2.imresize(img,(160,160,3))
+    # img = misc.imread(image_path)
+    # img = misc.imresize(img,(160,160,3))
     if img.ndim == 2:
         img = to_rgb(img)
     if do_prewhiten:
@@ -312,14 +351,14 @@ def load_data(image_paths, do_random_crop, do_random_flip, image_size, do_prewhi
     nrof_samples = len(image_paths)
     images = np.zeros((nrof_samples, image_size, image_size, 3))
     for i in range(nrof_samples):
-        img = cv2.imread(image_paths[i])
+        img = misc.imread(image_paths[i])
         if img.ndim == 2:
             img = to_rgb(img)
         if do_prewhiten:
             img = prewhiten(img)
         img = crop(img, do_random_crop, image_size)
         img = flip(img, do_random_flip)
-        img = cv2.imresize(img, (160, 160, 3))
+        img = misc.imresize(img, (160, 160, 3))
         # print(image_paths[i].split('/')[6],img.shape,images.shape)
         images[i, :, :, :] = img
     return images
@@ -404,8 +443,9 @@ def get_dataset(path, has_class_directories=True):
     logger.info(msg="get_dataset called")
     dataset = []
     path_exp = os.path.expanduser(path)
-    classes = sorted([path for path in os.listdir(path_exp)
-                      if os.path.isdir(os.path.join(path_exp, path))])
+    classes = [path for path in os.listdir(path_exp)
+               if os.path.isdir(os.path.join(path_exp, path))]
+    classes.sort()
     nrof_classes = len(classes)
     for i in range(nrof_classes):
         class_name = classes[i]
@@ -620,7 +660,6 @@ def calculate_val(thresholds, embeddings1, embeddings2, actual_issame, far_targe
                                                             dist[train_set],
                                                             actual_issame[train_set])
         if np.max(far_train) >= far_target:
-            # f = cv2.resize(img,None, fx = far_train, fy = thresholds, interpolation = cv2.INTER_LINEAR)
             f = interpolate.interp1d(far_train, thresholds, kind='slinear')
             threshold = f(far_target)
         else:
