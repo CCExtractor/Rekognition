@@ -4,9 +4,9 @@ name: CI
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: [ main ,dev]
+    branches: [ main , dev]
   pull_request:
-    branches: [ dev,main ]
+    branches: [ dev, main]
 jobs:
   docker-job:
     strategy:
@@ -117,6 +117,8 @@ jobs:
           wget https://www.dropbox.com/s/ull2tqlou1p8l16/obj2.mp4
           wget https://www.dropbox.com/s/3w5ghr5jj6opr58/scene1.mp4
           wget https://www.dropbox.com/s/ij5hj4hznczvfcw/text.mp4
+          wget --no-check-certificate 'https://docs.google.com/uc?export=download&id=1B-goSqkAqyq2dssvvpNy8vRhfxaZEMf5' -O caption1.jpg
+          wget --no-check-certificate 'https://docs.google.com/uc?export=download&id=1B-goSqkAqyq2dssvvpNy8vRhfxaZEMf5' -O caption2.jpg
           cd ../..
           cd media 
           mkdir object
@@ -131,7 +133,7 @@ jobs:
           cd ..
           mkdir tfs
           cd tfs
-          wget --load-cookies /tmp/cookies.txt "https://drive.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://drive.google.com/uc?export=download&id=12yE9v8dWeVidqxseUXidaDoS_VZpVOp1' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=12yE9v8dWeVidqxseUXidaDoS_VZpVOp1" -O module.zip && rm -rf /tmp/cookies.txt
+          wget --load-cookies /tmp/cookies.txt "https://drive.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://drive.google.com/uc?export=download&id=1Yix5evLAqHOoZ_dLdFtayduxZwsf_BFh' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1Yix5evLAqHOoZ_dLdFtayduxZwsf_BFh" -O module.zip && rm -rf /tmp/cookies.txt
           unzip module.zip
           rm module.zip
           cd ../../..
@@ -148,7 +150,6 @@ jobs:
          export DJANGO_SETTINGS_MODULE="Rekognition.settings"
          set -x
          docker version
-         docker run --rm hello-world
          docker pull tensorflow/serving:nightly-devel
          echo $(pwd)
          docker run -d -t -p 8500:8500 -p 8501:8501 -v /home/runner/work/Rekognition/Rekognition/corelib/model/tfs/model_volume:/home/ tensorflow/serving --model_config_file=/home/configs/models.conf

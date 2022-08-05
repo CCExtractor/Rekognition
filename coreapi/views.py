@@ -9,7 +9,7 @@ from corelib.main_api import (facerecogniseinimage, facerecogniseinvideo,
                               createembedding, process_streaming_video,
                               nsfwclassifier, similarface, object_detect,
                               text_detect, object_detect_video, scene_detect,
-                              text_detect_video, scene_video, nsfw_video)
+                              text_detect_video, scene_video, nsfw_video, generate_caption)
 from .serializers import (EmbedSerializer, NameSuggestedSerializer,
                           SimilarFaceSerializer, ImageFrSerializers)
 from .models import InputEmbed, NameSuggested, SimilarFaceInImage
@@ -119,6 +119,65 @@ class SceneTextVideo(views.APIView):
             elif (result["Error"] == 'Bad URL'):
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
             elif (result["Error"] == 'Text Detect(video) Not Working'):
+                return Response(result, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            elif (result["Error"] == 'The media format of the requested data is not supported by the server'):
+                return Response(result, status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+            elif (result["Error"] == 'A JSON error occurred.'):
+                return Response(result, status=status.HTTP_204_NO_CONTENT)
+            elif (result["Error"] == 'A proxy error occurred.'):
+                return Response(result, status=status.HTTP_407_PROXY_AUTHENTICATION_REQUIRED)
+            elif (result["Error"] == 'The header value provided was somehow invalid.'):
+                return Response(result, status=status.HTTP_411_LENGTH_REQUIRED)
+            elif (result["Error"] == 'The request timed out while trying to connect to the remote server.'):
+                return Response(result, status=status.HTTP_504_GATEWAY_TIMEOUT)
+            else:
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CaptionGenerate(views.APIView):
+    """     To generate caption from an image
+    Workflow
+            *   if  POST method request is made, then initially a random
+                filename is generated and then caption_generate method is
+                called which process the image and outputs the result
+                containing the detected text as a string
+    Returns:
+            *   outputs the result
+                containing the detected text as a string
+    """
+
+    def post(self, request):
+
+        tracemalloc.start()
+        start = time.time()
+        logger.info(msg="POST Request for Caption Generation made")
+        filename = getnewuniquefilename(request)
+        input_file = request.FILES['file']
+        method = 'greedy'
+        try:
+            method = request.FILES['method']
+        except BaseException:
+            pass
+        result = generate_caption(input_file, filename, method)
+        if "Error" not in result:
+            logger.info(msg="Memory Used = " + str((tracemalloc.get_traced_memory()[1] - tracemalloc.get_traced_memory()[0]) * 0.001))
+            end = time.time()
+            logger.info(msg="Time For Prediction = " + str(int(end - start)))
+            result['Time'] = int(end - start)
+            result["Memory"] = (tracemalloc.get_traced_memory()[1] - tracemalloc.get_traced_memory()[0]) * 0.001
+            tracemalloc.stop()
+            return Response(result, status=status.HTTP_200_OK)
+
+        else:
+            if (result["Error"] == 'An HTTP error occurred.'):
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            elif (result["Error"] == 'A Connection error occurred.'):
+                return Response(result, status=status.HTTP_503_SERVICE_UNAVALIABLE)
+            elif (result["Error"] == 'The request timed out.'):
+                return Response(result, status=status.HTTP_408_REQUEST_TIMEOUT)
+            elif (result["Error"] == 'Bad URL'):
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            elif (result["Error"] == 'Text Detection Not Working'):
                 return Response(result, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             elif (result["Error"] == 'The media format of the requested data is not supported by the server'):
                 return Response(result, status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)

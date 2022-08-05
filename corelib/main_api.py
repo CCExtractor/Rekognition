@@ -11,6 +11,8 @@ import ffmpeg
 from werkzeug.utils import secure_filename
 from Rekognition.settings import MEDIA_ROOT
 from corelib.CRNN import CRNN_utils
+from tensorflow.keras.applications.inception_v3 import preprocess_input
+from keras.preprocessing.image import img_to_array
 from corelib.textbox import TBPP512_dense_separable, PriorUtil
 from corelib.facenet.utils import (get_face, embed_image, save_embedding,
                                    identify_face, allowed_file, time_dura,
@@ -25,7 +27,7 @@ from corelib.constant import (pnet, rnet, onet, facenet_persistent_session,
                               base_url, face_exp_url, nsfw_url, text_reco_url,
                               char_dict_path, ord_map_dict_path, text_detect_url,
                               coco_names_path, object_detect_url, scene_detect_url,
-                              scene_labels_path)
+                              scene_labels_path, image_vectorization_url)
 from corelib.utils import ImageFrNetworkChoices, get_class_names, bb_to_cv, get_classes
 from coreapi.models import InputImage, InputVideo, InputEmbed, SimilarFaceInImage
 from logger.logging import RekogntionLogger
@@ -33,8 +35,7 @@ import numpy as np
 import requests
 from corelib.RetinaFace.retina_net import FaceDetectionRetina
 from django.db import IntegrityError, DatabaseError
-
-
+from corelib.CaptionGenerator.caption_generator_utils import greedyCaptionSearch, beam_search_predictions
 logger = RekogntionLogger(name="main_api")
 
 
@@ -111,6 +112,77 @@ def text_reco(image):
     preds = ' '.join(wordninja.split(preds))
 
     return {"Text": preds}
+
+
+def generate_caption(input_file, filename, method):
+    """     Caption Generation
+    Args:
+            *   input_file: Contents of the input image file
+            *   filename: filename of the image
+    Workflow:
+            *   A numpy array of an image with text is taken as input
+                inference input dimension requires dimension to be (299,299)
+                hence the image is resized to (299,299).
+            *   Now the processed output is further processed to make it a
+                json format which is compatible to TensorFlow Serving input.
+            *   Then a http post request is made at localhost:8501.
+                The post request contain data and headers.
+            *   Incase of any exception, it return relevant error message.
+            *   Calls to predict_captions are made and the result is stored
+                in the result parameter (There are four results result_greedy,
+                result_beam_search_3,result_beam_search_5,result_beam_search_7)
+            *   A dictionary is maintained having predicitons of the various caption serach algorithms
+            *   A dictionary with generated captions using 4 different search algorithms is returned
+    Returns:
+            *   A dictionary with generated captions using 4 different search algorithms
+    """
+
+    logger.info(msg="generate caption called")
+    file_path = os.path.join(MEDIA_ROOT, 'text', filename)
+    handle_uploaded_file(input_file, file_path)
+    img = cv2.imread(file_path)[:, :, ::-1]
+    img = cv2.resize(img, (299, 299))
+    image = img_to_array(img)
+    image = np.expand_dims(image, axis=0)
+    image = preprocess_input(image)
+    data = json.dumps({"signature_name": "serving_default",
+                       "instances": image.tolist()})
+    try:
+        headers = {"content-type": "application/json"}
+        url = urllib.parse.urljoin(base_url, image_vectorization_url)
+        json_response = requests.post(url, data=data, headers=headers)
+    except requests.exceptions.HTTPError as errh:
+        logger.error(msg=errh)
+        return {"Error": "An HTTP error occurred."}
+    except requests.exceptions.ConnectionError as errc:
+        logger.error(msg=errc)
+        return {"Error": "A Connection error occurred."}
+    except requests.exceptions.Timeout as errt:
+        logger.error(msg=errt)
+        return {"Error": "The request timed out."}
+    except requests.exceptions.TooManyRedirects as errm:
+        logger.error(msg=errm)
+        return {"Error": "Bad URL"}
+    except requests.exceptions.RequestException as err:
+        logger.error(msg=err)
+        return {"Error": "Text Detection Not Working"}
+    except Exception as e:
+        logger.error(msg=e)
+        return {"Error": e}
+    predictions = json.loads(json_response.text)
+    fea_vec = np.array(predictions["predictions"])
+    fea_vec = np.reshape(fea_vec, fea_vec.shape[1])
+    fea_vec = fea_vec.reshape((1, 2048))
+    res = "none"
+    if(method.lower() == 'greedy'):
+        logger.info(msg="predict_caption (Greedy Search) called")
+        res = greedyCaptionSearch(fea_vec)
+    else:
+        logger.info(msg="predict_caption (Beam Search) called")
+        res = beam_search_predictions(fea_vec, beam_index=7)
+    res = {"Caption": res}
+
+    return {"Texts": res}
 
 
 def text_detect(input_file, filename):

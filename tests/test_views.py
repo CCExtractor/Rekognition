@@ -49,6 +49,26 @@ class TestVideoFr(TestCase):
         self.assertEqual(status.HTTP_200_OK, response2.status_code)
 
 
+class TestCaptioning(TestCase):
+
+    def setUp(self):
+
+        print("Testing Image Captioning")
+        super(TestCaptioning, self).setUp()
+        self.client = APIClient()
+        file1 = File(open('tests/testdata/caption1.jpg', 'rb'))
+        self.uploaded_file1 = SimpleUploadedFile("temp1.jpg", file1.read(), content_type='multipart/form-data')
+        file2 = File(open('tests/testdata/caption2.jpg', 'rb'))
+        self.uploaded_file2 = SimpleUploadedFile("temp2.jpg", file2.read(), content_type='multipart/form-data')
+
+    def test_post(self):
+
+        response1 = self.client.post('/api/caption/', {'file': self.uploaded_file1, 'method': 'greedy'})
+        self.assertEqual(status.HTTP_200_OK, response1.status_code)
+        response2 = self.client.post('/api/caption/', {'file': self.uploaded_file2, 'method': 'greedy'})
+        self.assertEqual(status.HTTP_200_OK, response2.status_code)
+
+
 class TestAsyncVideoFr(TestCase):
 
     def setUp(self):
