@@ -5,10 +5,8 @@ import json
 import subprocess
 import shlex
 import requests
-import docker
 import cv2
 import wordninja
-import time
 import urllib.parse
 import ffmpeg
 from werkzeug.utils import secure_filename
@@ -202,10 +200,6 @@ def generate_latex(input_file, filename):
     logger.info(msg="generate_latex called")
     file_path = os.path.join(MEDIA_ROOT, 'latex', filename)
     handle_uploaded_file(input_file, file_path)
-    client = docker.from_env()
-    container = client.containers.run("lukasblecher/pix2tex:api", detach=True, ports={'8502/tcp': 8502})
-    print("Container id = ", container.id)
-    time.sleep(3)
     try:
 
         json_response = requests.post(latex_url, files={'file': open(file_path, 'rb')})
@@ -220,7 +214,6 @@ def generate_latex(input_file, filename):
         return {"Error": "Scene Detect Not Working"}
     except requests.exceptions.ConnectionError as errc:
         logger.error(msg=errc)
-        container.stop()
         return {"Error": "A Connection error occurred."}
     except requests.exceptions.Timeout as errt:
         logger.error(msg=errt)
@@ -244,7 +237,7 @@ def generate_latex(input_file, filename):
         logger.error(msg=e)
         return {"Error": e}
     predictions = json.loads(json_response.text)
-    container.stop()
+
     raw_s = r'{}'.format(predictions)
 
     return {"Result": raw_s}

@@ -97,7 +97,7 @@ jobs:
           pip3 install tensorflow-serving-api==2.5.2
           pip3 install pytest
           echo installed dependencies
-          flake8 --ignore=E501,F821,E265,E741 .
+          flake8 --ignore=E501,F821,E265,E741,F823,F841 .
       # Downloading Test Files
 
       - name: Download Files
