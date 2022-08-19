@@ -4,8 +4,11 @@ import uuid
 import json
 import subprocess
 import shlex
+import requests
+import docker
 import cv2
 import wordninja
+import time
 import urllib.parse
 import ffmpeg
 from werkzeug.utils import secure_filename
@@ -27,12 +30,11 @@ from corelib.constant import (pnet, rnet, onet, facenet_persistent_session,
                               base_url, face_exp_url, nsfw_url, text_reco_url,
                               char_dict_path, ord_map_dict_path, text_detect_url,
                               coco_names_path, object_detect_url, scene_detect_url,
-                              scene_labels_path, image_vectorization_url)
+                              scene_labels_path, image_vectorization_url, latex_url)
 from corelib.utils import ImageFrNetworkChoices, get_class_names, bb_to_cv, get_classes
 from coreapi.models import InputImage, InputVideo, InputEmbed, SimilarFaceInImage
 from logger.logging import RekogntionLogger
 import numpy as np
-import requests
 from corelib.RetinaFace.retina_net import FaceDetectionRetina
 from django.db import IntegrityError, DatabaseError
 from corelib.CaptionGenerator.caption_generator_utils import greedyCaptionSearch, beam_search_predictions
@@ -183,6 +185,69 @@ def generate_caption(input_file, filename, method):
     res = {"Caption": res}
 
     return {"Texts": res}
+
+
+def generate_latex(input_file, filename):
+    """     Scene Text Detection
+    Args:
+            *   input_file: Contents of the input image file
+            *   filename: filename of the image
+    Workflow:
+            *
+    Returns:
+            *   A string containg the code of the given
+            latex expression
+    """
+
+    logger.info(msg="generate_latex called")
+    file_path = os.path.join(MEDIA_ROOT, 'latex', filename)
+    handle_uploaded_file(input_file, file_path)
+    client = docker.from_env()
+    container = client.containers.run("lukasblecher/pix2tex:api", detach=True, ports={'8502/tcp': 8502})
+    print("Container id = ", container.id)
+    time.sleep(3)
+    try:
+
+        json_response = requests.post(latex_url, files={'file': open(file_path, 'rb')})
+    except requests.exceptions.HTTPError as errh:
+        logger.error(msg=errh)
+        return {"Error": "An HTTP error occurred."}
+    except requests.exceptions.ConnectTimeout as err:
+        logger.error(msg=err)
+        return {"Error": "The request timed out while trying to connect to the remote server."}
+    except requests.exceptions.ProxyError as err:
+        logger.error(msg=err)
+        return {"Error": "Scene Detect Not Working"}
+    except requests.exceptions.ConnectionError as errc:
+        logger.error(msg=errc)
+        container.stop()
+        return {"Error": "A Connection error occurred."}
+    except requests.exceptions.Timeout as errt:
+        logger.error(msg=errt)
+        return {"Error": "The request timed out."}
+    except requests.exceptions.InvalidURL as errm:
+        logger.error(msg=errm)
+        return {"Error": "Bad URL"}
+    except requests.exceptions.ContentDecodingError as err:
+        logger.error(msg=err)
+        return {"Error": "The media format of the requested data is not supported by the server"}
+    except requests.exceptions.InvalidJSONError as err:
+        logger.error(msg=err)
+        return {"Error": "A JSON error occurred."}
+    except requests.exceptions.InvalidHeader as err:
+        logger.error(msg=err)
+        return {"Error": "The header value provided was somehow invalid."}
+    except requests.exceptions.RequestException as err:
+        logger.error(msg=err)
+        return {"Error": "Latex Generator Not Working"}
+    except Exception as e:
+        logger.error(msg=e)
+        return {"Error": e}
+    predictions = json.loads(json_response.text)
+    container.stop()
+    raw_s = r'{}'.format(predictions)
+
+    return {"Result": raw_s}
 
 
 def text_detect(input_file, filename):

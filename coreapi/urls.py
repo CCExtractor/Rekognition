@@ -19,4 +19,5 @@ urlpatterns = [
     path('nsfwvideo/', views.NsfwVideo.as_view(), name='nsfw_video'),
     path('scenevideo/', views.SceneVideo.as_view(), name='scene_video'),
     path('caption/', views.CaptionGenerate.as_view(), name='caption_api'),
+    path('latex/', views.LatexGenerate.as_view(), name='latex_api'),
 ]

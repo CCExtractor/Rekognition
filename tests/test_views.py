@@ -69,6 +69,22 @@ class TestCaptioning(TestCase):
         self.assertEqual(status.HTTP_200_OK, response2.status_code)
 
 
+class TestLatex(TestCase):
+
+    def setUp(self):
+
+        print("Testing Image Captioning")
+        super(TestLatex, self).setUp()
+        self.client = APIClient()
+        file1 = File(open('tests/testdata/photo.jpg', 'rb'))
+        self.uploaded_file1 = SimpleUploadedFile("temp1.jpg", file1.read(), content_type='multipart/form-data')
+
+    def test_post(self):
+
+        response1 = self.client.post('/api/latex/', {'file': self.uploaded_file1})
+        self.assertEqual(status.HTTP_200_OK, response1.status_code)
+
+
 class TestAsyncVideoFr(TestCase):
 
     def setUp(self):

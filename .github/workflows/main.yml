@@ -119,10 +119,12 @@ jobs:
           wget https://www.dropbox.com/s/ij5hj4hznczvfcw/text.mp4
           wget --no-check-certificate 'https://docs.google.com/uc?export=download&id=1B-goSqkAqyq2dssvvpNy8vRhfxaZEMf5' -O caption1.jpg
           wget --no-check-certificate 'https://docs.google.com/uc?export=download&id=1B-goSqkAqyq2dssvvpNy8vRhfxaZEMf5' -O caption2.jpg
+          wget --no-check-certificate 'https://docs.google.com/uc?export=download&id=1Nl_sUHu6bQj4bxjVkqa9Wv_Xyj4BldQq' -O photo.jpg
           cd ../..
           cd media 
           mkdir object
           mkdir nsfw
+          mkdir latex
           cd ..
           cd corelib/model
           mkdir facenet
@@ -151,6 +153,7 @@ jobs:
          set -x
          docker version
          docker pull tensorflow/serving:nightly-devel
+         docker pull lukasblecher/pix2tex:api
          echo $(pwd)
          docker run -d -t -p 8500:8500 -p 8501:8501 -v /home/runner/work/Rekognition/Rekognition/corelib/model/tfs/model_volume:/home/ tensorflow/serving --model_config_file=/home/configs/models.conf
          echo aagye
