@@ -89,7 +89,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip3 install flake8
+          pip3 install flake8==3.7.7
           flake8 --ignore=E501,F821,E265,E741,F823,F841 .
           echo python version = 
           python --version
