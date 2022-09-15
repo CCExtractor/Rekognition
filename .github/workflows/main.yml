@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-20.04,ubuntu-18.04]
-        version: [3.6]
+        version: [3.6,3.7] 
     runs-on: ${{ matrix.os }}
 
     # service containers to run with `postgres-job`
@@ -24,7 +24,7 @@ jobs:
         # service environment variables
         # `POSTGRES_HOST` is `postgres`
         env:
-          # optional (defaults to `postgres`)
+          # optional (efaults to `postgres`)
           POSTGRES_DB: postgres_db
           # required
           POSTGRES_PASSWORD: postgres
@@ -83,12 +83,14 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v3.1.2
         with:
-          python-version: 3.6
+          python-version: ${{ matrix.version }}
 
       # Dependency Installation 
 
       - name: Install Dependencies
         run: |
+          pip3 install flake8==3.7.7
+          flake8 --ignore=E501,F821,E265,E741,F823,F841 .
           echo python version = 
           python --version
           sudo apt-get install python3-dev
@@ -97,7 +99,6 @@ jobs:
           pip3 install tensorflow-serving-api==2.5.2
           pip3 install pytest
           echo installed dependencies
-          flake8 --ignore=E501,F821,E265,E741 .
       # Downloading Test Files
 
       - name: Download Files
@@ -119,10 +120,12 @@ jobs:
           wget https://www.dropbox.com/s/ij5hj4hznczvfcw/text.mp4
           wget --no-check-certificate 'https://docs.google.com/uc?export=download&id=1B-goSqkAqyq2dssvvpNy8vRhfxaZEMf5' -O caption1.jpg
           wget --no-check-certificate 'https://docs.google.com/uc?export=download&id=1B-goSqkAqyq2dssvvpNy8vRhfxaZEMf5' -O caption2.jpg
+          wget --no-check-certificate 'https://docs.google.com/uc?export=download&id=1Nl_sUHu6bQj4bxjVkqa9Wv_Xyj4BldQq' -O photo.jpg
           cd ../..
           cd media 
           mkdir object
           mkdir nsfw
+          mkdir latex
           cd ..
           cd corelib/model
           mkdir facenet
@@ -150,9 +153,10 @@ jobs:
          export DJANGO_SETTINGS_MODULE="Rekognition.settings"
          set -x
          docker version
-         docker pull tensorflow/serving:nightly-devel
+         docker pull tensorflow/serving:2.6.3-devel
+         docker pull lukasblecher/pix2tex:api
          echo $(pwd)
-         docker run -d -t -p 8500:8500 -p 8501:8501 -v /home/runner/work/Rekognition/Rekognition/corelib/model/tfs/model_volume:/home/ tensorflow/serving --model_config_file=/home/configs/models.conf
+         docker run -d -t -p 8500:8500 -p 8501:8501 -v /home/runner/work/Rekognition/Rekognition/corelib/model/tfs/model_volume:/home/ tensorflow/serving:2.6.3 --model_config_file=/home/configs/models.conf
          echo aagye
          python manage.py flush --no-input
          python manage.py migrate
