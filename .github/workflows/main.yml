@@ -119,10 +119,7 @@ jobs:
           wget https://www.dropbox.com/s/ij5hj4hznczvfcw/text.mp4
           wget --no-check-certificate 'https://docs.google.com/uc?export=download&id=1B-goSqkAqyq2dssvvpNy8vRhfxaZEMf5' -O caption1.jpg
           wget --no-check-certificate 'https://docs.google.com/uc?export=download&id=1B-goSqkAqyq2dssvvpNy8vRhfxaZEMf5' -O caption2.jpg
-<<<<<<< HEAD
           wget --no-check-certificate 'https://docs.google.com/uc?export=download&id=1Nl_sUHu6bQj4bxjVkqa9Wv_Xyj4BldQq' -O photo.jpg
-=======
->>>>>>> c4b836061031dbb5bd9098626d7d2fa06725e79a
           cd ../..
           cd media 
           mkdir object
