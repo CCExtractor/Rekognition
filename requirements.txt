@@ -38,7 +38,7 @@ ipdb==0.12.3
 ipython==7.5.0
 ipython-genutils==0.2.0
 jedi==0.14.0
-joblib==0.14
+joblib==1.2.0
 Keras-Applications==1.0.7
 Keras-Preprocessing==1.1.2
 kiwisolver==1.1.0
