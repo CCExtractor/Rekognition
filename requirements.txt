@@ -35,7 +35,7 @@ idna==2.8
 idna-ssl==1.1.0
 imageio==2.5.0
 ipdb==0.12.3
-ipython==7.5.0
+ipython==8.10.0
 ipython-genutils==0.2.0
 jedi==0.14.0
 joblib==0.14
