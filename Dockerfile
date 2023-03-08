@@ -17,6 +17,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN echo "deb [arch=amd64] http://storage.googleapis.com/tensorflow-serving-apt stable tensorflow-model-server tensorflow-model-server-universal" |  tee /etc/apt/sources.list.d/tensorflow-serving.list && \
 curl https://storage.googleapis.com/tensorflow-serving-apt/tensorflow-serving.release.pub.gpg |  apt-key add -
 RUN apt-get update
+RUN /usr/local/bin/python -m pip install --upgrade pip
 
 RUN apt-get install tensorflow-model-server
 WORKDIR $(pwd)
@@ -41,8 +42,8 @@ WORKDIR ../../..
 WORKDIR data
 RUN mkdir text_reco
 WORKDIR text_reco
-RUN wget https://www.dropbox.com/s/dl/h2owqbmnrsvqo0c/ord_map_en.json
-RUN wget https://www.dropbox.com/s/dl/yzkijd7j5yflhli/char_dict_en.json
+RUN wget https://github.com/MaybeShewill-CV/CRNN_Tensorflow/blob/master/data/char_dict/ord_map_en.json
+RUN wget https://github.com/MaybeShewill-CV/CRNN_Tensorflow/blob/master/data/char_dict/char_dict_en.json
 WORKDIR ../..
 # install dependencies
 COPY ./requirements.txt .
